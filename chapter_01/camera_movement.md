@@ -32,7 +32,6 @@ Following prompts illustrate how to instruct the gemini-cli and qwen3-coder to d
 > Please modify the python script @/home/robot/movie_blender_studio/camera_focus_cube.py, so that when the script controls the camera movement in Blender, it also generate a mp4 video recording the view of the camera. 
 ~~~
 
-[camera_focus_cube.py](./src/camera_focus_cube.py)
 
 &nbsp;
 ## 3. Camera focus and movement
