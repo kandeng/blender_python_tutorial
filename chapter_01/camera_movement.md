@@ -22,3 +22,4 @@ We use Google's [gemini-cli](https://github.com/google-gemini/gemini-cli) and Al
 &nbsp;
 ## 4. Video generation
 
+[![Python controls the Blender's camera movement](https://img.youtube.com/vi/xKD0OjaZ_Cs/hqdefault.jpg)](https://www.youtube.com/watch?v=xKD0OjaZ_Cs)
