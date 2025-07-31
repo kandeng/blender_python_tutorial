@@ -4,4 +4,5 @@ A serials of tutorials and sample scripts on how to use python to control Blende
 
 1. [AI coder, camera movement and video generation](./chapter_01/camera_movement.md)
 
-
+2. [Blender image texture and online asset repositories](./chapter_02/image_texture.md)
+   
