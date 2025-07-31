@@ -6,7 +6,7 @@ This chapter discusses how to write Blender python script, to implement image te
 as well as the related online 3D asset resources.  
 
 &nbsp;
-## 2. Textbooks and video tutorials 
+## 2. Textbooks, video tutorials, and AI chatbots 
 
 ### 2.1 Textbooks
 
@@ -20,7 +20,7 @@ Many people complain that,
 2. Ever though there are quite some video tutorials on Blender on youtube.
    However, the learning curve is quite steep, especially to remember numerous hot-keys.  
    
-For example, [b_a_t_m_4_n on Reddit](https://www.reddit.com/r/blender/comments/sxp8kp/comment/hxtrnpo/) said,
+For example, [batm4n on Reddit](https://www.reddit.com/r/blender/comments/sxp8kp/comment/hxtrnpo/) said,
 
 ~~~
 Sadly I get the impression that written material is quite a long way behind the curve compared to video tutorials.
@@ -56,10 +56,29 @@ Our solution is to make timestamps for the video.
 
 **https://tubestamp.com** is a website that can make video timestamps especially for Youtube. 
 
-   <p align="center">
+Comparing with the original timestamps of a sample youtube video, 
+the tubestamp.com generated one is different in both the number of timestamps, and the title of each segment. 
+
+However it might be sufficiently good for content search. 
+
+   <p align="center" vertical-align="top">
      <img alt="tubestamp.com makes timestamps for Youtube video" src="./asset/tubestamp.png" width="48%">
      &nbsp; 
      <img alt="The ground-truth timestamps of a sample video" src="./asset/blender_hdri_timestamps.png" width="48%">
    </p>  
 
+
+### 2.3 AI chatbots
+
+An alternative to textbooks is to ask AI chatbots. 
+
+Following are the two answers from two AI chatbots for the same question. 
+
+The left one is **https://gemini.google.com/app**, the right one is **https://www.doubao.com/chat**. Both are free.
+
+   <p align="center" vertical-align="top">
+     <img alt="The answer of Google's gemini chatbot" src="./asset/gemini.png" width="48%">
+     &nbsp; 
+     <img alt="The answer of Bytedance's doubao chatbot" src="./asset/doubao.png" width="48%">
+   </p>  
 
