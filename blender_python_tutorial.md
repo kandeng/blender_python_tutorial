@@ -24,5 +24,5 @@ Here is the content table of the Blender python tutorials.
 
 1. [AI coder, camera movement and video generation](./chapter_01/camera_movement.md)
 
-2. [Blender image texture and online 3D asset resources](./chapter_02/image_texture.md)
+2. [Blender image texture mapping, shading, and online 3D asset resources](./chapter_02/image_texture.md)
    
