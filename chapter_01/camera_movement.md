@@ -41,7 +41,7 @@ We use qwen3-coder to generate a Blender python script, modify it, and fix bugs,
 1. How to configurate camera's properties and control its movement,
 2. How to generate mp4 video clip via Blender.
 
-The Blender python script [01_camera_focus_cube.py](./src/01_camera_focus_cube.py), is well annotated.
+The Blender python script [camera_focus_cube.py](./src/camera_focus_cube.py), is well annotated.
 
 
 &nbsp;
