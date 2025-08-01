@@ -142,7 +142,7 @@ Input the above prompts to gemini-cli or qwen3-coder, the AI coder will generate
 For example, [office_building_texture.py](./src/office_building_texture.py) is such an AI generated Blender python script. 
 
 
-### 3.2 Running in Blender 3D tool
+### 3.2 Running the Blender python script
 
 There are two ways to execute a Blender python script. 
 
@@ -211,5 +211,22 @@ There are two ways to execute a Blender python script.
      <img alt="Load the python script to Blender 3D tool" src="./asset/blender_script_loading.png" width="48%">
      &nbsp; 
      <img alt="Edit the shader nodes in Blender 3D tool" src="./asset/blender_shading_nodes.png" width="48%">
+   </p>  
+
+
+   ### 3.3 Blender script snippets vs Blender shader nodes in UI
+
+   Comparing the Blender python script with the shader nodes in the Blender 3D tool,
+   as shown in the 2 screenshots below,
+   they are one-to-one mapping.
+
+   You can change the shader node's values in the Blender python script, and re-run it.
+
+   After then in the Blender 3D tool, you can see the texture of the cube changes accordingly.
+
+   <p align="center" vertical-align="top">
+     <img alt="Blender python script snippets" src="./asset/blender_python_shader_nodes_snippet.png" width="48%">
+     &nbsp; 
+     <img alt="Blender shader nodes UI" src="./asset/blender_shader_nodes_enlarged_region.png" width="48%">
    </p>  
 
