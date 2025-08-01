@@ -241,13 +241,13 @@ In this video tutorial, Ryan showed how to generate a wood floor that looks like
 
 It is time consuming to generate 3D object using Blender 3D tool, in addition to a high demand for Blender skillset. 
 
-Instead of generating the 3D object manually, we use a two-phase approach,
+Instead of generating the 3D object manually, we use a three-phase approach, that is easy and efficient,
 
-1. Use gemini-cli and qwen3-coder to generate a Blender python script, with some prompts listed below,
-
-2. Run AI generated Blender python script in the Blender 3D tool, to generate the wood floor object with image texture,
-
-3. Manually double check the shader nodes to fix bugs.
+   1. Use gemini-cli and qwen3-coder to generate a Blender python script, with some prompts listed below,
+   
+   2. Run AI generated Blender python script in the Blender 3D tool, to generate the wood floor object with image texture,
+   
+   3. Manually double check the shader nodes to fix bugs.
 
 We use the following prompts to generate the Blender python script from scratch, modify it, and fix bugs. 
 
