@@ -1,4 +1,4 @@
-# Apply a HRDi Environmental Image to a Dome and Setup a Sun
+# Blender HDRI Python Package
 
 ## 1. Objective
 
