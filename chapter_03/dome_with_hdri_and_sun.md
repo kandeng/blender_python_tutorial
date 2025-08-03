@@ -69,6 +69,12 @@ It consists of 3 steps.
 
 It creates a dome and applies a HDRi image to the surface of the dome.
 
+   <p align="center" vertical-align="top">
+     <img alt="The dome with a thick floor" src="./asset/dome_mesh_for_hdri.png" width="48%">
+     &nbsp; 
+     <img alt="The shade nodes for the dome" src="./asset/shader_nodes_for_dome.png" width="48%">
+   </p>  
+
 The 3'rd part of the prompt is to set up a sun 
 at a 3D coordinate corresponding to the bright spot of the HDRi image, 
 
@@ -93,7 +99,12 @@ Part 3. Setup the sun outside the dome,
 
 [create_dome_with_hdri_and_sun.py](./src/create_dome_with_hdri_and_sun.py) implements the entire procedure from step 1 to 7. 
 
-
+   <p align="center" vertical-align="top">
+     <img alt="The sun's 3D coordinate from the point of view inside the dome" src="./asset/sun_3d_coorindate_inside_dome.png" width="48%">
+     &nbsp; 
+     <img alt="The sun's 3D coordinate from the point of view outside the dome" src="./asset/sun_3d_coordinate_outside_dome.png" width="48%">
+   </p>  
+   
 &nbsp;
 ## 3. The tricky parts of the python script
 
