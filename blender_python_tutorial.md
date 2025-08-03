@@ -25,4 +25,6 @@ Here is the content table of the Blender python tutorials.
 1. [AI coder, camera movement and video generation](./chapter_01/camera_movement.md)
 
 2. [Blender image texture mapping](./chapter_02/image_texture.md)
+
+3. [Blender HDRI python package](./chapter_03/dome_with_hdri_and_sun.md)
    
