@@ -164,3 +164,8 @@ In case the sun position is not correct, double check these tricky parts.
         sun_height = self.radius * 0.1  # 10% of dome radius above surface
         sun_x, sun_y, sun_z = x, y, z + sun_height    
 ~~~
+
+&nbsp;
+## 4. Video demo
+
+[![Blender HDRI python package](https://img.youtube.com/vi/fFoZTq80alY/hqdefault.jpg)](https://www.youtube.com/watch?v=fFoZTq80alY)
