@@ -22,6 +22,7 @@ class RiverTerrain:
         self.subdivisions = subdivisions
         self.plane = None
         self.riverbed_indices = []
+        self.riverbank_indices = []
 
     
     def create_terrain(self):
@@ -74,13 +75,15 @@ class RiverTerrain:
             riverbed_right = closest_point[1]
             if riverbed_left < vert.co.x < riverbed_right:
                 self.riverbed_indices.append(vert.index)
+            else:
+                self.riverbank_indices.append(vert.index)
 
-        if not self.riverbed_indices:
+        if not self.riverbank_indices:
             print("No vertices found for the riverbed. Aborting.")
             return
   
 
-    def dig_riverbed(self, min_pit_depth=0.5, max_pit_depth=1.5, pit_radius=1.8):
+    def dig_riverbed(self, min_pit_depth=0.5, max_pit_depth=2.5, pit_radius=1.8):
         """
         3. Digs pits for each vertex in the riverbed_indices list
            using iterative proportional editing.
@@ -112,12 +115,13 @@ class RiverTerrain:
             bpy.ops.object.mode_set(mode='EDIT')
 
             # Apply a small, random downward translation with proportional editing
-            z_depth = random.uniform(min_pit_depth, max_pit_depth)
+            z_depth = -1.0 * random.uniform(min_pit_depth, max_pit_depth)
             z_target = self.plane.data.vertices[vert_index].co.z - z_depth
+
             if (z_target < -1.0 * max_pit_depth):
-                z_target = max(-1.0 * max_pit_depth, z_target)
-            elif ((self.plane.data.vertices[vert_index].co.z - z_depth) > -1.0 * min_pit_depth):
-                z_target = min(-1.0 * min_pit_depth, z_target)
+                z_target = -1.0 * max_pit_depth
+            elif (z_target > -1.0 * min_pit_depth):
+                z_target = -1.0 * min_pit_depth
 
             z_displace = z_target - self.plane.data.vertices[vert_index].co.z
             bpy.ops.transform.translate(
@@ -134,9 +138,66 @@ class RiverTerrain:
         print("[INFO] Finished digging riverbed.")
 
 
+    def raise_riverbank(self, min_riverbank_height=0.5, max_riverbank_height=2.5, bump_radius=1.8):
+        """
+        4. Raise riverbank for each vertex outside of the riverbed_indices list
+           using iterative proportional editing.
+
+        Args:
+            min_riverbank_height (float): The minimum depth for each pit.
+            max_riverbank_height (float): The maximum depth for each pit.
+            riverbank_radius (float): The radius for each proportional editing operation.
+        """
+        if not self.riverbank_indices:
+            print("[ERROR] No riverbank vertices selected. Please run select_riverbed_vertices() first.")
+            return
+
+        print("[INFO] Raising riverbank ... (This may take a moment)")
+        bpy.context.view_layer.objects.active = self.plane
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.context.tool_settings.mesh_select_mode = (True, False, False)
+
+        original_falloff = bpy.context.scene.tool_settings.proportional_edit_falloff
+        bpy.context.scene.tool_settings.proportional_edit_falloff = 'SMOOTH'
+
+        for i, vert_index in enumerate(self.riverbank_indices):
+            if i % 100 == 0:
+                print(f"  Raising riverbank {i} of {len(self.riverbank_indices)}...")
+
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
+            self.plane.data.vertices[vert_index].select = True
+            bpy.ops.object.mode_set(mode='EDIT')
+
+            # Apply a small, random downward translation with proportional editing
+            z_depth = random.uniform(min_riverbank_height, max_riverbank_height)
+            deviation_from_middle = abs(self.plane.data.vertices[vert_index].co.x) / (0.5 * self.plane_width) 
+            z_depth *= deviation_from_middle
+            z_target = z_depth - self.plane.data.vertices[vert_index].co.z 
+
+            if (z_target > max_riverbank_height):
+                z_target = max_riverbank_height
+            elif (z_target < min_riverbank_height):
+                z_target = min_riverbank_height
+
+            z_displace = z_target - self.plane.data.vertices[vert_index].co.z
+            bpy.ops.transform.translate(
+                value=(0, 0, z_displace),
+                orient_type='GLOBAL',
+                use_proportional_edit=True, 
+                proportional_edit_falloff='SMOOTH',  # Use linear for more uniform effect
+                proportional_size=bump_radius,
+                release_confirm=True
+            )
+        
+        bpy.context.scene.tool_settings.proportional_edit_falloff = original_falloff
+        bpy.ops.object.mode_set(mode='OBJECT')
+        print("[INFO] Finished raising riverbank.")
+
+
     def apply_displace_texture(self, texture_path, strength=0.5, midlevel=0.5):
         """
-        4. Applies a displacement texture to the entire terrain.
+        5. Applies a displacement texture to the entire terrain.
 
         Args:
             texture_path (str): The file path to the displacement texture.
@@ -185,6 +246,7 @@ if __name__ == "__main__":
     my_river.create_terrain()
     my_river.select_riverbed_vertices()
     my_river.dig_riverbed()
+    my_river.raise_riverbank()
     my_river.apply_displace_texture(texture_path=texture_file_path)
 
     print("\nScript finished: A river terrain has been generated.")
