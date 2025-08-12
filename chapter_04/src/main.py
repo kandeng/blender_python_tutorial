@@ -2,7 +2,6 @@ import bpy
 import sys
 import os
 
-
 class BlenderImporter:
     def __init__(self):
         self.blend_file_path = "/"
@@ -49,11 +48,20 @@ class BlenderImporter:
 
 if __name__ in "__main__":
     BlenderImporter.append_script_directory()
+    
+    """
+    from model.rock_generator import RockGenerator
+    RockGenerator.run_demo()     
+    """
 
     """
-    from texture.apply_texture_to_mesh import ApplyTexture
-    ApplyTexture.testrun()    
+    from texture_modifier.apply_texture_asset import ApplyTexture
+    ApplyTexture.run_demo()      
     """
+  
+    from model.water_generator import WaterGenerator
+    WaterGenerator.run_demo()        
+    
 
-    from model.create_rock import RockGenerator
-    RockGenerator.testrun()
+
+    
