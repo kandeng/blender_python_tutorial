@@ -16,17 +16,17 @@ class WaterGenerator:
         self.tex_asset_applier = None
 
         try:
-            from texture_modifier.texture_generator import TextureGenerator
-            self.tex_gen = TextureGenerator()
+            from shader_modifier.shader_generator import ShaderGenerator
+            self.tex_gen = ShaderGenerator()
 
-            from texture_modifier.apply_texture_asset import ApplyTexture
+            from shader_modifier.apply_texture_asset import ApplyTexture
             self.tex_asset_applier = ApplyTexture()
 
             print("[INFO] WaterGenerator class imported successfully.")   
         except ImportError as e:
-            print(f"[ERROR] Could not import TextureGenerator class: {e}")
+            print(f"[ERROR] Could not import ShaderGenerator class: {e}")
             print(f"[ERROR] Please ensure 'create_texture.py' is in the correct directory.")
-            TextureGenerator = None
+            ShaderGenerator = None
 
 
     def create_water(self, scale=(10.0, 10.0)):

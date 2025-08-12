@@ -22,7 +22,7 @@ class RockGenerator:
 
         try:
             # print(f"[INFO] In RockGenerator, sys.path: '{sys.path}'")
-            from texture_modifier.apply_texture_asset import ApplyTexture
+            from shader_modifier.apply_texture_asset import ApplyTexture
             self.texture_applier = ApplyTexture()
         except ImportError:
             print("[ERROR] Could not import ApplyTexture class. Make sure 'apply_texture_asset.py' is in the correct directory.")
