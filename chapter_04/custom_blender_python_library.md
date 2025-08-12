@@ -19,6 +19,7 @@ $ tree .
 │   └── import_in_blender.py
 ├── shader_modifier
 │   ├── __init__.py
+│   ├── apply_texture_asset.py
 │   ├── modifier_generator.py
 │   └── shader_generator.py
 ├── hdri
