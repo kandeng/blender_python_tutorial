@@ -17,10 +17,10 @@ $ tree .
 ├── sys_config
 │   ├── __init__.py 
 │   └── import_in_blender.py
-├── texture_modifier
+├── shader_modifier
 │   ├── __init__.py
 │   ├── modifier_generator.py
-│   └── texture_generator.py
+│   └── shader_generator.py
 ├── hdri
 │   ├── __init__.py
 │   └── dome_with_hdri_and_sun_generator.py
