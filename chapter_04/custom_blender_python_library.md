@@ -9,6 +9,10 @@ that aims at constructing virtual movie studio.
 &nbsp;
 ## 2. System architecture
 
+Following is the final goal of the library framework. 
+
+In each file folder, we will add many more python scripts. 
+
 ~~~
 $ cd /home/robot/movie_blender_studio/
 $ tree .
@@ -45,22 +49,40 @@ $ tree .
 &nbsp;
 ## 3. Run demos
 
+To run the demo, do the following
+
 ~~~
 $ cd /home/robot/movie_blender_studio/
 
+# To verify there is no error.
 $ python3 main.py
+
+# Another way to verify there is no error.
+# Also, in the future, when providing cloud service to remote users,
+# we will run the system in the background/headless mode. 
 $ blender --background --python main.py
+
+# To see the demo in the Blender 3D software
+# the easiest way is to the following command
+$ blender --python main.py
 ~~~
 
 Or, load and run the "main.py" script in the Blender 3D software.
 
+The left screenshot below shows the shader nodes for the water plane, especially the noise and bump nodes. 
+The right screenshot below shows the displacement modifier that can change the vertex coordinates of the wooden floor dynamically. 
+
+The shader nodes and modifiers can be programmed easily, using our Blender python library.
+
    <p align="center" vertical-align="top">
-     <img alt="The sun's 3D coordinate from the point of view inside the dome" src="./asset/sun_3d_coorindate_inside_dome.png" width="48%">
-     &nbsp; 
-     <img alt="The sun's 3D coordinate from the point of view outside the dome" src="./asset/sun_3d_coordinate_outside_dome.png" width="48%">
+     <img alt="The shader nodes for the water plane, especially the noise and bump nodes" src="./asset/texture_shader_for_water.png" width="48%">
+     &nbsp;
+     <img alt="The modifier for displacement, that can change the vertex coordinates dynamically" src="./asset/modifier_for_wooden_floor.png" width="48%">
    </p>  
 
 &nbsp;
 ## 4. Demo video
 
-[![Blender HDRI python package](https://img.youtube.com/vi/fFoZTq80alY/hqdefault.jpg)](https://www.youtube.com/watch?v=fFoZTq80alY)
+Click the image to jump to youtube to see our demo.
+
+[![Blender HDRI python package](https://img.youtube.com/vi/Anh2qevOw-A/hqdefault.jpg)](https://www.youtube.com/watch?v=Anh2qevOw-A)
