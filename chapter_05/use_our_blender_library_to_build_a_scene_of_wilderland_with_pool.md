@@ -2,6 +2,13 @@
 
 ## 1. Objectives
 
+There are two objectives for chapter 05. 
+
+1. Continue to develop our Blender python library for video-making.
+
+2. Build a video-making scene set, in this case it is a wilderland with a pool, to verifying our library's functionality and easy-to-use.
+
+
 &nbsp;
 ## 2. System Architecture
 
