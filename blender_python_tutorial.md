@@ -28,4 +28,6 @@ Here is the content table of the Blender python tutorials.
 
 3. [Blender HDRI python package](./chapter_03/dome_with_hdri_and_sun.md)
 
-4. [Custom blender python library](./chapter_04/custom_blender_python_library.md)   
+4. [Custom blender python library](./chapter_04/custom_blender_python_library.md)
+
+5. [A wilderland with a pool scene set for video-making built by our blender python library](./chapter_05/use_our_blender_library_to_build_a_scene_of_wilderland_with_pool.md)   
