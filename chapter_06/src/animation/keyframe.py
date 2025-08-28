@@ -10,9 +10,6 @@ class Keyframe:
         self.keyframe = None
         self.constraint = None
 
-        # The frame_range is a tuple (start_frame, end_frame, step)
-        self.frame_range = (1, 100, 1)
-        
         try:
             from logger.logger import LlamediaLogger
             # Stream the log to the 'Animation' subdirectory in the log directory.
@@ -278,6 +275,49 @@ class Keyframe:
 
 
 
+    def move_straight(
+            self, 
+            line_coordinates=((0, 0, 0), (5, 0, 0)),
+            keyframe_range=(-1, 0)
+        ):
+        """
+        Move self.obj straight alone a line. Suggest not to use this, this method is too complicated and easy to make mistake. Instead, use keyframes is more robust.
+
+        Args:
+            line_coordinates (tuple, tuple): The two tuples (x, y, z) for the line's start and end points.
+            keyframe_range (tuple): The keyframe indices that the constraint starts and ends.        
+        """
+        if not self.obj:
+            warn_msg = f"move_straight(): self.obj doesn't exist."
+            self.logger.warn(warn_msg)
+            return
+        
+        if len(line_coordinates) != 2:
+            warn_msg = f"move_straight(): the line coordinates '{line_coordinates}' is not valid."
+            self.logger.warn(warn_msg)
+            return      
+        elif len(line_coordinates[0]) != 3:
+            warn_msg = f"move_straight(): line_coordinates[0] '{line_coordinates}' is not valid."
+            self.logger.warn(warn_msg)
+            return      
+        elif len(line_coordinates[1]) != 3:
+            warn_msg = f"move_straight(): line_coordinates[1] '{line_coordinates}' is not valid."
+            self.logger.warn(warn_msg)
+            return      
+            
+        if len(keyframe_range) != 2:
+            warn_msg = f"move_straight(): the keyframe range '{keyframe_range}' is not valid."
+            self.logger.warn(warn_msg)
+            return     
+        
+
+        self.obj.location = line_coordinates[0]
+        self.set_transform_keyframe(frame_idx=keyframe_range[0])
+
+        self.obj.location = line_coordinates[1]
+        self.set_transform_keyframe(frame_idx=keyframe_range[1])
+
+
     @staticmethod
     def run_demo():
         # --- 1. Scene Setup ---
@@ -320,7 +360,27 @@ class Keyframe:
             fcurve_handle_right_value=3.0   # The vertical distance of the right handle from the keyframe value
         )
 
-        # Set the scene frame range
+
+        # --- 4. Create a cube for moving straight.
+        #
+        bpy.ops.mesh.primitive_cube_add(location=(0, 0, 0))  # Create at origin
+        space_ship = bpy.context.active_object
+        space_ship.name = "space_ship"
+        space_ship.scale = (0.3, 0.6, 0.3)
+
+        space_ship_mat = bpy.data.materials.new(name="SpaceShipMaterial")
+        space_ship_mat.diffuse_color = (0.3, 0.6, 0.6, 1)
+        space_ship.data.materials.append(space_ship_mat)   
+
+        keyframe.set_object(space_ship)
+        keyframe.move_straight(
+            line_coordinates=((12, -10, -1), (12, 10, 1)),
+            keyframe_range=(1, 50)  
+        )
+
+
+        # --- 5. Set the scene frame range
+        # 
         bpy.context.scene.frame_start = 1
         bpy.context.scene.frame_end = 50
         
