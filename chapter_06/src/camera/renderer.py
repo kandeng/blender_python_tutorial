@@ -143,7 +143,7 @@ class Renderer:
         self.logger.debug(output_setting_str)  
 
 
-    def operate_rendering(self):
+    def _operate_rendering(self):
         """
         Renders the animation as a sequence of images.
         """
@@ -158,7 +158,7 @@ class Renderer:
             bpy.ops.render.render(animation=True)
             self.logger.info("Rendering process completed.")
         except Exception as e: 
-            self.logger.error(f"operate_rendering() threw an exception: '{str(e)}'")     
+            self.logger.error(f"_operate_rendering() threw an exception: '{str(e)}'")     
 
 
     def render_frame_images(self, output_path="frame_images"):
@@ -169,7 +169,7 @@ class Renderer:
             file_format="PNG"
         )
 
-        self.operate_rendering() 
+        self._operate_rendering() 
 
 
     def _import_image_sequence(self, input_images_dir="frame_images", image_extension="png", frame_duration=1):
@@ -190,8 +190,6 @@ class Renderer:
         # Add each image to sequencer
         current_frame = self.scene.frame_start       
         for img_path in image_files:
-            self.logger.debug(f"img_path:'{img_path}', img_path.stem: '{img_path.stem}'")
-
             # Create image strip
             strip = self.sequencer.sequences.new_image(
                 name=img_path.stem,
@@ -225,7 +223,7 @@ class Renderer:
             file_format="FFMPEG", video_codec="H264", container="MPEG4"
             )
 
-        self.operate_rendering()    
+        self._operate_rendering()    
         self.logger.info(f" Successfully generated a video stored in directory '{output_video_dir}'")         
 
 
@@ -238,25 +236,6 @@ class Renderer:
     
         demo_rendering_engine = Renderer()
         demo_rendering_engine.set_scene_settings()
-
-        # file_format (str): The file format ('FFMPEG', 'PNG', 'JPEG', etc.).
-        # video_codec (str): The video codec ('MPEG4', 'H264', etc.).
-        # container (str): The video container ('MPEG4', 'MKV', etc.).
-
-        """
-        # Directly render mp4 video.
-        demo_rendering_engine.set_output_settings(
-            output_path="./render_output/", 
-            file_format="PNG"
-            )
-
-        demo_rendering_engine.set_output_settings(
-            output_path="./render_output/",
-            file_format="FFMPEG", video_codec="H264", container="MPEG4"
-            )
-            
-        demo_rendering_engine.operate_rendering()        
-        """
 
         demo_rendering_engine.render_frame_images(
             output_path="tmp_frame_img"

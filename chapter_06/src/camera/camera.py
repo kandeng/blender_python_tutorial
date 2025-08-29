@@ -19,6 +19,7 @@ class Camera:
         self.logger = None
         self.camera = None
         self.renderer = None
+        self.animation = None
 
         try:
             from logger.logger import LlamediaLogger
@@ -27,8 +28,11 @@ class Camera:
 
             from camera.renderer import Renderer
             self.renderer = Renderer()
-
             self.camera = self._create_camera(camera_name)
+
+            from animation.animation import Animation
+            self.animation = Animation(self.camera)
+
         except ImportError as e:
             if self.logger:
                 self.logger.error(f"Could not initialize Camera class, error message: '{e}'")
@@ -191,7 +195,7 @@ class Camera:
     $ blender --python main.py
     """
     @staticmethod
-    def run_demo():
+    def run_demo_v1():
         # Clean up existing objects for a fresh start
         bpy.ops.object.select_all(action='SELECT')
         bpy.ops.object.delete()
@@ -250,6 +254,147 @@ class Camera:
         demo_camera.rotate_trackball(radius=6, angle_degrees=45)        
         """
 
+
+    """
+    $ cd /home/robot/movie_blender_studio
+    $ blender --python main.py
+    """
+    @staticmethod
+    def run_demo():
+        # Clear default objects
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete()
+
+        # --------------------------
+        # 1. Create Sun
+        # --------------------------
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=2, location=(0, 0, 0))
+        sun = bpy.context.active_object
+        sun.name = "Sun"
+
+        # Sun material
+        sun_mat = bpy.data.materials.new(name="SunMaterial")
+        sun_mat.diffuse_color = (1, 0.8, 0.2, 1)
+        sun.data.materials.append(sun_mat)
+
+        # --------------------------
+        # 2. Create Earth 
+        # --------------------------
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.8)
+        earth = bpy.context.active_object
+        earth.name = "Earth"
+        # earth.location = (0, -10.0, 0)
+        # bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+
+        # Earth material
+        earth_mat = bpy.data.materials.new(name="EarthMaterial")
+        earth_mat.diffuse_color = (0.2, 0.3, 1, 1)
+        earth.data.materials.append(earth_mat)    
+
+        # Lock Z location
+        earth.lock_location[2] = True   
+
+        # --------------------------
+        # 3. Create Moon
+        # --------------------------
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.4)
+        moon = bpy.context.active_object
+        moon.name = "Moon"
+
+        # Moon material
+        moon_mat = bpy.data.materials.new(name="MoonMaterial")
+        moon_mat.diffuse_color = (0.2, 0.8, 0.2, 1)
+        moon.data.materials.append(moon_mat)    
+
+        # Lock Z location
+        moon.lock_location[2] = True    
+
+        # --------------------------
+        # 4. Create solar animation.
+        # --------------------------
+        from animation.animation import Animation
+        solar_animation = Animation(earth)
+
+        # Make the earth circle around the sun. 
+        solar_animation.circle_around(
+            target_obj=sun,
+            radius=10,
+            keyframe_range=(1, 250)  # Full orbit over 250 frames
+        )        
+
+        # --------------------------
+        # 5. Using animation, to move the moon around the earth.
+        # --------------------------
+        solar_animation.set_object(moon)
+
+        # Make the moon circle around the earth. 
+        solar_animation.circle_around(
+            target_obj=earth,
+            radius=4,
+            keyframe_range=(1, 80)  # Full orbit over 250 frames
+        )     
+        solar_animation.circle_around(
+            target_obj=earth,
+            radius=4,
+            keyframe_range=(81, 160)  # Full orbit over 250 frames
+        )          
+        solar_animation.circle_around(
+            target_obj=earth,
+            radius=4,
+            keyframe_range=(161, 250)  # Full orbit over 250 frames
+        )         
+
+        # --------------------------
+        # 6. Create solar_camera
+        # --------------------------
+        solar_camera = Camera("SolarCamera")
+        solar_camera.set_activate()
+        solar_camera.camera.data.lens = 20.0
+        camera_properties = solar_camera.get_properties()
+        print(f"\n[INFO] Camera properties: ")
+        pprint.pprint(camera_properties)
+
+        # --------------------------
+        # 7. Using animation, to move the camera along a straight line.
+        # --------------------------
+        solar_camera.animation.move_straight(
+            line_coordinates=((12, -10, 10), (12, 10, 10)),
+            keyframe_range=(1, 250)  # Movement over 250 frames
+        )
+
+        solar_camera.animation.track_to(
+            target_obj=sun, 
+            track_axis="TRACK_NEGATIVE_Z", 
+            up_axis="UP_Y"            
+        )
+
+        # --------------------------
+        # 8. Set the Blender UI.
+        # --------------------------
+        bpy.context.scene.frame_start = 1
+        bpy.context.scene.frame_end = 250    
+
+        # Check if a world exists, create one if not.
+        if not bpy.context.scene.world:
+            bpy.context.scene.world = bpy.data.worlds.new("World")
+
+        bpy.context.scene.world.use_nodes = True
+        background_node = bpy.context.scene.world.node_tree.nodes["Background"]
+        background_node.inputs["Color"].default_value = (0.5, 0.5, 0.5, 1.0)     
+
+        # --------------------------
+        # 9. Rendering a MP4 video.
+        # --------------------------
+        solar_camera.set_activate()
+        solar_camera.renderer.render_frame_images(
+            output_path="output/tmp_images"
+        )
+        solar_camera.renderer.compile_images_to_video(
+            input_images_dir="output/tmp_images",
+            output_video_dir="output/video_output"
+        )      
+        
+  
 
 if __name__ == "__main__":
     Camera.run_demo()
