@@ -5,16 +5,13 @@ from mathutils import Vector
 class Keyframe:
     def __init__(self, obj=None):
         self.logger = None
-
         self.obj = obj
-        self.keyframe = None
-        self.constraint = None
 
         try:
             from logger.logger import LlamediaLogger
             # Stream the log to the 'Animation' subdirectory in the log directory.
             self.logger = LlamediaLogger("Animation").getLogger()
-            self.logger.info(f"Keyframe class initialized.")
+            self.logger.info(f"Keyframe class initialized, self.obj.name='{self.obj.name}'.")
 
         except ImportError as e:
             if self.logger:
@@ -62,8 +59,8 @@ class Keyframe:
             math.degrees(self.obj.rotation_euler.y),
             math.degrees(self.obj.rotation_euler.z)
         )
-        info_msg = f"set_transform_keyframe(), frame={frame_idx}, location={self.obj.location}, "
-        info_msg += f"rotation={rotation_degree}, scale={self.obj.scale}."
+        info_msg = f"set_transform_keyframe(), self.obj.name='{self.obj.name}', frame={frame_idx}, "
+        info_msg += f"location={self.obj.location}, rotation={rotation_degree}, scale={self.obj.scale}."
         self.logger.info(info_msg)
  
 
@@ -275,6 +272,78 @@ class Keyframe:
 
 
 
+    def circle_around(
+            self, 
+            target_obj=None,
+            radius=-1,
+            keyframe_range=(-1, 0)
+        ):
+        """
+        Make self.obj moves around the target object in x-y plane (z=0). 
+
+        Args:
+            target_obj (bpy.types.Object): The target object to circle around.
+            radius (float): The radius of the circle.
+            keyframe_range (tuple): The keyframe indices that the constraint starts and ends.
+        """      
+        if not self.obj:
+            warn_msg = f"circle_around(): self.obj doesn't exist."
+            self.logger.warn(warn_msg)
+            return
+        
+        if not target_obj:
+            warn_msg = f"circle_around(): the input target_obj is None."
+            self.logger.warn(warn_msg)
+            return         
+
+        if radius <= 0:
+            warn_msg = f"circle_around(): the radius of the circle, radius={radius}, is not valid."
+            self.logger.warn(warn_msg)
+            return     
+
+        if len(keyframe_range) != 2:
+            warn_msg = f"circle_around(): the keyframe range '{keyframe_range}' is not valid."
+            self.logger.warn(warn_msg)
+            return   
+        
+        # Remove any existing constraints
+        for constraint in self.obj.constraints:
+            self.obj.constraints.remove(constraint)
+
+        """ 
+        # WARN: Add constraint will cause conflict to the local coordinates keyframes.
+        # Add a Track To constraint to self.obj                                                                                                  
+        track_to = self.obj.constraints.new(type='TRACK_TO')       
+        track_to.name = target_obj.name                                                                                                          
+        track_to.target = target_obj                                                                                                             
+        track_to.track_axis = 'TRACK_Z'  #'TRACK_NEGATIVE_Z'       
+        track_to.up_axis = 'UP_Y'              
+        """
+     
+        # Set parent to target_obj
+        self.obj.parent = target_obj
+
+        # --- Animate with Keyframes ---
+        total_frames = keyframe_range[1] - keyframe_range[0] + 1
+        for frame in range(keyframe_range[0], keyframe_range[1] + 1, 1):
+            # Set the current frame
+            bpy.context.scene.frame_set(frame)
+
+            # --- Animate object's Orbit around the target ---
+            # Calculate the angle based on the frame
+            angle = ((frame - keyframe_range[0]) / total_frames) * (2 * math.pi)
+            # For a child object, the location is relative to the parent
+            # So we set the local coordinates directly
+            local_x = radius * math.cos(angle)
+            local_y = radius * math.sin(angle)
+            self.obj.location = (local_x, local_y, 0)  # Local coordinates relative to parent
+            self.obj.keyframe_insert(data_path='location', frame=frame)
+            
+            # Ensure rotation is reset to avoid any interference
+            self.obj.rotation_euler = (0, 0, 0)
+            self.obj.keyframe_insert(data_path='rotation_euler', frame=frame)
+
+
     def move_straight(
             self, 
             line_coordinates=((0, 0, 0), (5, 0, 0)),
@@ -285,7 +354,7 @@ class Keyframe:
 
         Args:
             line_coordinates (tuple, tuple): The two tuples (x, y, z) for the line's start and end points.
-            keyframe_range (tuple): The keyframe indices that the constraint starts and ends.        
+            keyframe_range (tuple): The keyframe indices that the animation starts and ends.        
         """
         if not self.obj:
             warn_msg = f"move_straight(): self.obj doesn't exist."
