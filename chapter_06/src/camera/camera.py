@@ -110,56 +110,7 @@ class Camera:
         direction = mathutils.Vector(center_point) - self.camera.location
         rot_quat = direction.to_track_quat('-Z', 'Y')
         self.camera.rotation_euler = rot_quat.to_euler()
-        
 
-    def move_on_track(self, curve_object: str|Any=None, duration_frames=250, start_frame=1):
-        """
-        Moves the camera along a specified 3D curve using a Follow Path constraint.
-        
-        This method is now corrected to ensure the camera completes the full path.
-        
-        Args:
-            curve_object_name (str): The name of the curve object to follow.
-            duration_frames (int): The total number of frames for the animation to complete.
-            start_frame (int): The starting frame for the animation.
-        """
-        curve = None
-        if curve_object is None:
-            error_msg = f"The curve object is None."
-            self.logger.error(error_msg)
-            return 
-        else:
-            if isinstance(curve_object, str):
-                curve = bpy.data.objects.get(str(curve_object))
-            else:
-                curve = curve_object
-
-            if not curve or curve.type != 'CURVE':
-                error_msg = f"The curve object '{str(curve_object)}' is not a valid curve."
-                self.logger.error(error_msg)
-                return
-            else:
-                info_msg = f"Make the camera moving along the track '{curve.name}'"
-                self.logger.info(info_msg)
-
-        # Clear existing path constraints to avoid conflicts
-        for constraint in self.camera.constraints:
-            if constraint.type == 'FOLLOW_PATH':
-                self.camera.constraints.remove(constraint)
-        
-        # Add the Follow Path constraint
-        constraint = self.camera.constraints.new(type='FOLLOW_PATH')
-        constraint.target = curve
-        constraint.use_curve_follow = True
-        
-       # Ensure the animation runs from start (0%) to end (100%) of the path
-        constraint.offset = 0.0
-        self.camera.keyframe_insert(data_path='constraints["Follow Path"].offset', frame=start_frame)
-        
-        # Set the final keyframe at the end of the specified duration
-        end_frame = start_frame + duration_frames
-        constraint.offset = 100.0
-        self.camera.keyframe_insert(data_path='constraints["Follow Path"].offset', frame=end_frame)
 
 
     def target_object(self, target_object: str | Any =None):
@@ -189,70 +140,6 @@ class Camera:
         
         self.logger.info(f"The camera now tracking object: {target.name}")
 
-
-    """
-    $ cd /home/robot/movie_blender_studio
-    $ blender --python main.py
-    """
-    @staticmethod
-    def run_demo_v1():
-        # Clean up existing objects for a fresh start
-        bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.object.delete()
-        
-        # Create a cube as a target object
-        bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, -1))
-        bpy.context.object.name = "TargetCube"
-        
-        demo_camera = Camera("DemoCamera")
-        demo_camera.set_activate()
-       
-        # Use the methods to manipulate the camera
-        
-        # Get the camera properties
-        camera_properties = demo_camera.get_properties()
-        print(f"\n[INFO] Camera properties: ")
-        pprint.pprint(camera_properties)
-        
-        
-        #
-        #  Demo 1. The camera moves along a circle, and lens always targets at the cube.
-        #
-        # Step 1. Create a path (Bezier curve) for the camera to follow
-        bpy.ops.curve.primitive_bezier_circle_add(radius=10)
-        path = bpy.context.object
-        path.name = "CameraPath"
-        path.location.z = 2     
-
-        # Step 2. Make the camera follow the curve and track the target
-        demo_camera.move_on_track(path.name, duration_frames=249)
-        demo_camera.target_object("TargetCube")
-        
-        # Step 3. Set the frame range
-        bpy.context.scene.frame_start = 1
-        bpy.context.scene.frame_end = 250
-        
-        # Step 4. Rendering a MP4 video
-        demo_camera.set_activate()
-        demo_camera.renderer.render_frame_images(
-            output_path="output/tmp_images"
-            )
-        demo_camera.renderer.compile_images_to_video(
-            input_images_dir="output/tmp_images",
-            output_video_dir="output/video_output"
-            )        
-
-
-        #
-        #  Demo 2. The camera is locked to a trackball, you can change the orientation of the camera,
-        #          but it is always locked to the origin.
-        #  When running demo 2, remember to comment out the demo 1. 
-        #
-        """
-        # Move the camera to a "trackball" position
-        demo_camera.camera.scale=(2,2,2)
-        demo_camera.rotate_trackball(radius=6, angle_degrees=45)        
-        """
 
 
     """
@@ -357,9 +244,17 @@ class Camera:
         # --------------------------
         # 7. Using animation, to move the camera along a straight line.
         # --------------------------
+        """
         solar_camera.animation.move_straight(
             line_coordinates=((12, -10, 10), (12, 10, 10)),
             keyframe_range=(1, 250)  # Movement over 250 frames
+        )        
+        """
+
+        solar_camera.animation.move_on_track(
+            curve_name="BezierCurve3D_camera",
+            curve_coordinates=((12, -10, 10), (12, 10, 10), (-12, 10, 10)),
+            keyframe_range=(1, 250)            
         )
 
         solar_camera.animation.track_to(
@@ -392,7 +287,7 @@ class Camera:
         solar_camera.renderer.compile_images_to_video(
             input_images_dir="output/tmp_images",
             output_video_dir="output/video_output"
-        )      
+        )          
         
   
 
