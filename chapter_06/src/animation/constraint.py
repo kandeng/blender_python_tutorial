@@ -1,5 +1,7 @@
 import bpy
 from mathutils import Vector
+from typing import Any
+
 
 class Constraint:
     def __init__(self, obj=None):
@@ -10,7 +12,10 @@ class Constraint:
             from logger.logger import LlamediaLogger
             # Stream the log to the 'Animation' subdirectory in the log directory.
             self.logger = LlamediaLogger("Animation").getLogger()
-            self.logger.info(f"Constraint class initialized.")
+            if self.obj:
+                self.logger.info(f"Constraint class initialized, self.obj.name='{self.obj.name}'.")
+            else:
+                self.logger.info(f"Constraint class initialized, but self.obj is not yet set.")
 
         except ImportError as e:
             if self.logger:
@@ -193,6 +198,7 @@ class Constraint:
         )
         circle_curve = bpy.context.active_object
         circle_curve.name="earth_orbit"
+        circle_curve.parent=target_obj
         circle_curve.data.path_duration = keyframe_range[1] - keyframe_range[0] + 1  
         
         circle_constraint = self.follow_path(
@@ -284,7 +290,7 @@ class Constraint:
             keyframe_range=(-1, 0)
         ):
         """
-        Move self.obj straight alone a line. 
+        Move self.obj straight alone a line. Suggest not to use this, this method is too complicated and easy to make mistake. Instead, use keyframe's move_straight() is more robust.
 
         Args:
             line_coordinates (tuple, tuple): The two tuples (x, y, z) for the line's start and end points.
@@ -346,6 +352,63 @@ class Constraint:
         info_msg += f"along a straight line, named '{line_name}', " 
         info_msg += f"\n\t starting from '{line_coordinates[0]}', ending with '{line_coordinates[1]}'."
         self.logger.info(info_msg)          
+
+
+    """
+    def move_on_track(
+            self,  
+            curve_name: str|Any=None, 
+            keyframe_range=(-1, 0)
+        ):
+        ""
+        Moves the self.obj along a specified 3D curve using a Follow Path constraint.
+        
+        Args:
+            curve_name (str): The name of the curve object to follow.
+            keyframe_range (tuple): The keyframe indices that the constraint starts and ends. 
+        ""
+        curve = None
+        if curve_name is None:
+            error_msg = f"The curve object is None."
+            self.logger.error(error_msg)
+            return 
+        else:
+            if isinstance(curve_name, str):
+                curve = bpy.data.objects.get(str(curve_name))
+            else:
+                curve = curve_name
+
+            if not curve or curve.type != 'CURVE':
+                error_msg = f"The curve object '{str(curve_name)}' is not a valid curve."
+                self.logger.error(error_msg)
+                return
+            else:
+                info_msg = f"Make the camera moving along the track '{curve.name}'"
+                self.logger.info(info_msg)
+
+        # Clear existing path constraints to avoid conflicts
+        for constraint in self.obj.constraints:
+            if constraint.type == 'FOLLOW_PATH':
+                self.obj.constraints.remove(constraint)
+        
+        # Add the Follow Path constraint
+        constraint = self.obj.constraints.new(type='FOLLOW_PATH')
+        constraint.target = curve
+        constraint.use_curve_follow = True
+        
+       # Ensure the animation runs from start (0%) to end (100%) of the path
+        constraint.offset = 0.0
+        self.obj.keyframe_insert(data_path='constraints["Follow Path"].offset', frame=keyframe_range[0])
+        
+        # Set the final keyframe at the end of the specified duration
+        constraint.offset = 100.0
+        self.obj.keyframe_insert(data_path='constraints["Follow Path"].offset', frame=keyframe_range[1])
+
+        info_msg = f"move_on_track(): create a 3D bezier curve, named '{curve_name}', " 
+        info_msg += f"\n\t within keyframes {keyframe_range}."
+        self.logger.info(info_msg)      
+    """
+
 
 
 

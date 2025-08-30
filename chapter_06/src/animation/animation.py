@@ -11,7 +11,10 @@ class Animation:
         try:
             from logger.logger import LlamediaLogger
             self.logger = LlamediaLogger("Animation").getLogger()
-            self.logger.info(f"Animation class initialized, self.obj.name='{self.obj.name}'")
+            if self.obj:
+                self.logger.info(f"Animation class initialized, self.obj.name='{self.obj.name}'")
+            else:
+                self.logger.info(f"Animation class initialized, but self.obj is not yet set.")
 
             from animation.keyframe import Keyframe
             from animation.constraint import Constraint
@@ -45,6 +48,18 @@ class Animation:
         self.obj.matrix_parent_inverse = parent_obj.matrix_world.inverted()
 
 
+    def track_to(
+            self, 
+            target_obj=None, 
+            track_axis="", 
+            up_axis=""
+        ) -> bpy.types.Object:
+        return self.constraint.track_to(
+            target_obj,
+            track_axis,
+            up_axis
+        )
+
     def circle_around(
             self, 
             target_obj=None,
@@ -66,6 +81,34 @@ class Animation:
             line_coordinates=line_coordinates,
             keyframe_range=keyframe_range           
         )        
+
+    def move_on_track(
+            self, 
+            curve_name="BezierCurve3D_4Animation",
+            curve_coordinates=((0, 0, 0), (5, 0, 0), (5, 5, 0)),
+            keyframe_range=(-1, 0)            
+        ):
+        curve_obj = self.keyframe.create_3d_bezier_curve(
+            curve_coordinates=curve_coordinates, 
+            curve_name=curve_name
+        )
+        self.keyframe.move_along_curve(
+            curve_name=curve_name,
+            keyframe_range=keyframe_range
+        )
+        # Make the curve invisible in the viewport and in renders
+        curve_obj.hide_set(True)
+        curve_obj.hide_render = True
+
+    def track_ahead(
+            self, 
+            curve_name="BezierCurve3D_4Animation", 
+            keyframe_range=(-1, 0)
+        ):
+        self.keyframe.track_ahead(
+            curve_name=curve_name,
+            keyframe_range=keyframe_range
+        )
 
 
     @staticmethod

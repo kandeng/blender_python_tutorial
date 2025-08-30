@@ -11,7 +11,10 @@ class Keyframe:
             from logger.logger import LlamediaLogger
             # Stream the log to the 'Animation' subdirectory in the log directory.
             self.logger = LlamediaLogger("Animation").getLogger()
-            self.logger.info(f"Keyframe class initialized, self.obj.name='{self.obj.name}'.")
+            if self.obj:
+                self.logger.info(f"Keyframe class initialized, self.obj.name='{self.obj.name}'.")
+            else:
+                self.logger.info(f"Keyframe class initialized, but self.obj is not yet set.")
 
         except ImportError as e:
             if self.logger:
@@ -387,12 +390,277 @@ class Keyframe:
         self.set_transform_keyframe(frame_idx=keyframe_range[1])
 
 
+    def create_3d_bezier_curve(
+            self, 
+            curve_coordinates=[], 
+            curve_name="BezierCurve3D"
+        ):
+        """
+        Create a 3D Bezier curve from a list of coordinates.
+        
+        Args:
+            curve_coordinates: List of (x, y, z) tuples defining the curve points
+            curve_name: Name for the curve object
+        """
+        # Create a new Bezier curve
+        curve_data = bpy.data.curves.new(name=curve_name, type='CURVE')
+        curve_data.dimensions = '3D'  # Enable 3D mode
+        curve_data.bevel_depth = 0.05  # Add thickness for visibility
+        curve_data.resolution_u = 12  # Smoothness of the curve
+        
+        # Create a new spline in the curve
+        spline = curve_data.splines.new(type='BEZIER')
+        
+        # Set the number of control points (matches coordinate count)
+        spline.bezier_points.add(count=len(curve_coordinates) - 1)  # Add remaining points
+        
+        # Set coordinates for each control point
+        for i, (x, y, z) in enumerate(curve_coordinates):
+            point = spline.bezier_points[i]
+            point.co = (x, y, z)  # 4th value is weight (1 = default)
+            
+            # Automatically calculate handle positions for smooth curves
+            # For first point, use next point to calculate outgoing handle
+            if i == 0 and len(curve_coordinates) > 1:
+                next_point = curve_coordinates[i + 1]
+                point.handle_right = ((x + next_point[0]) / 2, 
+                                    (y + next_point[1]) / 2, 
+                                    (z + next_point[2]) / 2)
+                point.handle_left = (x, y, z)  # No left handle for first point
+                
+            # For last point, use previous point to calculate incoming handle
+            elif i == len(curve_coordinates) - 1 and len(curve_coordinates) > 1:
+                prev_point = curve_coordinates[i - 1]
+                point.handle_left = ((x + prev_point[0]) / 2, 
+                                    (y + prev_point[1]) / 2, 
+                                    (z + prev_point[2]) / 2)
+                point.handle_right = (x, y, z)  # No right handle for last point
+                
+            # For middle points, create smooth handles between neighbors
+            elif 0 < i < len(curve_coordinates) - 1:
+                prev_point = curve_coordinates[i - 1]
+                next_point = curve_coordinates[i + 1]
+                point.handle_left = ((x + prev_point[0]) / 2, 
+                                    (y + prev_point[1]) / 2, 
+                                    (z + prev_point[2]) / 2)
+                point.handle_right = ((x + next_point[0]) / 2, 
+                                    (y + next_point[1]) / 2, 
+                                    (z + next_point[2]) / 2)
+        
+        # Create an object to hold the curve
+        curve_obj = bpy.data.objects.new(name=curve_name, object_data=curve_data)
+        
+        # Link the object to the scene
+        bpy.context.collection.objects.link(curve_obj)
+        
+        # Select and make active
+        bpy.context.view_layer.objects.active = curve_obj
+        curve_obj.select_set(True)
+
+        info_msg = f"create_3d_bezier_curve(): create a 3D bezier curve, named '{curve_name}', " 
+        info_msg += f"\n\t going through these points '{curve_coordinates}'."
+        self.logger.info(info_msg)          
+
+        return curve_obj
+
+
+    def get_curve_points(
+            self, 
+            curve_name="",
+            keyframe_range=(-1, 0)
+        ) -> list:
+        """
+        Get a point list along a Bezier curve.
+
+        Args:
+            curve_name (str): The name of the Bezier 3D curve.
+            keyframe_range (tuple): The keyframe indices that the animation starts and ends.  
+        """
+        curve_points = []
+        curve_obj = None
+
+        if curve_name is None:
+            warn_msg = f"The curve object is None."
+            self.logger.warn(warn_msg)
+            return []
+
+        try:
+            curve_obj = bpy.data.objects.get(str(curve_name))
+        except Exception as e:
+            warn_msg = f"Could not get the curve object from name '{curve_name}', "
+            warn_msg += f"\n\t The error message is: '{str(e)}'."
+            self.logger.warn(warn_msg)        
+            return []   
+
+        if not curve_obj or curve_obj.type != 'CURVE':
+            warn_msg = f"The curve object '{str(curve_name)}' is not a valid curve."
+            self.logger.warn(warn_msg)
+            return []
+
+        expected_points = keyframe_range[1] - keyframe_range[0] + 1
+        if expected_points < 2:
+            warn_msg = f"The keyframe range is not valid: {keyframe_range}."
+            self.logger.warn(warn_msg)
+            return []
+        
+        # First, collect all existing points from all splines
+        initial_point_count = 0
+        for spline in curve_obj.data.splines:
+            initial_point_count += len(spline.bezier_points)
+            for point in spline.bezier_points:
+                curve_points.append(point.co)
+                
+                
+        # If we already have enough points, return the required number
+        if len(curve_points) >= expected_points:
+            info_msg = f"get_curve_points(): collected points from the given curve '{curve_name}' for keyframe_range {keyframe_range}, " 
+            info_msg += f"\n\t and returns the point list of the curve, totally {len(curve_points)}' points."
+            self.logger.info(info_msg)    
+
+        else:
+            # Switch the curve object to Edit mode
+            bpy.context.view_layer.objects.active = curve_obj
+            bpy.ops.object.mode_set(mode="EDIT")
+            bpy.ops.curve.select_all(action="SELECT")
+
+            # Calculate how many cuts we need
+            # Note: Blender's subdivide may not be exactly N+1 points for N cuts
+            subdivision_cuts = expected_points - len(curve_points)
+            
+            # Apply subdivision to the entire curve
+            try:
+                bpy.ops.curve.subdivide(number_cuts=subdivision_cuts)
+                bpy.ops.object.mode_set(mode="OBJECT")
+            except RuntimeError as e:
+                warn_msg = f"When subdividing the Bezier curve '{curve_name}', an exception is thrown. "
+                warn_msg += f"\n\t The exception message is: '{str(e)}'"
+                self.logger.warn(warn_msg)
+                bpy.ops.object.mode_set(mode="OBJECT")
+                return []
+            
+            # Collect points again after subdivision
+            curve_points = []
+            for spline_idx, spline in enumerate(curve_obj.data.splines):
+                for point in spline.bezier_points:
+                    curve_points.append(point.co)
+
+
+        # Return only the required number of points
+        selected_points = []
+        step = len(curve_points) / expected_points
+        for keyframe_idx in range(expected_points):
+            current_idx = int(keyframe_idx * step)
+            selected_points.append(curve_points[current_idx])
+
+        info_msg = f"get_curve_points(): processed the given curve '{curve_name}' for keyframe_range {keyframe_range}, " 
+        info_msg += f"\n\t and returns the point list of the curve, totally {len(selected_points)}' points."
+        self.logger.info(info_msg)    
+
+        return selected_points
+
+
+    def move_along_curve(
+            self, 
+            curve_name="", 
+            keyframe_range=(-1, 0)
+        ):
+        """
+        Moves self.obj along a bezier 3D curve.
+        
+        Args:
+            curve_name (str): The name of the curve object to follow.
+            keyframe_range (tuple): The keyframe indices that the constraint starts and ends. 
+        """
+        # Verify if the keyframe_range is valid
+        total_keyframes = keyframe_range[1] - keyframe_range[0] + 1
+        if total_keyframes < 2:
+            warn_msg = f"move_along_curve(), The number of keyframes in keyframe_range {keyframe_range} is not bigger than 2 as expected."
+            self.logger.warn(warn_msg)
+            return 
+        
+        # Clear existing animation
+        if self.obj.animation_data:
+            self.obj.animation_data.action = None
+
+        # Get the point list of the Bezier curve
+        curve_points = self.get_curve_points(
+            curve_name=curve_name,
+            keyframe_range=keyframe_range
+        ) 
+ 
+        # Verify the subdivision points of the curve is equal to the keyframe number.
+        if len(curve_points) != total_keyframes:
+            warn_msg = f"move_along_curve(), the number of the control points of the given Bezier curve '{curve_name}', "
+            warn_msg += f"{len(curve_points)} is not equal to {total_keyframes} as expected."
+            self.logger.warn(warn_msg)
+
+        # Insert location keyframe for animation.
+        for frame_idx in range(total_keyframes):
+            # Set the location for the animation keyframe.
+            self.obj.location = curve_points[frame_idx]
+            self.obj.keyframe_insert(data_path="location", frame=frame_idx)
+
+
+    def track_ahead(
+            self, 
+            curve_name="", 
+            keyframe_range=(-1, 0)
+        ):
+        """
+        when self.obj moves along a Bezier 3D curve, makes self.obj tracks ahead on the curve.
+        
+        Args:
+            curve_name (str): The name of the curve object to follow.
+            keyframe_range (tuple): The keyframe indices that the constraint starts and ends. 
+        """
+        # Verify if the keyframe_range is valid
+        total_keyframes = keyframe_range[1] - keyframe_range[0] + 1
+        if total_keyframes < 2:
+            warn_msg = f"track_ahead(), The number of keyframes in keyframe_range {keyframe_range} is not bigger than 2 as expected."
+            self.logger.warn(warn_msg)
+            return 
+        
+        # Clear existing animation
+        if self.obj.animation_data:
+            self.obj.animation_data.action = None
+
+        # Get the point list of the Bezier curve
+        curve_points = self.get_curve_points(
+            curve_name=curve_name,
+            keyframe_range=keyframe_range
+        ) 
+ 
+        # Verify the subdivision points of the curve is equal to the keyframe number.
+        if len(curve_points) != total_keyframes:
+            warn_msg = f"track_ahead(), the number of the control points of the given Bezier curve '{curve_name}', "
+            warn_msg += f"{len(curve_points)} is not equal to {total_keyframes} as expected."
+            self.logger.warn(warn_msg)
+
+        # Insert rotation keyframe for animation.
+        for frame_idx in range(total_keyframes):
+            # Set the rotation direction for the animation keyframe.
+            target_idx = frame_idx + int(total_keyframes * 0.1)
+            if target_idx == frame_idx:
+                target_idx = keyframe_range[1]
+            elif frame_idx == keyframe_range[1]:
+                target_idx = 0
+
+            p1 = curve_points[frame_idx]
+            p2 = curve_points[target_idx]
+            direction = (p2 - p1).normalized()
+
+            rot_quat = direction.to_track_quat('-Z', 'Y')
+            self.obj.rotation_euler = rot_quat.to_euler()
+            self.obj.keyframe_insert(data_path="rotation_euler", frame=frame_idx)
+
+        
+
     @staticmethod
     def run_demo():
         # --- 1. Scene Setup ---
         bpy.ops.object.select_all(action='SELECT')
         bpy.ops.object.delete()
-        
+    
         bpy.ops.mesh.primitive_cube_add(location=(0, 0, 0))
         cube = bpy.context.object
         cube.name = "Bouncing_Cube"
