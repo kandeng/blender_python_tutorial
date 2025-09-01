@@ -93,18 +93,47 @@ if __name__ in "__main__":
     DomeHdriGenerator.run_demo()
     """
 
-    """
+    
     from scene.rocky_river_terrain import RockyRiverTerrain
-    RockyRiverTerrain.run_demo()           
-    """
-
+    RockyRiverTerrain.run_demo()      
+    
+         
     """
     from logger.logger import LlamediaLogger
     LlamediaLogger.run_demo()    
     """
 
+    """
+    from animation.keyframe import Keyframe
+    Keyframe.run_demo()          
+    """
+
+    """
+    from animation.constraint import Constraint
+    Constraint.run_demo()       
+    """
+
+    """
     from animation.animation import Animation
-    Animation.run_demo()    
+    Animation.run_demo()      
+    """
+    
+    """
+    from camera.camera import Camera
+    Camera.run_demo()       
+    """
+ 
+    """
+    from camera.renderer import Renderer
+    Renderer.run_demo()    
+    """
+
+    """
+    from hdri.hdri_background import HdriBackground
+    HdriBackground.run_demo()      
+    """
+ 
+  
     
 
     
