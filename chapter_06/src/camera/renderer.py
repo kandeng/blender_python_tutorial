@@ -71,6 +71,10 @@ class Renderer:
         if engine == 'CYCLES':
             self.scene.cycles.samples = samples
             self.scene.cycles.use_denoising = True
+            # Enable feature set for better displacement
+            self.scene.cycles.feature_set = 'SUPPORTED'
+            # Set displacement method
+            self.scene.cycles.displacement_method = 'BOTH'
         elif engine == 'BLENDER_EEVEE':
             # Eevee specific settings can be added here if needed
             pass

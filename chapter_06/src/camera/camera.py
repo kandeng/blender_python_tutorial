@@ -52,6 +52,11 @@ class Camera:
         return self.camera
 
 
+    def reset_animation(self):
+        # Clear existing animation
+        if self.animation:
+            self.animation.reset_animation()
+
     def set_activate(self):
         self.logger.info(f"Set camera '{self.camera.name}' to be active.")
         bpy.context.scene.camera = self.camera
