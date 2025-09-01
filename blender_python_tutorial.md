@@ -30,4 +30,6 @@ Here is the content table of the Blender python tutorials.
 
 4. [Custom blender python library](./chapter_04/custom_blender_python_library.md)
 
-5. [A wilderland with a pool scene set for video-making built by our blender python library](./chapter_05/use_our_blender_library_to_build_a_scene_of_wilderland_with_pool.md)   
+5. [A wilderland with a pool scene set for video-making built by our blender python library](./chapter_05/use_our_blender_library_to_build_a_scene_of_wilderland_with_pool.md)
+
+6. [Blender python pacakge for AI cinematography](./chapter_06/src/blender_python_for_cinematography.md)
