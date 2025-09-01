@@ -33,6 +33,15 @@ class Animation:
         self.keyframe.set_object(self.obj)
         self.constraint.set_object(self.obj)
 
+    def reset_animation(self):
+        # Clear existing animation
+        if self.obj.animation_data:
+            self.obj.animation_data.action = None
+        if self.keyframe.obj.animation_data:
+            self.keyframe.obj.animation_data.action = None
+        if self.constraint.obj.animation_data:
+            self.constraint.obj.animation_data.action = None    
+
 
     def set_parent(self, parent_obj):
         if parent_obj is None:

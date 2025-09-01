@@ -579,8 +579,8 @@ class Keyframe:
             return 
         
         # Clear existing animation
-        if self.obj.animation_data:
-            self.obj.animation_data.action = None
+        # if self.obj.animation_data:
+        #    self.obj.animation_data.action = None
 
         # Get the point list of the Bezier curve
         curve_points = self.get_curve_points(
@@ -621,8 +621,8 @@ class Keyframe:
             return 
         
         # Clear existing animation
-        if self.obj.animation_data:
-            self.obj.animation_data.action = None
+        # if self.obj.animation_data:
+        #    self.obj.animation_data.action = None
 
         # Get the point list of the Bezier curve
         curve_points = self.get_curve_points(
@@ -640,10 +640,16 @@ class Keyframe:
         for frame_idx in range(total_keyframes):
             # Set the rotation direction for the animation keyframe.
             target_idx = frame_idx + int(total_keyframes * 0.1)
-            if target_idx == frame_idx:
-                target_idx = keyframe_range[1]
-            elif frame_idx == keyframe_range[1]:
-                target_idx = 0
+
+            if target_idx >= keyframe_range[1]:
+                target_idx = keyframe_range[1] - 1
+            elif frame_idx >= keyframe_range[1] - 1:
+                target_idx = keyframe_range[0]
+            
+            if target_idx == frame_idx and target_idx == keyframe_range[0]:
+                target_idx = keyframe_range[1] - 1
+            elif target_idx == frame_idx and target_idx >= keyframe_range[1] - 1:
+                target_idx = keyframe_range[0]
 
             p1 = curve_points[frame_idx]
             p2 = curve_points[target_idx]
