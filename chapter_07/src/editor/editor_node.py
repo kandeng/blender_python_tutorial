@@ -258,7 +258,7 @@ class EditorNode:
             new_link = self.node_tree.links.new(from_node_output, to_node_input)
 
             info_msg = f"create_link(), Create a link, "
-            info_msg += "from '{from_node_output.node.name}.{from_node_output.name}', "
+            info_msg += f"from '{from_node_output.node.name}.{from_node_output.name}', "
             info_msg += f"to '{to_node_input.node.name}.{to_node_input.name}'."
             self.logger.info(info_msg)
             return new_link
