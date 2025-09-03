@@ -63,7 +63,14 @@ class EditorNode:
                 return 
 
             material_name = f"{self.editor_name}_material"
-            self.material = bpy.data.materials.new(name=material_name)
+            if self.obj.data.materials:
+                # Use the first material slot's material
+                self.material = self.obj.data.materials[0]
+            else:
+                # Create a new default material if none exists
+                self.material = bpy.data.materials.new(name=material_name)
+                self.obj.data.materials.append(self.material)            
+
             self.material.use_nodes = True
             self.node_tree = self.material.node_tree
                 
