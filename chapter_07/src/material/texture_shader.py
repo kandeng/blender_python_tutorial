@@ -745,6 +745,7 @@ class TextureShader:
 
     def create_displacement_modifier(
             self, 
+            file_path="",
             disp_strength=0.1, 
             midlevel=0.5
         ):
@@ -765,8 +766,8 @@ class TextureShader:
 
         try:
             # Load the displacement texture
-            path = self.texture_paths['displacement']
-            disp_image = bpy.data.images.load(path, check_existing=True)
+            # path = self.texture_paths['displacement']
+            disp_image = bpy.data.images.load(file_path, check_existing=True)
             disp_image.colorspace_settings.name = 'Non-Color'
         except Exception as e:
             print(f"[ERROR] Could not load displacement texture: {e}")
@@ -819,29 +820,69 @@ class TextureShader:
         return disp_mod
 
 
-    """
-    def apply_another_texture(self, secondary_texture_dir=""):
-        # 1. Verify secondary_texture_dir value
-        if len(secondary_texture_dir) == 0 and self.secondary_texture_dir is not None :
-            print("[INFO] If the input 'secondary_texture_dir' is empty,", end=" ")
-            print(f"we will use 'self.secondary_texture_dir' that is '{self.secondary_texture_dir}'")
-        elif len(secondary_texture_dir) > 0 and self.secondary_texture_dir is not None:
-            print(f"[WARN] The previous 'self.secondary_texture_dir' that is '{self.secondary_texture_dir}',", end=" ")
-            print(f"will be changed to '{secondary_texture_dir}'")
-            self.set_secondary_texture_directory(secondary_texture_dir)
-        elif len(secondary_texture_dir) > 0 and self.secondary_texture_dir is None:
-            print(f"[INFO] Set 'self.secondary_texture_dir' to '{secondary_texture_dir}'")
-            self.set_secondary_texture_directory(secondary_texture_dir)
-        else:
-            print(f"[ERROR] 'secondary_texture_dir'='{secondary_texture_dir}' is invalid")
-            return
+    def apply_texture(
+            self, 
+            texture_dir=""
+        ):
+        """
+        Given a texture file directory and a mesh object, apply the texture images in that directory to the object. 
 
-        # 2. Create the commonly used shader nodes for the secondary texture
-        self.create_secondary_base_nodes()
+        Args:
+            obj (object): A mesh object instance that the texture images are used to. 
+            texture_dir (str): A file directory contains some texture images, including color, normal, displacement etc.
+        """
+        try:           
+            self.set_texture_directory(texture_dir)
+            self.create_base_nodes()
+            self.create_texture_nodes()
 
-        # 3. Create the textures nodes for the secondary texture
-        self.create_secondary_texture_nodes()    
-    """
+            path = self.texture_paths['displacement']
+            self.create_displacement_modifier(
+                file_path=path,
+                disp_strength=0.2, 
+                midlevel=0.5
+            )
+            
+        except (ValueError, FileNotFoundError) as e:
+            warn_msg = f"apply_texture(), An error occurred: {str(e)}."
+            self.logger.warn(warn_msg)
+
+        info_msg = f"Given a texture file directory and a mesh object, "
+        info_msg += f"apply the texture images in that directory to the object."
+        self.logger.info(info_msg)
+        
+
+    def apply_secondary_texture(
+            self, 
+            secondary_texture_dir=""
+        ):
+        """
+        Given a secondary texture file directory and a mesh object, apply the texture images in that directory to the object. 
+
+        Args:
+            obj (object): A mesh object instance that the texture images are used to. 
+            texture_dir (str): A file directory contains some texture images, including color, normal, displacement etc.
+        """
+        try:           
+            self.set_secondary_texture_directory(secondary_texture_dir)
+            self.create_secondary_base_nodes()
+            self.create_secondary_texture_nodes()
+
+            path = self.secondary_texture_paths['displacement']
+            self.create_displacement_modifier(
+                file_path=path,
+                disp_strength=0.2, 
+                midlevel=0.5
+            )
+            
+        except (ValueError, FileNotFoundError) as e:
+            warn_msg = f"apply_texture(), An error occurred: {str(e)}."
+            self.logger.warn(warn_msg)
+
+        info_msg = f"Given a texture file directory and a mesh object, "
+        info_msg += f"apply the texture images in that directory to the object."
+        self.logger.info(info_msg) 
+    
 
 
     # --- Main execution example ---
@@ -864,6 +905,11 @@ class TextureShader:
         wood_texture_directory = "/home/robot/movie_blender_studio/asset/texture/WoodFloor043_4K"
         moss_texture_directory = "/home/robot/movie_blender_studio/asset/texture/Moss002_2K-JPG"
 
+        texture_applier = TextureShader(sample_mesh)
+        texture_applier.apply_texture(texture_dir=wood_texture_directory)
+        texture_applier.apply_secondary_texture(secondary_texture_dir=moss_texture_directory)
+
+        """
         try:
             # 1. Instantiate the class with the mesh and texture directory
             texture_applier = TextureShader(sample_mesh)
@@ -887,7 +933,9 @@ class TextureShader:
             print("\n[SUCCESS] TextureShader demo finished. \n\n")
 
         except (ValueError, FileNotFoundError) as e:
-            print(f"\n[ERROR] An error occurred: {str(e)}")
+            print(f"\n[ERROR] An error occurred: {str(e)}")        
+        """
+
 
 
 
