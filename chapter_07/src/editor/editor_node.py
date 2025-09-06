@@ -50,13 +50,8 @@ class EditorNode:
                 print(f"[ERROR] Could not initialize EditorNode class, error message: '{str(e)}'")
 
 
-    def _create_node_tree(self):
-        if len(self.editor_type) == 0:
-            scene = bpy.context.scene
-            scene.use_nodes = True
-            self.node_tree = scene.node_tree
-    
-        elif self.editor_type.upper() == "MATERIAL":
+    def _create_node_tree(self):    
+        if self.editor_type.upper() == "MATERIAL":
             if self.obj is None:
                 warn_msg = f"_create_node_tree(), self.obj is None."
                 self.logger.warn(warn_msg)
@@ -78,7 +73,15 @@ class EditorNode:
                 self.obj.data.materials.clear()
                 self.obj.data.materials.append(self.material)
 
-        # self.node_tree.nodes.clear()
+        elif self.editor_type.upper() == "COMPOSITING":
+            scene = bpy.context.scene
+            scene.use_nodes = True
+            self.node_tree = scene.node_tree
+
+        else:
+            warn_msg = f"Unknown editor type: '{self.editor_type}'"
+            self.logger.warn(warn_msg)
+            
 
 
     def reset(
