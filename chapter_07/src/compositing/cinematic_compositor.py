@@ -23,11 +23,16 @@ class CinematicCompositor():
                 print(f"[ERROR] Could not initialize CinematicCompositor class, error message: '{str(e)}'")
         
 
-
     def create_cinematic_node(self):
         # Execute the operator that adds the node group to the scene.
         # This single command replicates the "Apply effect" button-click behavior, 
         # referring to ~/.config/blender/4.4/scripts/addons/Cinematic Compositor Addon v2/__init__.py
+        if self.cinematic_node and type(self.cinematic_node).__name__ == "CompositorNodeGroup":
+            debug_msg = f"create_cinematic_node(), self.cinematic_node already exists, "
+            debug_msg += f"no need to execute create_cinematic_node() again."
+            self.logger.debug(debug_msg)
+            return
+        
         try:
             bpy.ops.ccg.add_node_group('INVOKE_DEFAULT')
             debug_msg = "create_cinematic_node(), Successfully executed 'ccg.add_node_group' operator."
@@ -68,7 +73,7 @@ class CinematicCompositor():
 
         # 2. Set the cinematic node's attributes.
         self.cinematic_node.inputs[6].default_value = 1
-        self.cinematic_node.inputs[7].default_value = (0.00264851, 0.00906155, 1, 1)
+        # self.cinematic_node.inputs[7].default_value = (0.00264851, 0.00906155, 1, 1)
         self.cinematic_node.inputs[8].default_value = 0.663158
 
         # 3. Return a dict containing in_node object and in_node socket for upstream,

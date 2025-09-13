@@ -10,7 +10,7 @@ class Compositor:
         self.camera = None
 
         self.node_tree = None
-        self.base_node_names = []
+        self.base_node_names = ["CinematicCompositor"]   # Reserve CinematicCompositor as a base node.
 
         self.color_compositor = None
         self.cinematic_compositor = None
@@ -299,12 +299,14 @@ class Compositor:
         input_images = [
             "/home/robot/movie_blender_studio/input/balloons_noisy.png",
             "/home/robot/movie_blender_studio/input/battle_field.png",
+            "/home/robot/movie_blender_studio/input/opera_house_inside.jpeg",
             "/home/robot/movie_blender_studio/input/opera_house_outside.jpeg"
         ]
         output_images = [
             "/home/robot/movie_blender_studio/output/balloons_noisy_denoise.jpg",
             "/home/robot/movie_blender_studio/output/balloons_noisy_blur.jpg",
             "/home/robot/movie_blender_studio/output/battle_field_color_adjusted.jpg",
+            "/home/robot/movie_blender_studio/output/opera_house_inside_cinematic.jpg",
             "/home/robot/movie_blender_studio/output/opera_house_outside_cinematic.jpg"
         ]
 
@@ -331,6 +333,11 @@ class Compositor:
             input_image_filename=input_images[2],
             output_image_filename=output_images[3], 
         )
+        image_compositor.cinematic_mystery(
+            input_image_filename=input_images[3],
+            output_image_filename=output_images[4], 
+        )
+
         
 
 
