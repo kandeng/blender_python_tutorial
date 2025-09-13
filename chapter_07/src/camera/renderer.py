@@ -5,8 +5,10 @@ import json
 from pathlib import Path
 
 class Renderer:
-    def __init__(self):
+    def __init__(self, renderer_name="myRenderer"):
         self.logger = None
+        self.renderer_name = renderer_name
+        
         self.scene = None
         self.sequencer = None
 
@@ -234,6 +236,7 @@ class Renderer:
     def set_image_settings(
             self,             
             engine='CYCLES', 
+            file_format="PNG", 
             resolution_x=640, 
             resolution_y=360, 
             samples=32
@@ -242,7 +245,8 @@ class Renderer:
         Set the Blender rendering engine setting to prepare the rendering of a PNG image.
 
         Args:
-            engine (str): The render engine to use ('CYCLES', 'BLENDER_EEVEE', etc.).
+            engine (str): The render engine to use ('CYCLES', 'BLENDER_EEVEE', etc.)
+            file_format (str): The format of the image file, ('PNG', 'JPG', etc)
             resolution_x (int): The width of the rendered output in pixels.
             resolution_y (int): The height of the rendered output in pixels.
             samples (int): The number of samples for the render engine, HD=128
@@ -284,8 +288,15 @@ class Renderer:
         self.scene.render.resolution_percentage = 100  # Use full resolution
         
         # Set output format and path
-        self.scene.render.image_settings.file_format = 'PNG'  # Can also use 'JPEG', 'OPEN_EXR', etc.
-        self.scene.render.image_settings.color_mode = 'RGBA'  # Include alpha channel
+        if file_format == 'PNG':
+            self.scene.render.image_settings.color_mode = 'RGBA'  # Include alpha channel for PNG
+        elif file_format == 'JPEG':
+            self.scene.render.image_settings.color_mode = 'RGB'  # JPG doesn't have alpha channel
+        else:
+            self.logger.warn(f"For the time being, we only support 'PNG' and 'JPEG', not including '{file_format}'")
+            self.scene.render.image_settings.color_mode = 'RGB'
+            
+        self.scene.render.image_settings.file_format = file_format  # Can be 'PNG', 'JPEG', 'OPEN_EXR', etc.
         self.scene.render.image_settings.compression = 15  # PNG compression (0-100)
 
         info_msg = f"set_scene_settings(): Rendering with Cycles, \n\t"
