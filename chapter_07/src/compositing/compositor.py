@@ -129,7 +129,41 @@ class Compositor:
         input_image = bpy.data.images.load(single_image_filename)
         image_node = self.editor_node.get_node("Compositor_InputImage")
         image_node.image = input_image
+        return image_node
   
+
+    def get_image_format_from_filename(
+            self, 
+            filename=""
+        ) -> str:
+        """
+        Get the image file format based on the given filename's suffix.
+        """
+        # A dictionary mapping file extensions to Blender's internal file format identifiers.
+        # Note: These names are case-sensitive.
+        file_formats = {
+            '.png': 'PNG',
+            '.jpg': 'JPEG',
+            '.jpeg': 'JPEG',
+            '.bmp': 'BMP',
+            '.tga': 'TGA',
+            '.tif': 'TIFF',
+            '.tiff': 'TIFF',
+            '.exr': 'OPEN_EXR',
+            # Add more mappings as needed
+        }
+
+        # Extract the file extension from the filename.
+        file_extension = os.path.splitext(filename)[1].lower()
+
+        # Get the corresponding Blender file format identifier.
+        file_format = file_formats.get(file_extension)
+
+        if file_format:
+            return file_format
+        else:
+            return ""
+
 
     def image_processing_decorator(func):
         """
@@ -141,7 +175,7 @@ class Compositor:
 
             # 2. Load the input image to the InputImage node.
             input_image = kwargs.get("input_image_filename", "")
-            self.load_image(single_image_filename=input_image)
+            image_node = self.load_image(single_image_filename=input_image)
 
             # 3. Call the func with its parameters.
             in_out = func(self, *args, **kwargs)
@@ -163,10 +197,13 @@ class Compositor:
 
             # 6. Render the scene into an image.
             output_image = kwargs.get("output_image_filename", "")
+            image_format = self.get_image_format_from_filename(output_image)
+            if len(image_format) == 0: image_format = "PNG"
             self.camera.renderer.set_image_settings(      
                 engine='CYCLES', 
-                resolution_x=640, 
-                resolution_y=360, 
+                file_format=image_format,
+                resolution_x=image_node.image.size[0], 
+                resolution_y=image_node.image.size[1], 
                 samples=32
             )
             self.camera.renderer.render_single_images(
