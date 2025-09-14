@@ -95,11 +95,14 @@ class Renderer:
         self.logger.debug(scene_setting_str)
 
 
-    def set_output_settings(self, output_path="render_output", 
-                            file_format="PNG", 
-                            video_codec="", container="",
-                            fps = 30
-                            ):
+    def set_output_settings(
+            self, 
+            output_path="render_output", 
+            file_format="PNG", 
+            video_codec="", 
+            container="",
+            fps = 30
+        ):
         """
         Configures the output path, file format, and codec.
 
@@ -156,9 +159,9 @@ class Renderer:
         self.logger.info("Starting renderring process...")
 
         # Check if there's an active camera in the scene
-        if not self.scene.camera:
-            self.logger.error("No active camera found in the scene. Cannot render.")
-            return
+        # if not self.scene.camera:
+        #    self.logger.error("No active camera found in the scene. Cannot render.")
+        #    return
 
         try:
             bpy.ops.render.render(animation=True)
