@@ -218,9 +218,14 @@ class Renderer:
         self.scene.frame_end = current_frame - 1
 
 
-    def compile_images_to_video(self, 
-                                input_images_dir="frame_images", image_extension="png", frame_duration=1,
-                                output_video_dir="render_output"):
+    def compile_images_to_video(
+            self, 
+            input_images_dir="frame_images", 
+            output_video_dir="render_output",
+            image_extension="png", 
+            frame_duration=1, 
+            fps = 30
+        ):
         self.logger.info("compile_images_to_video(): Compiling the image series into video...")
 
         self._import_image_sequence(
