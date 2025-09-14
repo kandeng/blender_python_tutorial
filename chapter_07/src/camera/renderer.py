@@ -229,13 +229,18 @@ class Renderer:
         self.logger.info("compile_images_to_video(): Compiling the image series into video...")
 
         self._import_image_sequence(
-            input_images_dir=input_images_dir, image_extension="png", frame_duration=1
-            )
+            input_images_dir=input_images_dir, 
+            image_extension="png", 
+            frame_duration=1
+        )
 
         self.set_output_settings(
             output_path=output_video_dir,
-            file_format="FFMPEG", video_codec="H264", container="MPEG4"
-            )
+            file_format="FFMPEG", 
+            video_codec="H264", 
+            container="MPEG4",
+            fps = fps
+        )
 
         self._operate_rendering()    
         self.logger.info(f" Successfully generated a video stored in directory '{output_video_dir}'")         
