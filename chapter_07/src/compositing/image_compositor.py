@@ -105,10 +105,10 @@ class ImageCompositor:
             self.logger.info(info_msg)
 
             removed_nodes_str = json.dumps(removed_nodes, indent=2, ensure_ascii=False)
-            self.logger.debug(f"The non-base nodes that have been removed:\n{removed_nodes_str}\n")
+            # self.logger.debug(f"The non-base nodes that have been removed:\n{removed_nodes_str}\n")
 
             remained_nodes_str = json.dumps(remained_nodes, indent=2, ensure_ascii=False)
-            self.logger.debug(f"The nodes that have been remained:\n{remained_nodes_str}\n")
+            # self.logger.debug(f"The nodes that have been remained:\n{remained_nodes_str}\n")
 
 
         except Exception as e:
@@ -209,6 +209,10 @@ class ImageCompositor:
             self.camera.renderer.render_single_images(
                 image_output_filename=output_image
             )
+
+            info_msg = f"image_processing_decorator(), input_image='{input_image}', "
+            info_msg += f"output_image='{output_image}'."
+            self.logger.info(info_msg)
 
         # Return the wrapper function
         return wrapper
