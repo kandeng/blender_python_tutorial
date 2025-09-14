@@ -16,6 +16,9 @@ class CinematicCompositor():
                 scene.use_nodes = True
             self.node_tree = scene.node_tree
 
+            # 1. Create the cinematic node.
+            self.create_cinematic_node()
+
         except ImportError as e:
             if self.logger:
                 self.logger.error(f"Could not initialize CinematicCompositor class, error message: '{str(e)}'")
@@ -68,15 +71,13 @@ class CinematicCompositor():
         """
         Make the color tone as green-grey, a feeling of mystery or depressed.
         """
-        # 1. Create the cinematic node.
-        self.create_cinematic_node()
-
-        # 2. Set the cinematic node's attributes.
+        # 1. Set the cinematic node's attributes.
+        self.cinematic_node.inputs[7].default_value = (1.0, 0.0, 0.0, 1.0)
         self.cinematic_node.inputs[6].default_value = 1
-        # self.cinematic_node.inputs[7].default_value = (0.00264851, 0.00906155, 1, 1)
+        self.cinematic_node.inputs[7].default_value = (0.0, 1.0, 0.0, 1.0)
         self.cinematic_node.inputs[8].default_value = 0.663158
 
-        # 3. Return a dict containing in_node object and in_node socket for upstream,
+        # 2. Return a dict containing in_node object and in_node socket for upstream,
         #    and out_node object and out_node socket for downstream.
         in_out = {
             "in_node": self.cinematic_node,
