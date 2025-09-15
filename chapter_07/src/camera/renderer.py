@@ -152,7 +152,7 @@ class Renderer:
         self.logger.debug(output_setting_str)  
 
 
-    def _operate_rendering(self):
+    def start_rendering(self):
         """
         Renders the animation as a sequence of images.
         """
@@ -167,7 +167,7 @@ class Renderer:
             bpy.ops.render.render(animation=True)
             self.logger.info("Rendering process completed.")
         except Exception as e: 
-            self.logger.error(f"_operate_rendering() threw an exception: '{str(e)}'")     
+            self.logger.error(f"start_rendering() threw an exception: '{str(e)}'")     
 
 
     def render_frame_images(self, output_path="frame_images"):
@@ -178,7 +178,7 @@ class Renderer:
             file_format="PNG"
         )
 
-        self._operate_rendering() 
+        self.start_rendering() 
 
 
     def _import_image_sequence(self, input_images_dir="frame_images", image_extension="png", frame_duration=1):
@@ -242,7 +242,7 @@ class Renderer:
             fps = fps
         )
 
-        self._operate_rendering()    
+        self.start_rendering()    
         self.logger.info(f" Successfully generated a video stored in directory '{output_video_dir}'")         
 
 
