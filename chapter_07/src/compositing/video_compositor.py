@@ -167,8 +167,14 @@ class VideoCompositor():
             links.new(out_node.outputs[out_socket[1]], viewer_node.inputs[1])           # 'Alpha'
 
             # 5. Render the scene into an image.
-            output_video_filename = kwargs.get("output_video_filename", "")
-
+            self.renderer.set_scene_settings(
+                engine='CYCLES', 
+                resolution_x=self.movie_clip_size[0], 
+                resolution_y=self.movie_clip_size[1], 
+                samples=32, 
+                frame_start=1, 
+                frame_end=self.movie_clip_frame_duration+1
+            )
             self.renderer.set_output_settings(
                 output_path="",
                 file_format="FFMPEG", 
@@ -177,6 +183,7 @@ class VideoCompositor():
                 fps=round(self.movie_clip_fps)
             )
             # Bug fixing, override the output_path
+            output_video_filename = kwargs.get("output_video_filename", "")
             bpy.context.scene.render.filepath = output_video_filename
 
             self.renderer.start_rendering()
@@ -190,32 +197,6 @@ class VideoCompositor():
         return wrapper
 
 
-    """
-    def enable_movie_tracking_addon(self):
-        ""Enable the built-in Movie Tracking add-on required for movie_clips""
-        addon_name = "io_sequencer_movieclip"  # Internal name of the Movie Tracking add-on
-        
-        # Check if addon is already enabled
-        if addon_name in bpy.context.preferences.addons:
-            return True
-        
-        # Try to enable the addon
-        try:
-            bpy.ops.preferences.addon_enable(module=addon_name)
-            bpy.ops.wm.save_userpref()
-
-            info_msg = f"enable_movie_tracking_addon(), Enabled Movie Tracking add-on successfully"
-            self.logger.info(info_msg)
-            return True
-        
-        except Exception as e:
-            warn_msg = f"enable_movie_tracking_addon(), Failed to enable Movie Tracking add-on. "
-            warn_msg += f"The error message is: '{str(e)}'."
-            self.logger.warn(warn_msg)
-            return False    
-    """
-
-
     def load_video(
             self, 
             video_filename=""
@@ -224,21 +205,6 @@ class VideoCompositor():
             warn_msg = f"load_video(), Input video file not found: {video_filename}."
             self.logger.warn(warn_msg)
             return
-        
-        """
-        # Ensure the required add-on is enabled
-        if not self.enable_movie_tracking_addon():
-            warn_msg = f"load_video(), Cannot load video clip - required add-on is missing"
-            self.logger.warn(warn_msg)
-            return 
-        
-        # Verify the add-on loaded properly (check if movie_clips exists)
-        if not hasattr(bpy.data, 'movie_clips'):
-            print("Movie clip support is still not available after enabling add-on")
-            warn_msg = f"load_video(), Movie clip support is still not available after enabling add-on"
-            self.logger.warn(warn_msg)
-            return None        
-        """
 
         # Load the video file into a new movie clip data block
         try:
@@ -284,7 +250,7 @@ class VideoCompositor():
             "/home/robot/movie_blender_studio/input/TrueStory.mp4"
         ]
         output_videos = [
-            "/home/robot/movie_blender_studio/output/nyu_corridor_cinematic.mp4"
+            "/home/robot/movie_blender_studio/output/nyu_corridor_cinematic_2.mp4"
         ]
 
         video_compositor.cinematic_mystery(
