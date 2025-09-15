@@ -4,6 +4,11 @@ import json
 import shutil
 import datetime
 
+
+#-----------------------------------------------------
+#  WARNING: Not fully tested yet!!
+#-----------------------------------------------------
+
 class ImageSequenceCompositor():
     def __init__(self):
         self.logger = None
