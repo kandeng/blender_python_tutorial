@@ -1,29 +1,49 @@
 import bpy
 import os
 import json
-import shutil
-import datetime
+
 
 class VideoCompositor():
     def __init__(self):
-        self.logger = None
-        self.scene = None
-        self.sequence_editor = None 
+        self.node_tree = None 
+        self.compositor_node_list = []
+
         self.renderer = None
-        self.movie_strip = None
+        self.editor_node = None
+        self.cinematic_compositor = None
+        self.movie_clip_node = None
+        
+        #
+        # Video Size: clip.size returns a tuple (width, height) in pixels.
+        # Frame Count: clip.frame_duration gives the total number of frames in the video (accounts for speed changes if any).
+        # FPS: clip.fps provides the video's original frame rate (this is separate from the scene's frame rate).
+        #    - bpy.context.scene.render.fps: Base frame rate
+        #    - bpy.context.scene.render.fps_base: Frame rate divisor (usually 1.0 for standard FPS values)
+        # 
+        self.movie_clip_size = None
+        self.movie_clip_frame_duration = 0
+        self.movie_clip_fps = 0
 
         try:
+            scene = bpy.context.scene
+            if not scene.use_nodes:
+                scene.use_nodes = True
+            self.node_tree = scene.node_tree
+
             from logger.logger import LlamediaLogger
             self.logger = LlamediaLogger("VideoCompositor").getLogger()
 
-            from camera.renderer import Renderer
-            self.renderer = Renderer()
+            from camera.camera import Camera
+            self.renderer = Camera().renderer
 
-            # Create a new sequence editor if it doesn't exist
-            self.scene = bpy.context.scene
-            if not self.scene.sequence_editor:
-                self.scene.sequence_editor_create()
-            self.sequence_editor = self.scene.sequence_editor 
+            from editor.editor_node import EditorNode
+            self.editor_node = EditorNode(editor_name="Compositor", editor_type="COMPOSITING")
+
+            from compositing.cinematic_compositor import CinematicCompositor
+            self.cinematic_compositor = CinematicCompositor()
+
+            # Create all compositor nodes, including a cinematic node, and a view node.
+            self.create_compositor_nodes()
 
         except ImportError as e:
             if self.logger:
@@ -32,193 +52,242 @@ class VideoCompositor():
                 print(f"[ERROR] Could not initialize VideoCompositor class, error message: '{str(e)}'")
         
 
-    def convert_video_to_image_sequence(
-            self, 
-            video_filename="", 
-            output_dir="", 
-            output_format='PNG'
-        ):
+    def create_compositor_nodes(self):
+        # 1. Create all compositor nodes, not including a cinematic node.
+        self.create_base_nodes()
+
+        # 2. Create a Cinematic node
+        self.cinematic_compositor.create_cinematic_node()
+        if self.cinematic_compositor.cinematic_node:
+            cinematic_nodename = "CinematicCompositor" 
+            if cinematic_nodename not in self.compositor_node_list:
+                self.compositor_node_list.append(cinematic_nodename)
+
+        # 3. For unknown reason, after creating 'CinematicCompositor',
+        #    The 'Viewer' disappear, hence, to create again.
+        viewer_nodename = "Compositor_Viewer"
+        viewer_node = self.editor_node.get_node(viewer_nodename)
+        if not viewer_node:
+            viewer_node = self.node_tree.nodes.new(type='CompositorNodeViewer')
+
+        viewer_node.name = viewer_nodename
+        viewer_node.location = (300, -300)
+        if viewer_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(viewer_nodename)        
+
+
+    def create_base_nodes(self):
+        # 1. Clear existing nodes (optional)
+        for node in self.node_tree.nodes:
+            self.node_tree.nodes.remove(node)
+
+        # 2. Create a Movie Clip node
+        movie_clip_nodename = "Compositor_VideoInput"
+        self.movie_clip_node = self.editor_node.get_node(movie_clip_nodename)
+        if not self.movie_clip_node:
+            self.movie_clip_node = self.node_tree.nodes.new(type='CompositorNodeMovieClip')
+
+        self.movie_clip_node.name = movie_clip_nodename
+        self.movie_clip_node.location = (-300, 300)  # Position node in the compositor
+        if movie_clip_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(movie_clip_nodename)
+
+        # 3. Render Layers node (Not always useful, but prepare for potential use.)
+        render_layers_nodename = "Compositor_RenderLayers"
+        render_layers = self.editor_node.get_node(render_layers_nodename)
+        if not render_layers:
+            render_layers = self.node_tree.nodes.new(type='CompositorNodeRLayers')
+
+        render_layers.name = render_layers_nodename
+        render_layers.location = (-300, -300)
+        if render_layers_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(render_layers_nodename)
+
+        # 4. Denoise node (Not always useful, but prepare for potential use.)
+        denoise_nodename = "Compositor_Denoise"
+        denoise_node = self.editor_node.get_node(denoise_nodename)
+        if not denoise_node:
+            denoise_node = self.node_tree.nodes.new(type='CompositorNodeDenoise')
+
+        denoise_node.name = denoise_nodename
+        denoise_node.location = (0, 0)
+        if denoise_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(denoise_nodename)
+
+        # 5. Composite node (final output)
+        composite_nodename = "Compositor_Composite"
+        composite_node = self.editor_node.get_node(composite_nodename)
+        if not composite_node:
+            composite_node = self.node_tree.nodes.new(type='CompositorNodeComposite')
+
+        composite_node.name = composite_nodename
+        composite_node.location = (300, 300)
+        if composite_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(composite_nodename)
+        
+        # 6. Viewer node (preview)
+        viewer_nodename = "Compositor_Viewer"
+        viewer_node = self.editor_node.get_node(viewer_nodename)
+        if not viewer_node:
+            viewer_node = self.node_tree.nodes.new(type='CompositorNodeViewer')
+
+        viewer_node.name = viewer_nodename
+        viewer_node.location = (300, -300)
+        if viewer_nodename not in self.compositor_node_list:
+            self.compositor_node_list.append(viewer_nodename)
+
+
+    def video_processing_decorator(func):
         """
-        Converts a video file into a series of images with sortable names.
-
-        Args:
-            video_filename (str): The full file name including the file path of the video file. 
-                The valid suffices of the video file are ('mp4', 'mov', etc), case insensitive. 
-            output_dir (str): The full file directory name, in which the frame images are stored. 
-            output_format (str): The image format of the image sequence. 
-                Usually PNG is a better choice than JPEG, because PNG includes the alpha channel.
-        """        
-        # Create the output directory if it doesn't exist
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        # Clear existing VSE movie_strip objects
-        for strip in self.sequence_editor.sequences_all:
-            self.sequence_editor.sequences.remove(strip)
-
-        # Use the direct API method to add the movie strip.
-        # This does not require a context override and is the most reliable way.
-        self.movie_strip = self.sequence_editor.sequences.new_movie(
-            name=os.path.basename(video_filename),
-            filepath=video_filename,
-            channel=1,
-            frame_start=1
-        )
-        
-        if not self.movie_strip:
-            warn_msg = f"convert_video_to_image_sequence(), the movie strip was not created as expected."
-            self.logger.warn(warn_msg)
-            return 
-        
-        # Set the scene's start and end frames to match the video
-        self.scene.frame_start = int(self.movie_strip.frame_start)
-        self.scene.frame_end = int(self.movie_strip.frame_final_duration)
-
-        # Set render output path and file format to render the frame images.
-        self.scene.render.filepath = os.path.join(output_dir, "frame_####")
-        self.scene.render.image_settings.file_format = output_format
-
-        bpy.ops.render.render(animation=True)
-        
-        # Print out the info log.
-        info_msg = f"convert_video_to_image_sequence(), successfully convert '{video_filename}' to "
-        frame_num = self.scene.frame_end - self.scene.frame_start + 1
-        info_msg += f"a sequence of frame images stored in '{output_dir}',"
-        info_msg += f"\n\t totally {frame_num} frame images, fps={self.movie_strip.fps}."
-        self.logger.info(info_msg)
-
-
-    def assemble_image_sequence_to_video(
-            self, 
-            image_seq_dir="", 
-            output_filename=""  
-        ):
+        A decorator function for all image processing functions.
         """
-        Assemble a sequence of images, whose filenames are 'frame_###' where '###' are indices in order,
-            into a mp4 video file.
+        def wrapper(self, *args, **kwargs):
+            # 1. Load the input image to the InputImage node.
+            input_video_filename = kwargs.get("input_video_filename", "")
+            self.load_video(video_filename=input_video_filename)
 
-        Args:
-            image_seq_dir (str): The full file directory name, in which the frame images are stored, 
-                the filenames of the images are 'frame_###' where '###' are indices in order. 
-            output_filename (str): The full file name of the output file, 
-                the format of the video is MPEG4, hence, the suffix of the video file must be '.mp4'.
-        """  
-        #--------------------------------
-        # 1. Verification
-        #--------------------------------
+            # 2. Call the func with its parameters.
+            in_out = func(self, *args, **kwargs)
+            in_node = in_out["in_node"]
+            in_socket = in_out["in_socket"]
+            out_node = in_out["out_node"]
+            out_socket = in_out["out_socket"]
 
-        # 1. Verify if the input image sequence directory exists.
-        if not os.path.isdir(image_seq_dir):
-            warn_msg = f"assemble_image_sequence_to_video(), input image sequence file directory is not found at '{image_seq_dir}'."
+            # 3. Get the base nodes.
+            composite_node = self.editor_node.get_node("Compositor_Composite")
+            viewer_node = self.editor_node.get_node("Compositor_Viewer")
+
+            # 4. Link nodes together
+            links = self.node_tree.links
+            links.new(self.movie_clip_node.outputs[0], in_node.inputs[in_socket[0]])    # 'Image'
+            links.new(self.movie_clip_node.outputs[1], in_node.inputs[in_socket[1]])    # 'Alpha'
+            links.new(out_node.outputs[out_socket[0]], composite_node.inputs[0])        # 'Image'
+            links.new(out_node.outputs[out_socket[1]], composite_node.inputs[1])        # 'Alpha'
+            links.new(out_node.outputs[out_socket[0]], viewer_node.inputs[0])           # 'Image'
+            links.new(out_node.outputs[out_socket[1]], viewer_node.inputs[1])           # 'Alpha'
+
+            # 5. Render the scene into an image.
+            output_video_filename = kwargs.get("output_video_filename", "")
+
+            self.renderer.set_output_settings(
+                output_path="",
+                file_format="FFMPEG", 
+                video_codec="H264", 
+                container="MPEG4",
+                fps=round(self.movie_clip_fps)
+            )
+            # Bug fixing, override the output_path
+            bpy.context.scene.render.filepath = output_video_filename
+
+            self.renderer.start_rendering()
+
+            # 6. Print out the info log.
+            info_msg = f"image_processing_decorator(), input_image='{input_video_filename}', "
+            info_msg += f"output_image='{output_video_filename}'."
+            self.logger.info(info_msg)
+
+        # Return the wrapper function
+        return wrapper
+
+
+    """
+    def enable_movie_tracking_addon(self):
+        ""Enable the built-in Movie Tracking add-on required for movie_clips""
+        addon_name = "io_sequencer_movieclip"  # Internal name of the Movie Tracking add-on
+        
+        # Check if addon is already enabled
+        if addon_name in bpy.context.preferences.addons:
+            return True
+        
+        # Try to enable the addon
+        try:
+            bpy.ops.preferences.addon_enable(module=addon_name)
+            bpy.ops.wm.save_userpref()
+
+            info_msg = f"enable_movie_tracking_addon(), Enabled Movie Tracking add-on successfully"
+            self.logger.info(info_msg)
+            return True
+        
+        except Exception as e:
+            warn_msg = f"enable_movie_tracking_addon(), Failed to enable Movie Tracking add-on. "
+            warn_msg += f"The error message is: '{str(e)}'."
             self.logger.warn(warn_msg)
-            return 
+            return False    
+    """
 
-        # 2. Verify the number of files in the directory that start with "frame_" is not 0.
-        filename_list = []
-        for filename in os.listdir(image_seq_dir):
-            full_path = os.path.join(image_seq_dir, filename)
-            if os.path.isfile(full_path) and filename.startswith("frame_"):
-                filename_list.append(full_path)
 
-        if len(filename_list) == 0:
-            warn_msg = f"assemble_image_sequence_to_video(), no image file named as 'frame_###' is not found at '{image_seq_dir}'."
+    def load_video(
+            self, 
+            video_filename=""
+        ):
+        if not os.path.exists(video_filename):
+            warn_msg = f"load_video(), Input video file not found: {video_filename}."
+            self.logger.warn(warn_msg)
+            return
+        
+        """
+        # Ensure the required add-on is enabled
+        if not self.enable_movie_tracking_addon():
+            warn_msg = f"load_video(), Cannot load video clip - required add-on is missing"
             self.logger.warn(warn_msg)
             return 
         
-        # 3. Verify if all the frame images are of the same format, including 'png', 'jpg', 'jpeg'.
-        file_format_list = []
-        for idx, filename in enumerate(filename_list):
-            file_extension = os.path.splitext(filename)[1].lstrip('.')
-            if file_extension not in file_format_list:
-                file_format_list.append(file_extension)
-
-        if len(file_format_list) > 1:
-            warn_msg = f"assemble_image_sequence_to_video(), multiple file formats are found in the image sequence: {file_format_list}."
+        # Verify the add-on loaded properly (check if movie_clips exists)
+        if not hasattr(bpy.data, 'movie_clips'):
+            print("Movie clip support is still not available after enabling add-on")
+            warn_msg = f"load_video(), Movie clip support is still not available after enabling add-on"
             self.logger.warn(warn_msg)
-            return     
+            return None        
+        """
 
-        #---------------------------------------------------
-        # 2. Assemble the image sequence into a mp4 video
-        #---------------------------------------------------
+        # Load the video file into a new movie clip data block
+        try:
+            # Create a new movie clip
+            clip = bpy.data.movieclips.load(video_filename)
+            self.movie_clip_node.clip = clip
 
-        # 1. Set up a temporary video file directory to fit the requirement of renderer.compile_images_to_video()
-        full_filename = os.path.basename(output_filename)
-        base_filename = os.path.splitext(full_filename)[0]
+            self.movie_clip_size = clip.size
+            self.movie_clip_frame_duration = clip.frame_duration
+            self.movie_clip_fps = clip.fps
 
-        now = datetime.datetime.now()
-        time_str = now.strftime('%Y%m%d_%H%M%S')
+            info_msg = f"load_video(), successfully loaded video: '{video_filename}', \n\t"
+            info_msg += f"Video properties - Size: {clip.size}, Frames: {clip.frame_duration}, FPS: {clip.fps}."
+            self.logger.info(info_msg)
 
-        tmp_video_dir = f"/tmp/{base_filename}_{time_str}"
-        video_fps = round(self.movie_strip.fps)
-
-        # 2. Use renderer's API to assemble the image sequence into a MP4 video file.
-        self.renderer.compile_images_to_video(
-            input_images_dir=image_seq_dir, 
-            output_video_dir=tmp_video_dir,
-            image_extension="png", 
-            frame_duration=len(filename_list),
-            fps=video_fps
-        )      
-        info_msg = f"assemble_image_sequence_to_video(), the temporary video file is in '{tmp_video_dir}' directory,"
-        info_msg += f"\n\t totally {len(filename_list)} frames, fps={video_fps}."
-        self.logger.info(info_msg)
-
-        #--------------------------------
-        # 3. Clean up
-        #--------------------------------
-
-        # 1. Find the temporary video file.
-        tmp_video_list = []
-        for filename in os.listdir(tmp_video_dir):
-            full_path = os.path.join(tmp_video_dir, filename)
-            if os.path.isfile(full_path) and filename.startswith("video_") and filename.endswith(".mp4"):
-                tmp_video_list.append(full_path)
-
-        if len(tmp_video_list) != 1:
-            warn_msg = f"assemble_image_sequence_to_video(), '{tmp_video_dir}' directory contains multiple mp4 files."
-            warn_msg += f"\n\t we only use the first mp4 file. "
+        except Exception as e:
+            warn_msg = f"load_video(), failed to load video '{video_filename}', "
+            warn_msg += f"the error message is: '{str(e)}'"
             self.logger.warn(warn_msg)
 
-        # 2. Rename the temporary video file.
-        tmp_filename = f"{tmp_video_list[0]}"
-        tmp_video_filename = f"{tmp_video_dir}/{base_filename}.mp4"
-        os.rename(tmp_filename, tmp_video_filename)
 
 
-        # 3. Copy the temporary video file to the destination directory
-        dest_dir = os.path.dirname(output_filename)
-        if dest_dir:
-            os.makedirs(dest_dir, exist_ok=True)
-
-        shutil.copy(tmp_video_filename, output_filename)
-
-        # 4. Delete the temporary directory and all its contents
-        shutil.rmtree(tmp_video_dir)
-
-        # 5. Print the info
-        info_msg = f"assemble_image_sequence_to_video(), assemble the image sequence from '{image_seq_dir}' directory, "
-        info_msg += f"\n\t to '{output_filename}' file."
-        self.logger.info(info_msg)
-
+    @video_processing_decorator
+    def cinematic_mystery(
+            self,
+            input_video_filename="",
+            output_video_filename=""
+        ):
+        in_out = self.cinematic_compositor.cinematic_mystery()
+        return in_out   
+    
 
 
     @staticmethod
     def run_demo():
-        # Example usage:
-        # Make sure to change these paths to your actual video file and desired output directory.
-        video_input_filename = "/home/robot/movie_blender_studio/input/nyu_corridor.MOV"
-        image_seq_output_directory = "/home/robot/movie_blender_studio/nyu_video_output/nyu_corridor"
-        video_output_filename = "/home/robot/movie_blender_studio/nyu_video_output/nyu_corridor.mp4"
-
-        # For this script to work, you must be running it inside Blender's scripting environment.
         video_compositor = VideoCompositor()
+        compositor_node_list = video_compositor.compositor_node_list 
+        compositor_node_str = json.dumps(compositor_node_list, indent=2, ensure_ascii=False)
+        video_compositor.logger.debug(f"Video compositor nodes: \n\t{compositor_node_str}")
 
-        video_compositor.convert_video_to_image_sequence(
-            video_filename=video_input_filename, 
-            output_dir=image_seq_output_directory
-        )       
+        input_videos = [
+            "/home/robot/movie_blender_studio/input/nyu_corridor.MOV",
+            "/home/robot/movie_blender_studio/input/TrueStory.mp4"
+        ]
+        output_videos = [
+            "/home/robot/movie_blender_studio/output/nyu_corridor_cinematic.mp4"
+        ]
 
-        video_compositor.assemble_image_sequence_to_video(
-            image_seq_dir=image_seq_output_directory, 
-            output_filename=video_output_filename
+        video_compositor.cinematic_mystery(
+            input_video_filename=input_videos[0],
+            output_video_filename=output_videos[0]
         )
