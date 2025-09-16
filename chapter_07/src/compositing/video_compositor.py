@@ -166,35 +166,43 @@ class VideoCompositor():
             links.new(out_node.outputs[out_socket[0]], viewer_node.inputs[0])           # 'Image'
             links.new(out_node.outputs[out_socket[1]], viewer_node.inputs[1])           # 'Alpha'
 
-            # 5. Render the scene into an image.
-            self.renderer.set_scene_settings(
-                engine='CYCLES', 
-                resolution_x=self.movie_clip_size[0], 
-                resolution_y=self.movie_clip_size[1], 
-                samples=32, 
-                frame_start=1, 
-                frame_end=self.movie_clip_frame_duration+1
-            )
-            self.renderer.set_output_settings(
-                output_path="",
-                file_format="FFMPEG", 
-                video_codec="H264", 
-                container="MPEG4",
-                fps=round(self.movie_clip_fps)
-            )
-            # Bug fixing, override the output_path
-            output_video_filename = kwargs.get("output_video_filename", "")
-            bpy.context.scene.render.filepath = output_video_filename
-
-            self.renderer.start_rendering()
-
-            # 6. Print out the info log.
-            info_msg = f"image_processing_decorator(), input_image='{input_video_filename}', "
-            info_msg += f"output_image='{output_video_filename}'."
+            # 5. Print out the info log.
+            info_msg = f"image_processing_decorator(), input_image='{input_video_filename}'."
             self.logger.info(info_msg)
 
         # Return the wrapper function
         return wrapper
+
+
+    def render_video(
+            self, 
+            output_video_filename=""
+        ):        
+        # 1. Render the scene into an image.
+        self.renderer.set_scene_settings(
+            engine='CYCLES', 
+            resolution_x=self.movie_clip_size[0], 
+            resolution_y=self.movie_clip_size[1], 
+            samples=32, 
+            frame_start=1, 
+            frame_end=self.movie_clip_frame_duration+1
+        )
+        self.renderer.set_output_settings(
+            output_path="",
+            file_format="FFMPEG", 
+            video_codec="H264", 
+            container="MPEG4",
+            fps=round(self.movie_clip_fps)
+        )
+        # Bug fixing, override the output_path
+        bpy.context.scene.render.filepath = output_video_filename
+
+        # 2. Start the rendering, it will take quite long time. 
+        self.renderer.start_rendering()
+
+        # 3. Print out the info log.
+        info_msg = f"image_processing_decorator(), output_image='{output_video_filename}''."
+        self.logger.info(info_msg)
 
 
     def load_video(
@@ -217,7 +225,7 @@ class VideoCompositor():
             self.movie_clip_fps = clip.fps
 
             info_msg = f"load_video(), successfully loaded video: '{video_filename}', \n\t"
-            info_msg += f"Video properties - Size: {clip.size}, Frames: {clip.frame_duration}, FPS: {clip.fps}."
+            info_msg += f"Video properties - Size(x*y): ({clip.size[0]}*{clip.size[1]}), Frames: {clip.frame_duration}, FPS: {clip.fps}."
             self.logger.info(info_msg)
 
         except Exception as e:
@@ -230,8 +238,7 @@ class VideoCompositor():
     @video_processing_decorator
     def cinematic_mystery(
             self,
-            input_video_filename="",
-            output_video_filename=""
+            input_video_filename=""
         ):
         in_out = self.cinematic_compositor.cinematic_mystery()
         return in_out   
@@ -254,6 +261,8 @@ class VideoCompositor():
         ]
 
         video_compositor.cinematic_mystery(
-            input_video_filename=input_videos[0],
+            input_video_filename=input_videos[0]       
+        )
+        video_compositor.render_video(
             output_video_filename=output_videos[0]
         )
