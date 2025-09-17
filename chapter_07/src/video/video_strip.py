@@ -18,8 +18,11 @@ class VideoStrip:
         self.strip_name=""       
         self.strip_content = None
         self.frame_start = 0
+        self.frame_end = 0
         self.frame_duration = 0
         self.fps = 0
+        self.resolution_x = 0
+        self.resolution_y = 0
         
         try:
             from logger.logger import LlamediaLogger
@@ -67,11 +70,16 @@ class VideoStrip:
 
 
         self.frame_start = self.channel.get_channel_end(channel_idx)
-        self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_final_start + 1
+        self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_final_start
+        self.frame_end = self.frame_start + self.frame_duration
+
+        self.resolution_x = self.strip_content.elements[0].orig_width
+        self.resolution_y = self.strip_content.elements[0].orig_height
 
         debug_msg = f"filename:'{filename}', self.strip_name:'{self.strip_name}', "
         debug_msg += f"self.strip_content.frame_final_end={self.strip_content.frame_final_end}, "
         debug_msg += f"self.strip_content.frame_final_start={self.strip_content.frame_final_start}"
+        debug_msg += f"self.resolution=({self.resolution_x}*{self.resolution_y})"
         self.logger.debug(debug_msg)
 
         info_msg = f"load_strip(), load a video_strip from file '{video_filename}'"
@@ -184,7 +192,7 @@ class VideoStrip:
         substrip_video.strip_name = substrip_name  
         substrip_video.strip_content = video_strip
         substrip_video.frame_start = start_frame
-        substrip_video.frame_duration = end_frame - start_frame + 1
+        substrip_video.frame_duration = end_frame - start_frame
         substrip_video.fps = self.fps
 
         info_msg = f"substrip(), get a segment from videostrip '{self.strip_name}', "

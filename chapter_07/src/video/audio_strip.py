@@ -64,7 +64,7 @@ class AudioStrip:
 
 
         self.frame_start = self.channel.get_channel_end(channel_idx)
-        self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_final_start + 1
+        self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_final_start
 
         debug_msg = f"filename:'{filename}', self.strip_name:'{self.strip_name}', "
         debug_msg += f"self.strip_content.frame_final_end={self.strip_content.frame_final_end}, "
