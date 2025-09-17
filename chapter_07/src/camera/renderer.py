@@ -5,10 +5,8 @@ import json
 from pathlib import Path
 
 class Renderer:
-    def __init__(self, renderer_name="myRenderer"):
+    def __init__(self):
         self.logger = None
-        self.renderer_name = renderer_name
-        
         self.scene = None
         self.sequencer = None
 
@@ -34,10 +32,15 @@ class Renderer:
         self.sequencer = self.scene.sequence_editor
 
 
-    def set_scene_settings(self, engine='CYCLES', 
-                           resolution_x=640, resolution_y=360, samples=32, 
-                           frame_start=1, frame_end=60
-                           ):
+    def set_scene_settings(
+            self, 
+            engine='CYCLES', 
+            resolution_x=640, 
+            resolution_y=360, 
+            samples=32, 
+            frame_start=1, 
+            frame_end=60
+        ):
         """
         Configures the scene's rendering settings.
 
@@ -162,6 +165,27 @@ class Renderer:
         # if not self.scene.camera:
         #    self.logger.error("No active camera found in the scene. Cannot render.")
         #    return
+
+        """
+        rendering_setting = {
+            "render.engine": bpy.context.scene.render.engine,
+            "render.resolution_x": bpy.context.scene.render.resolution_x,
+            "render.resolution_y": bpy.context.scene.render.resolution_y,
+            "render.resolution_percentage": bpy.context.scene.render.resolution_percentage,
+            "scene.frame_start": bpy.context.scene.frame_start,
+            "scene.frame_end": bpy.context.scene.frame_end,
+            "scene.filepath": bpy.context.scene.render.filepath,
+            "scene.file_format": bpy.context.scene.render.image_settings.file_format,
+            "scene.fps": bpy.context.scene.render.fps,
+            "scene.fps_base": bpy.context.scene.render.fps_base,
+            "ffmpeg.codec": bpy.context.scene.render.ffmpeg.codec,
+            "ffmpeg.format": bpy.context.scene.render.ffmpeg.format      
+        }
+        rendering_msg = f"All the scene and renderer setting before starting the rendering: \n"
+        setting_str = json.dumps(rendering_setting, indent=2, ensure_ascii=False)
+        rendering_msg += setting_str
+        self.logger.debug(rendering_msg)        
+        """
 
         try:
             bpy.ops.render.render(animation=True)
