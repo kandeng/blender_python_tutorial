@@ -15,6 +15,7 @@ class AudioStrip:
         self.strip_name=""       
         self.strip_content = None
         self.frame_start = 0
+        self.frame_end = 0
         self.frame_duration = 0
         self.fps = 0
         
@@ -64,6 +65,7 @@ class AudioStrip:
 
 
         self.frame_start = self.channel.get_channel_end(channel_idx)
+        self.frame_end = self.strip_content.frame_final_end
         self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_final_start
 
         debug_msg = f"filename:'{filename}', self.strip_name:'{self.strip_name}', "
@@ -77,54 +79,3 @@ class AudioStrip:
         self.logger.info(info_msg)
 
 
-    def download(
-            self, 
-            audio_filename=""            
-        ):
-        """
-        Download an audio strip to a file. 
-
-        Args:
-            audio_filename (str): The file name of this audio strip, 
-                the valid suffices are (".MP3"),  case insensitive. 
-        """ 
-        scene = None
-        if bpy.context.scene:
-            scene = bpy.context.scene
-
-        # Set scene duration to match the audio strip
-        scene.frame_start = self.strip_content.frame_final_start
-        scene.frame_end = self.strip_content.frame_final_end
-
-        # Configure the render settings to export only the audio as an MP3.
-        scene.render.image_settings.file_format = 'FFMPEG'
-        scene.render.ffmpeg.format = 'MPEG4'
-        scene.render.ffmpeg.audio_codec = 'MP3'
-        scene.render.ffmpeg.audio_bitrate = 192  # Optional: sets the audio quality in kbps.
-
-        # Crucially, set the video codec to 'NONE' to ensure only audio is rendered.
-        scene.render.ffmpeg.codec = 'NONE'
-
-        # Ensure the output path ends with .mp3 extension
-        if not (audio_filename.endswith('.mp3') or audio_filename.endswith('.MP3')):
-            base_name = os.path.splitext(audio_filename)[0]
-            audio_filename = base_name + '.mp3'
-            
-        # Ensure the directory exists
-        output_dir = os.path.dirname(audio_filename)
-        if output_dir and not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            
-        # Set output path
-        scene.render.filepath = audio_filename
-        scene.render.use_placeholder = False
-        scene.render.use_file_extension = False
-         
-        # Render the animation (export the audio)
-        try:
-            bpy.ops.render.render(animation=True)
-            info_msg = f"download(), successfully exported to: {audio_filename}."
-            self.logger.info(info_msg)
-        except Exception as e:
-            warn_msg = f"download(), failed to export audio: {str(e)}"
-            self.logger.warn(warn_msg)

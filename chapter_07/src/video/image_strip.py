@@ -32,7 +32,8 @@ class ImageStrip:
         
     def upload(
             self, 
-            image_filename=""
+            image_filename="",
+            frame_duration=0
         ):
         """
         Upload an image strip from a file. 
@@ -46,21 +47,29 @@ class ImageStrip:
 
         self.strip_name = f"raw_{filename}"
         channel_idx = self.channel.raw_image_channel
-        frame_start_idx = self.channel.get_channel_end(channel_idx)
+        frame_start = self.channel.get_channel_end(channel_idx)
         
         image_strip = bpy.context.scene.sequence_editor.sequences.new_image(
             name=self.strip_name, 
             filepath=image_filename, 
             channel=channel_idx,
-            frame_start=frame_start_idx
+            frame_start=frame_start
         )
+
+        if frame_duration == 0: frame_duration = 10   # Randomly set a duration for image sequence.
+        image_strip.frame_final_duration = frame_duration
+    
+        # Update the scene's frame range to include the new strip
+        if bpy.context.scene.frame_end < (frame_start + frame_duration):
+            bpy.context.scene.frame_end = frame_start + frame_duration
 
         self.strip_content = image_strip
         self.frame_start = self.channel.get_channel_end(channel_idx)
-        self.frame_duration = 5 
+        self.frame_duration = frame_duration
         self.strip_content.frame_final_end = self.strip_content.frame_final_start + self.frame_duration - 1
 
         info_msg = f"load_strip(), load an image_strip from file '{image_filename}'"
         info_msg += f"\n\t with frame_start = {image_strip.frame_start}, "
         info_msg += f"and initializes its frame_duration to {self.frame_duration}."
         self.logger.info(info_msg)
+

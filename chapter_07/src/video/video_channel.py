@@ -139,3 +139,78 @@ class VideoChannel:
         channels_strips_str = json.dumps(channels_strips, indent=2, ensure_ascii=False)
         debug_msg = f"print_all_channels(): \n{channels_strips_str}\n"
         self.logger.debug(debug_msg)
+
+
+
+    def convert_frame_idx_to_time_string(
+            self, 
+            frame_idx = 0
+        ) -> str:
+        """
+        Convert a frame index to a "HH:MM:SS:MS" time string.
+        
+        Args:
+            frame_idx: The frame index number to convert to "HH:MM:SS:MS" format time string.
+            
+        Returns:
+            String in "HH:MM:SS:MS" format
+        """
+        # Get the frame rate from the scene (default to 24fps if not specified)
+        scene = bpy.context.scene
+        fps = scene.render.fps / scene.render.fps_base  # Handle fractional frame rates
+
+        debug_msg = f"convert_frame_idx_to_time_string(), scene.render.fps={scene.render.fps}, "
+        debug_msg += f"scene.render.fps_base={scene.render.fps_base}, fps={fps}"
+        self.logger.debug(debug_msg)
+
+
+        # Calculate total milliseconds
+        total_seconds = frame_idx / fps
+        total_ms = int(total_seconds * 1000)
+        
+        # Break down into components
+        hours = total_ms // 3600000
+        remaining_ms = total_ms % 3600000
+        
+        minutes = remaining_ms // 60000
+        remaining_ms %= 60000
+        
+        seconds = remaining_ms // 1000
+        ms = remaining_ms % 1000
+        
+        # Format with leading 
+        time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}:{ms:03d}"
+        return time_str
+    
+
+    def convert_time_string_to_frame_idx(
+            self, 
+            time_str=""
+        ) -> int:
+        """
+        Convert a "HH:MM:SS:MS" time string to a frame index.
+        
+        Args:
+            time_str: String in "HH:MM:SS:MS" format (e.g., "00:01:23:46")
+            
+        Returns:
+            Frame index as an integer (rounded to nearest frame)
+        """
+        # Split the time string into components
+        try:
+            hours, minutes, seconds, ms = map(int, time_str.split(':'))
+        except ValueError as e:
+            warn_msg = f"convert_time_string_to_frame_idx(), "
+            warn_msg += f"Invalid time format: {time_str}. Use 'HH:MM:SS:MS'"
+            self.logger.debug(warn_msg)
+            return -1
+        
+        # Calculate total time in seconds
+        total_seconds = (hours * 3600) + (minutes * 60) + seconds + (ms / 1000)
+        
+        # Get frame rate from the scene
+        scene = bpy.context.scene
+        fps = scene.render.fps / scene.render.fps_base  # Handle accurate frame rate
+        
+        # Convert seconds to frames and round to nearest integer
+        return round(total_seconds * fps)
