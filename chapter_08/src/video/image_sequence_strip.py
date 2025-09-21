@@ -77,6 +77,34 @@ class ImageSequenceStrip:
             self.scene_settings = json.load(file)
 
 
+
+    def _get_file_list(self) -> list:
+        file_list = []
+
+        # 1. If strip_fps == scene_fps, return the full self.frame_image_filenames
+        strip_fps = self.scene_settings["scene.render.fps"] 
+        strip_fps_base = self.scene_settings["scene.render.fps_base"] 
+        strip_fps = strip_fps / strip_fps_base
+
+        scene_fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base 
+        if strip_fps == scene_fps:
+            file_list = [{"name": os.path.basename(f)} for f in self.frame_image_filenames]  
+            return file_list
+
+        # 2. Select some of the image from self.frame_image_filenames
+        speed_factor = strip_fps / scene_fps
+        current_index_float = 1.0
+
+        while int(current_index_float) < len(self.frame_image_filenames):
+            current_filename = self.frame_image_filenames[int(current_index_float)]
+            file_list.append({"name": os.path.basename(current_filename)})
+
+            # Increment the index by the floating-valued speed_factor
+            current_index_float += speed_factor
+
+        return file_list
+    
+
     def _add_image_strip(
             self, 
             image_sequence_scene=None,
@@ -110,8 +138,8 @@ class ImageSequenceStrip:
             temp_area_change = True
 
 
-        # 3. Create image sequence strip using 'bpy.ops' with proper context
-        files = [{"name": os.path.basename(f)} for f in self.frame_image_filenames]  
+        # 3. Create image sequence strip using 'bpy.ops' with proper context 
+        files = self._get_file_list() 
         try:
             if sequencer_area:
                 with bpy.context.temp_override(area=sequencer_area, scene=image_sequence_scene):
@@ -187,6 +215,7 @@ class ImageSequenceStrip:
         if self.strip_content:
             self.strip_content.name = self.strip_name
             self.frame_duration = self.strip_content.frame_final_end - self.strip_content.frame_start
+
 
         # 3. Print out the info log.
         info_msg = f"upload_image_sequence(), upload an image sequence from directory '{image_sequence_dir}', "
