@@ -162,19 +162,33 @@ class VideoChannel:
         scene.frame_end = 0     # Initialize frame_end to 0, ready to update.
 
         for one_strip in all_strips:
-            if scene.render.resolution_x < one_strip.elements[0].orig_width:
-                scene.render.resolution_x = one_strip.elements[0].orig_width
+            """
+            The type of a VSE strip includes the following:
+            MOVIE: A video file (.mp4, .mov, etc.).
+            IMAGE: A single image file (.png, .jpg, etc.) or an image sequence.
+            SOUND: An audio file (.mp3, .wav, etc.).
+            COLOR: A solid color strip.
+            SCENE: A strip representing another Blender scene.
+            MASK: A mask strip.
+            TRANSFORM: An effect strip that controls scale, position, and rotation of other strips.
+            ADJUSTMENT: An effect strip used to apply color correction or other filters to the entire timeline.
+            TEXT: A text strip.            
+            """
+            # Not including 'SOUND' 'TRANSFORM', 'ADJUSTMENT'
+            if type(one_strip) in ['MOVIE', 'IMAGE', 'COLOR', 'SCENE', 'MASK', 'TEXT']:
+                if scene.render.resolution_x < one_strip.elements[0].orig_width:
+                    scene.render.resolution_x = one_strip.elements[0].orig_width
 
-            if scene.render.resolution_y < one_strip.elements[0].orig_height:
-                scene.render.resolution_y = one_strip.elements[0].orig_height
+                if scene.render.resolution_y < one_strip.elements[0].orig_height:
+                    scene.render.resolution_y = one_strip.elements[0].orig_height
 
             real_frame_start = one_strip.frame_start + one_strip.frame_offset_start
             if real_frame_start < scene.frame_start:
-                scene.frame_start = real_frame_start
+                scene.frame_start = round(real_frame_start)
 
             real_frame_end = one_strip.frame_final_end - one_strip.frame_offset_end
             if real_frame_end > scene.frame_end:
-                scene.frame_end = real_frame_end
+                scene.frame_end = round(real_frame_end)
 
 
         # 3. Print out the settings.

@@ -326,7 +326,8 @@ class ImageSequenceStrip:
 
         if len(json_filename) > 0:
             directory_path = os.path.dirname(json_filename)
-            os.makedirs(directory_path, exist_ok=True)
+            if not os.path.isdir(directory_path):
+                os.makedirs(directory_path, exist_ok=True)
 
             with open(json_filename, "w") as fo:
                 fo.write(scene_output_settings_str)
@@ -349,7 +350,8 @@ class ImageSequenceStrip:
         scene = bpy.context.scene
         scene.render.image_settings.file_format = "PNG"
 
-        shutil.rmtree(image_sequence_dir)
+        if os.path.isdir(image_sequence_dir):
+            shutil.rmtree(image_sequence_dir)
         os.makedirs(image_sequence_dir, exist_ok=True)
         scene.render.filepath = os.path.join(image_sequence_dir, "frame_")  # Output path + prefix
 

@@ -428,19 +428,27 @@ class VideoEditor:
         print(f"Upload 'battle_field.png', 'TrueStory.mp4', and 'TrueStory.mp3' \n")
         video_editor.video_channel.print_all_channels()
 
+        """
         # 6. Rendering
-        video_object = video_editor.get_strip_object(
-            strip_name="raw_TrueStory",
-            strip_type="MP4"
-        )
-
         rendered_output_filename = "truestory_output/rendered_truestory.mp4"
         video_editor.render(
             file_name=rendered_output_filename,
             frame_start=1, 
             frame_end=1500,
             fps=25
+        )   
+        """
+
+        # 7. Upload an image sequence from disk to scene
+        greenscreen_imgseq_dir = "/home/robot/movie_blender_studio/output/bicycling_greenscreen_imgseq"
+        from video.image_sequence_strip import ImageSequenceStrip
+        imgseq_strip = ImageSequenceStrip()
+        imgseq_strip.upload_image_sequence(
+            image_sequence_dir=greenscreen_imgseq_dir
         )
-        # frame_start=video_object.frame_start, 
-        # frame_end=video_object.frame_end,
-        
+
+        # 8. Render bpy.context.scene to an image sequence. The scene may contain multiple strips.
+        whole_scene_imgseq_dir = "/home/robot/movie_blender_studio/output/whole_scene_imgseq"
+        imgseq_strip.render_to_image_sequence(
+            image_sequence_dir=whole_scene_imgseq_dir
+        )
