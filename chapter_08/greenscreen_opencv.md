@@ -26,3 +26,45 @@ Specifically, in this chapter,
 &nbsp;
 ## 2. Blender, OpenCV and MoviePy
 
+We plan to combine Blender python with OpenCV and MoviePy. 
+
+1. OpenCV 
+
+   We will use OpenCV python to load the video and do image enhancement,
+   including cropping, stabilization, denoising and color adjustment.
+   
+   In addition, we will use OpenCV to do feature tracking, or more advanced PnP/Homography solving
+   to calculate a relative camera transformation matrix per frame.
+
+   Also we will use OpenCV to do object detection or background subtraction
+   to generate per-frame masks (e.g., identifying a green screen, or isolating a tracked object)
+   to assist in rendering or compositing later.
+
+2. MoviePy
+   
+   MoviePy and Blender's Video Sequence Editor (VSE) share a lot of features,
+   but MoviePy is more convenient to work with.
+   Therefore, we intend to use MoviePy to replace the VSE in our pipeline.
+
+   Especially, we will use MoviePy to load various media files,
+   including the video footage of various formats, and image sequence,
+   in addition to audio and textual caption for the video. 
+
+   Also, we will use Moviedy To clip a segment from a video, audio. 
+
+   And finally, we will use MoviePy to assemble multiple layers of media together
+   to deliver the final video file. 
+
+3. Blender
+
+   Blender is good at modeling that create a virtual object and scene of the real world, including landscape, city and indoor environment.
+   Furthermore, there are a lot of tools or even completed 3D assets available on market, that will save a lot of development human cost.
+
+   Blender is also good at 3D animation adhering to the physics laws.
+
+   Blender excels at implementing visual effects (VFX), including fire, massive waves, explosions, avalanches, and building collapse.
+
+   In addition, there are many Blender material assets available on the market, including wood, metal, and plastic etc.
+
+   For image and video enhancement, Blender features numerous compositing add-ons
+   that can significantly enhance the quality of videos and images, giving them a cinematic look.
