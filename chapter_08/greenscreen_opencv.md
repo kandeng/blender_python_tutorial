@@ -67,4 +67,34 @@ We plan to combine Blender python with OpenCV and MoviePy.
    In addition, there are many Blender material assets available on the market, including wood, metal, and plastic etc.
 
    For image and video enhancement, Blender features numerous compositing add-ons
-   that can significantly enhance the quality of videos and images, giving them a cinematic look.
+   that can significantly enhance the quality of videos and images, giving them a cinematic look. 
+
+
+&nbsp;
+## 3. AI Models and 3D Gaussian Splatting
+
+1. AI vision models
+
+   The vision models are useful for image and video analysis, including image segmentation, object recognition and tracking, etc.
+
+2. AI image and video generation models.
+
+   The generation models can generate 2D images and videos automatically, given only a textural prompt.
+   We are very interested in the progress of AI 3D model and scene generation, including the static ones and the dynamic animations.
+
+   Since Blender is not yet good at modeling human subjects, maybe we can leverage AI video generation model to generate human subject.
+   However, the challange is that how to generate 3D human subjects, and how to generate human subjects' motion that is physically accurate.
+
+3. 3D gaussian splatting (3DGS)
+
+   For the time being, 3DGS is often used to scan the static objects including human bodie, static city street views, and static landscape.
+
+   However, the challange is that how to generate human body in motion that is physically accurate. 
+
+
+&nbsp;
+## 4. Demo Videos
+
+[![3DGS with KIRI Blender addon](https://img.youtube.com/vi/BLw4efOemqQ/hqdefault.jpg)](https://www.youtube.com/watch?v=BLw4efOemqQ)
+
+[![Pretend to travel around the world](https://img.youtube.com/vi/IhcAEcW5Iws/hqdefault.jpg)](https://www.youtube.com/shorts/IhcAEcW5Iws)
