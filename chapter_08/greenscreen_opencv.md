@@ -158,3 +158,9 @@ Ubuntu 22.04, Nvidia RTX 3070Ti/CUDA 12.4, and Blender 4.4.3.
 2. Pretend to travel around the world with greenscreen
 
 [![Pretend to travel around the world](https://img.youtube.com/vi/IhcAEcW5Iws/hqdefault.jpg)](https://www.youtube.com/shorts/IhcAEcW5Iws)
+
+3. Pretend to walk along the Seine
+
+[![Pretend to walk along the Seine](https://img.youtube.com/vi/t_PxzgwYk88/hqdefault.jpg)](https://www.youtube.com/watch?v=t_PxzgwYk88)
+
+
