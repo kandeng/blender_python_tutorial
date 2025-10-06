@@ -93,8 +93,68 @@ We plan to combine Blender python with OpenCV and MoviePy.
 
 
 &nbsp;
-## 4. Demo Videos
+## 4. Install and run OpenCV and MoviePy in Blender
+
+~~~
+$ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install \
+    --upgrade opencv-python
+$ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install \
+    --upgrade opencv-contrib-python
+    
+$ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install moviepy
+    
+$ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install scipy
+$ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip show scipy  
+~~~
+~~~
+$ blender -b -q --python main.py -- --cycles-device CUDA
+~~~
+
+&nbsp;
+## 5. 3D Gaussian Splatting as a Blender addon
+
+Using 3D Gaussian Splatting (3DGS) is not only beneficial for quickly modeling individual objects 
+but also for rapidly constructing entire scenes.  
+
+The scenes and objects built with 3DGS can be combined with other 3D objects in Blender, 
+along with lighting setups and camera movement rails, to quickly set up a virtual movie studio.  
+
+We tested the Blender 3DGS plugin developed by Kiri Engine, with the following environment, 
+Ubuntu 22.04, Nvidia RTX 3070Ti/CUDA 12.4, and Blender 4.4.3. 
+
+1. Currently, 3DGS is more suitable for building static objects.
+   
+   For moving objects such as people, animals, and machinery, 4DGS is required.
+   Although the technology is still immature, it has great potential.  
+
+2. The Kiri 3DGS addon with Blender 4.4.3 running in Ubuntu,
+   its image granularity is relatively coarse and the image quality is not clear enough.
+   
+   For the time being, the objects and scenes constructed with 3DGS are more suitable for backgrounds,
+   rather than for close-up shots.  
+
+3. Lighting setup is easy, but shadow creation is difficult.
+   
+   The difficulty in shadow creation lies in the fact that when generating MP4 video files,
+   only the EEVEE rendering engine can be used for 3DGS-constructed objects and scenes, while the CYCLES engine cannot.
+   
+   However, we do need CYCLE engine, because the video quality generated using the CYCLES rendering engine is far better than that of EEVEE.
+   
+   There is a solution, but it is currently relatively complex.
+   
+   Two layers are needed, one layer uses the EEVEE rendering engine to generate video of 3DGS objects and scenes with a transparent background,
+   and the other layer uses CYCLES to generate video of other objects and scenes with an opaque background.
+   
+   After then, overlay these two layers of video together.
+   
+
+&nbsp;
+## 6. Demo Videos
+
+1. Test run of 3DGS with KIRI Blender addon
 
 [![3DGS with KIRI Blender addon](https://img.youtube.com/vi/BLw4efOemqQ/hqdefault.jpg)](https://www.youtube.com/watch?v=BLw4efOemqQ)
+
+2. Pretend to travel around the world with greenscreen
 
 [![Pretend to travel around the world](https://img.youtube.com/vi/IhcAEcW5Iws/hqdefault.jpg)](https://www.youtube.com/shorts/IhcAEcW5Iws)
