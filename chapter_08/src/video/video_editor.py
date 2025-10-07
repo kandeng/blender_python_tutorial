@@ -439,13 +439,17 @@ class VideoEditor:
         )   
         """
 
+        
         # 7. Upload an image sequence from disk to scene
         greenscreen_imgseq_dir = "/home/robot/movie_blender_studio/output/bicycling_greenscreen_imgseq"
         from video.image_sequence_strip import ImageSequenceStrip
         imgseq_strip = ImageSequenceStrip()
+
+        """
         imgseq_strip.upload_image_sequence(
             image_sequence_dir=greenscreen_imgseq_dir
         )
+        """
 
         # 8. Render bpy.context.scene to an image sequence. The scene may contain multiple strips.
         whole_scene_imgseq_dir = "/home/robot/movie_blender_studio/output/whole_scene_imgseq"

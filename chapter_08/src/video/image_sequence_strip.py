@@ -38,7 +38,7 @@ class ImageSequenceStrip:
                 print(f"[ERROR] Could not initialize ImageSequenceStrip class, error message: '{str(e)}'")
 
 
-    def _load_image_sequence(
+    def load_image_sequence(
             self, 
             image_sequence_dir=""
         ):
@@ -57,7 +57,7 @@ class ImageSequenceStrip:
                 self.frame_image_filenames.append(image_filename)
 
         if len(self.frame_image_filenames) == 0:
-            warn_msg = f"_load_image_sequence(), no frame images are found."
+            warn_msg = f"load_image_sequence(), no frame images are found."
             self.logger.warn(warn_msg)
             return
 
@@ -68,7 +68,7 @@ class ImageSequenceStrip:
             self.frame_image_filenames[idx] = filepath
 
         frame_image_filenames_str = json.dumps(self.frame_image_filenames, indent=2, ensure_ascii=False)
-        debug_msg = f"_load_image_sequence(), self.frame_image_filenames:\n{frame_image_filenames_str}\n"
+        debug_msg = f"load_image_sequence(), self.frame_image_filenames:\n{frame_image_filenames_str}\n"
         # self.logger.debug(debug_msg)
 
         image_sequence_dir = image_sequence_dir.rstrip('/')
@@ -195,7 +195,7 @@ class ImageSequenceStrip:
                 the valid suffices of the images are (".JPG", ".JPEG", ".PNG", etc), case insensitive. 
         """
         # 1. Get all the image filenames, and sort them. 
-        self._load_image_sequence(
+        self.load_image_sequence(
             image_sequence_dir=image_sequence_dir
         )
 
@@ -238,7 +238,7 @@ class ImageSequenceStrip:
             mp4_filename (str): The full filename of the output MP4 video file.
         """
         # 1. Get all the image filenames, and sort them. 
-        self._load_image_sequence(
+        self.load_image_sequence(
             image_sequence_dir=image_sequence_dir
         )
 
@@ -465,6 +465,79 @@ class ImageSequenceStrip:
             self.logger.info(info_msg)    
 
 
+
+    def greenscreen(
+            self,
+            input_greenscreen_video="",
+            output_transparent_video=""
+        ):
+        # 1. Create a temporary file directory for image sequence. 
+        from datetime import datetime
+        current_time = datetime.now()
+        # Format the time as yyyy-mm-dd-hh-mm-ss
+        formatted_time = current_time.strftime("%Y_%m%d_%H%M%S")
+
+        tmp_dirname = f"/tmp/{formatted_time}"
+        os.makedirs(tmp_dirname, exist_ok=True)
+
+        # 2. disassemble_greenscreen_to_image_sequence
+        self.disassemble_video_to_image_sequence(
+            video_filename=input_greenscreen_video,
+            image_sequence_dir=tmp_dirname          
+        )        
+
+        # 3. convert_greenscreen_to_transparent 
+        from compositing.green_screen_compositor import GreenScreenCompositor
+        green_screen_compositor = GreenScreenCompositor()
+        green_screen_compositor.create_greenscreen_node()
+        green_screen_compositor.set_greenscreen_settings()
+        
+        green_screen_compositor.load_image_sequence(
+            image_sequence_dir=tmp_dirname
+        )
+
+        resolution_x = green_screen_compositor.scene_settings["scene.render.resolution_x"]
+        resolution_y = green_screen_compositor.scene_settings["scene.render.resolution_y"]
+        frame_start = green_screen_compositor.scene_settings["scene.frame_start"]
+        frame_end = green_screen_compositor.scene_settings["scene.frame_end"]
+        fps = green_screen_compositor.scene_settings["scene.render.fps"]
+
+        # 4. Render from compositor to mp4 video.   
+        from camera.renderer import Renderer  
+        video_renderer = Renderer()
+        video_renderer.set_video_settings(       
+            file_name=output_transparent_video, 
+            resolution_x=resolution_x, 
+            resolution_y=resolution_y, 
+            samples=32,
+            frame_start=frame_start, 
+            frame_end=frame_end,
+            fps=round(fps)
+        )        
+
+        video_renderer.start_rendering()
+
+        info_msg = f"greenscreen(), output_transparent_video='{output_transparent_video}''."
+        self.logger.info(info_msg)
+
+
+        # 5. Delete the temporary file directory for image sequence.
+        import shutil
+        shutil.rmtree(tmp_dirname)
+
+
+    def greenscreen_usage_sample(self):
+        greenscreen_video = "/home/robot/movie_blender_studio/input/kdeng_greenscreen.mov"
+        transparent_video = "/home/robot/movie_blender_studio/output/kdeng_transparent.mov"
+        walking_green_video = "/home/robot/movie_blender_studio/input/walking_greenscreen.MOV"
+        walking_transparent_video = "/home/robot/movie_blender_studio/output/walking_greenscreen.mp4"
+
+        self.greenscreen(
+            input_greenscreen_video=walking_green_video,
+            output_transparent_video=walking_transparent_video
+        )
+
+
     @staticmethod
     def run_demo():
         input_video = "/home/robot/movie_blender_studio/input/bicycling_greenscreen.webm"
@@ -478,9 +551,12 @@ class ImageSequenceStrip:
             video_filename=input_video,
             image_sequence_dir=image_sequence_dir          
         )        
-        """
-       
+
         imgseq_strip.assemble_image_sequence_to_mp4(
             image_sequence_dir=image_sequence_dir,
             mp4_filename=output_video
-        )
+        )        
+        """
+
+        imgseq_strip.greenscreen_usage_sample()
+
