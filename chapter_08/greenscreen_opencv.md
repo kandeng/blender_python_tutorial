@@ -106,6 +106,14 @@ $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install s
 $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip show scipy  
 ~~~
 
+Notice that when using OpenCV-python within Blender, don't call the GUI-related functions like `cv2.imshow()` and `cv2.waitKey()`, 
+otherwise, segmentation faults (core dumped) will be throwned. 
+
+The root cause is that OpenCV's GUI related functions will call Qt libraries like `libQt5XcbQpa`, `libQt5Gui`, etc.
+
+When these functions are called inside Blender's Python environment, they conflict with Blender's own GUI system, leading to the segmentation fault.
+
+
 &nbsp;
 ## 5. Run OpenCV and MoviePy in Blender
 
