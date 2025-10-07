@@ -40,6 +40,7 @@ class GreenScreenCompositor():
         # 1. Clear existing nodes (optional)
         for node in self.scene.node_tree.nodes:
             self.scene.node_tree.nodes.remove(node)
+            self.compositor_nodes = {}
 
         # 2. Image input node, not only for one single image, but also for image sequence.
         image_nodename = "Compositor_Image"
@@ -295,11 +296,12 @@ class GreenScreenCompositor():
         # 2. Load the image sequence
         self.image_sequence_strip.load_image_sequence(
             image_sequence_dir=image_sequence_dir
-        )
+        ) 
+        self.scene_settings = self.image_sequence_strip.scene_settings
         first_path = self.image_sequence_strip.frame_image_filenames[0]
 
         scene_setting_str = json.dumps(
-            self.image_sequence_strip.scene_settings,
+            self.scene_settings,
             indent=2,
             ensure_ascii=False
         )
@@ -345,7 +347,8 @@ class GreenScreenCompositor():
         green_screen_compositor.set_greenscreen_settings()
 
         bicycle_green_screen_dir = "/home/robot/movie_blender_studio/output/bicycling_greenscreen_imgseq"
+        kdeng_green_screen_dir = "/home/robot/movie_blender_studio/input/kan_walking_frames"
         green_screen_compositor.load_image_sequence(
-            image_sequence_dir=bicycle_green_screen_dir
+            image_sequence_dir=kdeng_green_screen_dir
         )
 

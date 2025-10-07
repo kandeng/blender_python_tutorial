@@ -190,8 +190,8 @@ class VideoCompositor():
             output_video_filename=""
         ):        
         # 1. Render the scene into an image.
+        """
         self.renderer.set_scene_settings(
-            engine='CYCLES', 
             resolution_x=self.movie_clip_size[0], 
             resolution_y=self.movie_clip_size[1], 
             samples=32, 
@@ -205,8 +205,19 @@ class VideoCompositor():
             container="MPEG4",
             fps=round(self.movie_clip_fps)
         )
+        """
+        self.renderer.set_video_settings(       
+            file_name=output_video_filename, 
+            resolution_x=self.movie_clip_size[0], 
+            resolution_y=self.movie_clip_size[1], 
+            samples=32,
+            frame_start=1, 
+            frame_end=self.movie_clip_frame_duration+1,
+            fps=round(self.movie_clip_fps)
+        )        
+
         # Bug fixing, override the output_path
-        bpy.context.scene.render.filepath = output_video_filename
+        # bpy.context.scene.render.filepath = output_video_filename
 
         # 2. Start the rendering, it will take quite long time. 
         self.renderer.start_rendering()
@@ -256,24 +267,28 @@ class VideoCompositor():
     
 
 
+    def cinematic_usage_sample(self):
+        compositor_node_str = json.dumps(self.compositor_node_list, indent=2, ensure_ascii=False)
+        self.logger.debug(f"Video compositor nodes: \n\t{compositor_node_str}")
+
+        input_videos = [
+            "/home/robot/movie_blender_studio/input/nyu_corridor.MOV"
+        ]
+        output_videos = [
+            "/home/robot/movie_blender_studio/output/nyu_corridor_cinematic_20251005.mp4"
+        ]
+
+        self.cinematic_mystery(
+            input_video_filename=input_videos[0]       
+        )
+        self.render_video(
+            output_video_filename=output_videos[0]
+        )
+
+
+
     @staticmethod
     def run_demo():
         video_compositor = VideoCompositor()
-        compositor_node_list = video_compositor.compositor_node_list 
-        compositor_node_str = json.dumps(compositor_node_list, indent=2, ensure_ascii=False)
-        video_compositor.logger.debug(f"Video compositor nodes: \n\t{compositor_node_str}")
+        video_compositor.cinematic_usage_sample()
 
-        input_videos = [
-            "/home/robot/movie_blender_studio/input/nyu_corridor.MOV",
-            "/home/robot/movie_blender_studio/input/TrueStory.mp4"
-        ]
-        output_videos = [
-            "/home/robot/movie_blender_studio/output/nyu_corridor_cinematic_20250916.mp4"
-        ]
-
-        video_compositor.cinematic_mystery(
-            input_video_filename=input_videos[0]       
-        )
-        video_compositor.render_video(
-            output_video_filename=output_videos[0]
-        )
