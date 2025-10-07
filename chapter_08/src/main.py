@@ -143,9 +143,9 @@ if __name__ in "__main__":
     HdriBackground.run_demo()      
     """
  
-    """    
+    """
     from video.video_editor import VideoEditor
-    VideoEditor.run_demo()    
+    VideoEditor.run_demo()       
     """
     
     """
@@ -155,10 +155,34 @@ if __name__ in "__main__":
     
     """
     from compositing.video_compositor import VideoCompositor
-    VideoCompositor.run_demo()        
+    VideoCompositor.run_demo()          
     """
-          
+
+    """
     from video.image_sequence_strip import ImageSequenceStrip
-    ImageSequenceStrip.run_demo()
+    ImageSequenceStrip.run_demo()         
+    """
+    
+    """
+    from compositing.green_screen_compositor import GreenScreenCompositor
+    GreenScreenCompositor.run_demo()    
+    """
+
+    """
+    from tracking.motion_tracker import MotionTracker
+    MotionTracker.run_demo()
+    """
+    
+    """
+    from camera.renderer_opencv import OpencvRenderer
+    OpencvRenderer.run_demo()    
+    """
+
+    from tracking.camera_tracker import CameraTracker
+    CameraTracker.run_demo()    
+    
+
+
+
         
     
