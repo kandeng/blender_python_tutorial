@@ -1,4 +1,4 @@
-# Green Screen, OpenCV and MoviePy
+# Green Screen, Camera Tracking with OpenCV
 
 ## 1. Objectives
 
