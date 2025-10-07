@@ -2,9 +2,7 @@
 
 ## 1. Objectives
 
-In chapter 08, we start to combine 
-[OpenCV-python](https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html) and 
-[Moviepy](https://zulko.github.io/moviepy/) with Blender python. 
+In chapter 08, we start to integrate OpenCV-python with Blender python. 
 
 Later, we will combine the state-of-art AI models with Blender python. 
 
@@ -19,14 +17,15 @@ Specifically, in this chapter,
 3. Given the time series of camera motion, we use OpenCV-python to process the human subject motion video footage,
    to make the human motion aligned with the scene video footage's pan and tilt. 
 
-4. Use Moviepy, instead of Blender's video editor functionality, to merge the human motion video footage
-   with the scene background video. 
 
 
 &nbsp;
 ## 2. Blender, OpenCV and MoviePy
 
-We plan to combine Blender python with OpenCV and MoviePy. 
+We are integrating 
+[OpenCV-python](https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html) 
+and [Moviepy](https://zulko.github.io/moviepy/) 
+with Blender python.
 
 1. OpenCV 
 
@@ -93,7 +92,7 @@ We plan to combine Blender python with OpenCV and MoviePy.
 
 
 &nbsp;
-## 4. Install and run OpenCV and MoviePy in Blender
+## 4. Install OpenCV and MoviePy in Blender
 
 ~~~
 $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install \
@@ -106,12 +105,48 @@ $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install m
 $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip install scipy
 $ /home/robot/blender-4.4.3-linux-x64/4.4/python/bin/python3.11 -m pip show scipy  
 ~~~
+
+&nbsp;
+## 5. Run OpenCV and MoviePy in Blender
+
+To execute the demo, we ran the following command in a ubuntu terminal. 
+
 ~~~
+$ cd /home/robot/movie_blender_studio
 $ blender -b -q --python main.py -- --cycles-device CUDA
 ~~~
 
+Look into main.py, there are two demos related to this chapter. 
+
+~~~
+ from tracking.camera_tracker import CameraTracker
+ CameraTracker.run_demo()
+
+ from video.image_sequence_strip import ImageSequenceStrip
+ ImageSequenceStrip.run_demo()     
+~~~
+
+1. Camera tracking
+
+   `tracking/camera_tracker.py` uses OpenCV-python to track the pan-tilt motion of camera, given a video clip.
+
+   
+2. Green-screen keying
+   
+   `video/image_sequence_strip.py` will call `compositing/green_screen_compositor.py` 
+to turn the green pixels of the green-screen to transparent. 
+
+   However in practice, `compositing/green_screen_compositor.py` that relies on Blender's compositing nodes
+doesn't work reliably. 
+
+   Especially after the affine transformation of the original green-screen MOV video using OpenCV-python, 
+`compositing/green_screen_compositor.py` cannot do the keying job very well. 
+
+   Later, we will use AI vision model to handle green-screen keying, and other jobs, that is expected to work more robustly.
+
+
 &nbsp;
-## 5. 3D Gaussian Splatting as a Blender addon
+## 6. 3D Gaussian Splatting as a Blender addon
 
 Using 3D Gaussian Splatting (3DGS) is not only beneficial for quickly modeling individual objects 
 but also for rapidly constructing entire scenes.  
