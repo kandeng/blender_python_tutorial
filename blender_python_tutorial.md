@@ -37,3 +37,6 @@ Here is the content table of the Blender python tutorials.
 7. [Introduction to pyCinematic](./chapter_07/pyCinematic_intro.md)
 
 8. [Green Screen, Camera Tracking with OpenCV](./chapter_08/greenscreen_opencv.md)
+
+9. [Integrate AI models and Moviepy to Blender](./chapter_09/ai_moviepy.md)
+
