@@ -29,4 +29,6 @@ To make it easy to use Moviepy, we implement `movie/movie_editor.py` to provide 
 
 5. overlay subtitle text and image onto a video file.
 
-       
+   To write text to video, you need to download fonts.
+
+   We download the English/Chinese font ttf files from https://fonts.google.com/noto/fonts
