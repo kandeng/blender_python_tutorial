@@ -100,7 +100,8 @@ Not as expected, the four generated image green-screen images are different.
    </p>  
 
 That means, even though the image model is powerful, 
-however, due to its unstability, we cannot use it to convert a video (consisting of a sequence of images) 
+however, due to its unstability, we cannot use the `qwen-image-edit` model to convert a video (consisting of a sequence of images) 
 to a green-screen video. 
 
+Instead, we should wait for a video model, that can convert a raw video to a green-screen one. 
 
