@@ -105,3 +105,115 @@ to convert a video (consisting of a sequence of images) to a green-screen video.
 
 Instead, we should wait for a video model, that can convert a raw video to a green-screen one. 
 
+
+&nbsp;
+## 4. Software architecture
+
+~~~
+movie_blender_studio/
+
+# System configuration
+├── __init__.py
+├── .env
+├── dot.env -> .env
+├── main.py
+├── sys_config
+│   ├── __init__.py
+│   ├── import_in_blender.py
+│   └── sys_config.env
+
+# System tool
+├── logger
+│   ├── __init__.py
+│   └── logger.py
+
+
+# 'qwen' is just a beginning, we will add more AI models and functions here.
+├── ai_gateway
+│   ├── __init__.py
+│   ├── __pycache__
+│   └── qwen_remote.py
+
+# 'animation' is one of the keys functionality of the entire system.
+├── animation
+│   ├── __init__.py
+│   ├── animation.py
+│   ├── constraint.py
+│   └── keyframe.py
+
+# 'camera' is one of the key functionality of the entire system.
+# We will add 'light' 'layout' etc to mimick the functionality of a movie making team.  
+├── camera
+│   ├── __init__.py
+│   ├── camera.py
+│   ├── renderer.py 
+│   └── renderer_opencv.py
+
+# 'compositing' is one of the key functionality for post-production.
+# It will integrate blender, opencv, ai-models together for compositing jobs.
+├── compositing
+│   ├── __init__.py
+│   ├── cinematic_compositor.py
+│   ├── color_compositor.py
+│   ├── green_screen_compositor.py
+│   ├── image_compositor.py
+│   └── video_compositor.py
+
+# 'tracking' is a popular job for post-production, video processing.
+├── tracking
+│   ├── __init__.py
+│   └── camera_tracker.py
+
+
+# superclass for blender's shader and other nodes. 
+├── editor
+│   ├── __init__.py
+│   └── editor_node.py
+
+# 'hdri' will be changed to 'environment'
+├── hdri
+│   ├── __init__.py
+│   ├── dome_with_hdri_and_sun_generator.py
+│   └── hdri_background.py
+
+# 'model' will be changed to 'property', referring to single objects of movie-making property
+├── model
+│   ├── __init__.py
+│   ├── water_generator.py
+│   ├── riverbed_generator.py
+│   ├── rock_generator.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   └── curve_generator.py
+
+# Tool to make the properties. 
+├── material
+│   ├── __init__.py
+│   └── texture_shader.py
+
+# Tool to make the properties. 
+├── modifier
+│   ├── __init__.py
+│   └── modifier_generator.py
+
+# 'scene' refers to the 'set' in movie production.
+├── scene
+│   ├── __init__.py
+│   └── rocky_river_terrain.py
+
+# Assemble the video clips into one final video.
+├── movie
+│   ├── __init__.py
+│   └── movie_editor.py
+
+# The Blender solution for video assembly is replaced by /movie.
+└── video
+    ├── __init__.py
+    ├── video_channel.py
+    ├── video_editor.py
+    ├── audio_strip.py
+    ├── image_sequence_strip.py
+    ├── image_strip.py
+    └── video_strip.py
+
+~~~
