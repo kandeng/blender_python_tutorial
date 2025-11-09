@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import bpy
 
 
@@ -20,6 +21,47 @@ class BlendRetriever:
                 self.logger.error(f"Could not initialize BlendRetriever class, error message: '{str(e)}'")
             else:
                 print(f"[ERROR] Could not initialize BlendRetriever class, error message: '{str(e)}'")
+
+
+    def get_object_names(
+            self,
+            blend_filepath: str=""
+        ) -> list:
+        """
+        Get a list of object names from a .blend file without actually importing them.
+
+        Args:
+            blend_filepath (str): Path to the .blend file
+            
+        Returns:
+            list: List of object names in the .blend file
+        """
+        # 1. Validation Check: Ensure the source file exists
+        if not os.path.exists(blend_filepath):
+            warn_msg = f"get_object_names(), Source .blend file not found at path: '{blend_filepath}'."
+            self.logger.warning(warn_msg)
+            return []
+
+        # 2. Use bpy.data.libraries to load the file and inspect its contents
+        try:
+            # Load the .blend file as a library
+            with bpy.data.libraries.load(blend_filepath, link=False) as (data_from, data_to):
+                # Extract object names from the library
+                object_names = data_from.objects if data_from.objects else []
+                
+            info_msg = f"get_object_names(), Found {len(object_names)} objects in '{blend_filepath}'. \n"
+            object_names_str = json.dumps(list(object_names), ensure_ascii=False, indent=2)
+            info_msg += f"{object_names_str}"
+            self.logger.info(info_msg)
+            
+            return list(object_names)
+            
+        except Exception as e:
+            warn_msg = f"get_object_names(), Cannot read objects from .blend file '{blend_filepath}'. "
+            warn_msg += f"\n\t The error message is: '{str(e)}'."
+            self.logger.warning(warn_msg)
+            return []
+        
 
 
     def retrieve_object(
@@ -87,6 +129,19 @@ class BlendRetriever:
         TARGET_OBJECT_NAME = "bq_Tree_Citrus-medica_A_spring-summer-autumn" 
 
         blend_retriever = BlendRetriever()
+        
+        # Demonstrate get_object_names
+        object_names = blend_retriever.get_object_names(blend_filepath=SOURCE_BLEND_FILE)
+        if len(object_names) > 0:
+            object_names_str = json.dumps(object_names, ensure_ascii=False, indent=2)
+            info_msg = f"usage_demo(), the .blend file: '{SOURCE_BLEND_FILE}' contains the following objects: \n"
+            info_msg += object_names_str
+            blend_retriever.logger.info(info_msg)
+
+        else:
+            blend_retriever.logger.warning(f"usage_demo(), No objects found in the .blend file '{SOURCE_BLEND_FILE}'.")
+        
+        # Demonstrate retrieve_object
         retrieved_obj = blend_retriever.retrieve_object(
             blend_filepath=SOURCE_BLEND_FILE,
             object_name=TARGET_OBJECT_NAME
@@ -97,8 +152,6 @@ class BlendRetriever:
             retrieved_obj.select_set(True)
             bpy.context.view_layer.objects.active = retrieved_obj
 
-            blend_retriever.logger.info(f"usage_demo(), Object '{retrieved_obj.name}' is now selected and active.")
- 
             # Show any relevant material/node information
             if retrieved_obj.data and retrieved_obj.data.materials:
                 material_str = ', '.join([m.name for m in retrieved_obj.data.materials])
