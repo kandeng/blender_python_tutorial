@@ -106,6 +106,7 @@ class Sky:
             node_name="SkyTexture",
             location=(0, 0)
         )  
+        sky_node.sky_type = 'NISHITA'
         sky_node.sun_elevation = math.radians(-10)
         sky_node.sun_rotation = math.radians(-20)
 
@@ -226,6 +227,33 @@ class Sky:
         sky_node.sun_rotation = math.radians(azimuth_deg)
 
 
+
+    def control_panel(
+            self, 
+            sky_z_rotation_degree: float=0.0,
+            sun_strength: float=0.0,
+            shadow_intensity: float=0.0,
+            sun_elevation_degree: float=0.0,
+            sun_rotation_degree: float=0.0
+        ):
+        if sky_z_rotation_degree != 0.0:
+            mapping_node = self.editor_node.get_node("WorldMapping")
+            mapping_node.inputs[2].default_value[2] = math.radians(sky_z_rotation_degree)
+
+        if sun_strength > 0.0:
+            sky_background_node = self.editor_node.get_node("SkyBackground")
+            sky_background_node.inputs[1].default_value = sun_strength
+
+        sky_node = self.editor_node.get_node("SkyTexture")
+        if shadow_intensity > 0.0:
+            sky_node.sun_intensity = shadow_intensity
+        if sun_elevation_degree != 0.0:
+            sky_node.sun_elevation = math.radians(sun_elevation_degree)
+        if sun_rotation_degree != 0.0:
+            sky_node.sun_rotation = math.radians(sun_rotation_degree)
+
+
+
     @staticmethod
     def usage_demo():
         hdri_filepaths=[
@@ -235,5 +263,12 @@ class Sky:
 
         sky_hdri = Sky()
         sky_hdri.align_sky_hdri(hdri_filepath=hdri_filepaths[1])
+        sky_hdri.control_panel(
+            sky_z_rotation_degree=11.0,
+            sun_strength=22.0,
+            shadow_intensity=33.0,
+            sun_elevation_degree=44.0,
+            sun_rotation_degree=55.0
+        )
 
 
