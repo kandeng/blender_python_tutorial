@@ -39,6 +39,42 @@ class BlendFileHandler:
             warn_msg = f"get_all_assets(), Source .blend file doesn't exist: '{self.blend_filepath}'."
             self.logger.warning(warn_msg)
             return {}
+        
+        try:
+            with bpy.data.libraries.load(self.blend_filepath, link=True) as (data_from, data_to):
+                # data_from.objects contains all object names in the external file
+                asset_names = {
+                    "Objects": data_from.objects,
+                    "Materials": data_from.materials,
+                    "Node Groups": data_from.node_groups,
+                    "Worlds": data_from.worlds,
+                    "Images": data_from.images                 
+                }
+
+                asset_names_str = json.dumps(asset_names, ensure_ascii=False, indent=2)
+                info_msg = f"get_all_asset_names(), following is all the asset names in the '{self.blend_filepath}' .blend file:\n"
+                info_msg += asset_names_str
+                self.logger.info(info_msg)
+                return asset_names
+
+        except Exception as e:
+            warn_msg = f"get_all_asset_names, following exception was thrown when listing all the assets in "
+            warn_msg += f"'{self.blend_filepath}' .blend file: {str(e)}\n"
+            self.logger.warning(warn_msg)
+            return {}
+
+
+    def get_all_asset_names_obsolete(self) -> dict:
+        """
+        List all asset names in a single .blend file by temporarily soft linking them to the current 'bpy.data'.
+
+        Returns:
+            dict: A dict of all the asset object names in the .blend file
+        """
+        if not os.path.exists(self.blend_filepath):
+            warn_msg = f"get_all_assets(), Source .blend file doesn't exist: '{self.blend_filepath}'."
+            self.logger.warning(warn_msg)
+            return {}
     
         asset_names = {
             "Objects": [],
@@ -186,9 +222,9 @@ class BlendFileHandler:
 
         # Set up the sun. 
         sun_data = bpy.data.lights.new(name="Sun_Light", type='SUN')
-        sun_data.energy = 10.0  # Strength (irradiance in Watts/m²)
+        sun_data.energy = 30.0  # Strength (irradiance in Watts/m²)
         sun_obj = bpy.data.objects.new(name="Sun", object_data=sun_data)
-        sun_obj.location = (0, -2.0, 5.0) 
+        sun_obj.location = (5, -10.0, 15.0) 
         bpy.context.collection.objects.link(sun_obj)
 
 
@@ -199,7 +235,6 @@ class BlendFileHandler:
 
             # Locate the object along Y-axis.
             obj.location = (0.0, (idx + 1) * 2.0, 0.0)
-
             # Ensure the object is not hidden in the viewport
             obj.hide_viewport = False  # Visible in viewport
             obj.hide_select = False    # Allows selection (optional but useful)
@@ -228,6 +263,17 @@ class BlendFileHandler:
         blend_file_handler = BlendFileHandler(blend_filepaths[0])
         asset_dict = blend_file_handler.get_all_asset_names()
 
-        object_names = asset_dict["Objects"][:3]
+        object_names = []
+        target_obj_names = ["tree", "flower", "basic_rock"]
+
+        for obj_name in asset_dict["Objects"]:
+            if len(target_obj_names) == 0:
+                break
+            else:
+                for target_single_name in target_obj_names:
+                    if target_single_name in obj_name.lower():
+                        object_names.append(obj_name)
+                        target_obj_names.remove(target_single_name)
+
         object_instances = blend_file_handler.load_objects(object_names)
         blend_file_handler.display_objects(object_instances)
