@@ -66,10 +66,8 @@ class BlendFileHandler:
 
     def get_all_asset_names_obsolete(self) -> dict:
         """
-        List all asset names in a single .blend file by temporarily soft linking them to the current 'bpy.data'.
-
-        Returns:
-            dict: A dict of all the asset object names in the .blend file
+        DON'T USE THIS FUNCTION!! Use get_all_asset_names(). 
+        The purpose to save this obsolete function, is to use it as a demo of the usage of .blend object. 
         """
         if not os.path.exists(self.blend_filepath):
             warn_msg = f"get_all_assets(), Source .blend file doesn't exist: '{self.blend_filepath}'."
@@ -207,6 +205,182 @@ class BlendFileHandler:
         return loaded_objects
 
 
+    # bpy.data.objects
+    def get_objects(
+            self,
+            object_names:list=[]
+        ) -> list:
+        """
+        Find the object instances from 'bpy.data.objects' given their names.
+
+        Args:
+            object_names (list): A list of object names.
+
+        Returns:
+            list: The list of object instances in 'bpy.data.objects'.
+        """
+        object_names_lower = [s.lower() if isinstance(s, str) else s for s in object_names]
+        try:
+            object_instances = []
+            for obj_instance in bpy.data.objects:
+                if obj_instance.name.lower() in object_names_lower:
+                    object_instances.append(obj_instance)
+
+            info_msg = f"get_objects(), given object names: '{object_names}', "
+            info_msg += f"find these objects in 'bpy.data.objects': \n"
+            object_instances_names = [obj.name for obj in object_instances]
+            info_msg += f"\t{object_instances_names}"
+            self.logger.info(info_msg)
+
+            return object_instances
+        except Exception as e:
+            warn_msg = f"get_objects(), the following exception is thrown "
+            warn_msg += f"when get '{object_names}' from 'bpy.data.objects': '{str(e)}'"
+            self.logger.warning(warn_msg)
+
+
+    def get_materials(
+            self, 
+            object_instance: object
+        ) -> list:
+        """
+        Given a mesh object instance, get the names of the material that this object used. 
+        
+        Returns:
+            list: The list of the material names.
+        """
+        material_name_list = []
+        
+        try:
+            if object_instance.data and object_instance.data.materials:
+                material_name_list = [m.name for m in object_instance.data.materials]
+
+                material_name_list_str = json.dumps(material_name_list, ensure_ascii=False, indent=2)
+                info_msg = f"get_materials(), '{object_instance.name}' attached Materials: '{material_name_list_str}'."
+                self.logger.info(info_msg)
+
+            else:
+                info_msg = f"get_materials(), '{object_instance.name}' doesn't have any attached Materials."
+                self.logger.info(info_msg)
+
+        except Exception as e:
+            warn_msg = f"get_materials(), an exception was thrown when getting the attached materials \n"
+            warn_msg += f"of an object instance '{object_instance.name}': '{str(e)}'."
+            self.logger.warning(warn_msg)
+        
+        return material_name_list
+    
+
+    def get_modifiers(
+            self, 
+            object_instance: object
+        ) -> list:
+        """
+        Given a mesh object instance, get the names of the modifiers of this object's geometry node groups. 
+        
+        Returns:
+            list: The list of the names of the modifiers of this object's geometry node groups.
+        """
+        modifier_list = []
+
+        try:
+            if object_instance.modifiers:
+                for idx, item in enumerate(object_instance.modifiers):
+                    modifier_list.append(item.name)
+
+                modifier_list_str = json.dumps(modifier_list, ensure_ascii=False, indent=2)
+                info_msg = f"get_modifiers(), '{object_instance.name}' attached geometry node modifier: '{modifier_list_str}'."
+                self.logger.info(info_msg)
+
+            else:
+                info_msg = f"get_modifiers(), '{object_instance.name}' doesn't have any attached geometry node modifier."
+                self.logger.info(info_msg)
+
+        except Exception as e:
+            warn_msg = f"get_modifiers(), an exception was thrown when getting the attached geometry node modifier \n"
+            warn_msg += f"of an object instance '{object_instance.name}': '{str(e)}'."
+            self.logger.warning(warn_msg)
+
+        return modifier_list
+    
+
+    def set_material_properties(
+            self, 
+            object_instance: object=None,
+            material_name: str="",
+            node_name: str="",
+            node_attributes: dict={}
+        ):
+        if object_instance is None:
+            warn_msg = f"set_material_properties(), 'object_instance' is None."
+            self.logger.warning(warn_msg)
+            return 
+        
+        # 1. Find the material object
+        target_materials = []
+        target_material_names = []
+        try:
+            # if object_instance.data and object_instance.data.materials:
+            for idx, material_obj in enumerate(object_instance.data.materials):
+                # self.logger.debug(f" material[{idx}] '{material_obj.name}'")
+
+                if material_name.lower() in material_obj.name.lower():
+                    target_materials.append(material_obj)
+                    target_material_names.append(material_obj.name)
+            
+            info_msg = f"set_material_properties(), given 'material_name'=='{material_name}', "
+            info_msg += f"find these 'target_materials'=='{target_material_names}'."
+            self.logger.info(info_msg)
+        except Exception as e:
+            warn_msg = f"set_material_properties(), the following exception was thrown "
+            warn_msg += f"when getting the materials of the mesh object '{object_instance.name}': '{str(e)}'"
+            self.logger.warning(warn_msg)
+            return
+        
+
+        for idx, target_material in enumerate(target_materials):
+            # 2. Find the shader node object
+            target_node = None
+            try:
+                for idx, node in enumerate(target_material.node_tree.nodes):
+                    # self.logger.debug(f"get_node(), [{idx}] node.name=='{node.name}'")
+                    if node_name.lower() in node.name.lower():
+                        target_node = node
+                        break
+
+                info_msg = f"set_material_properties(), given 'node_name'=='{node_name}', "
+                info_msg += f"find the 'target_node'=='{target_node.name}'."
+                self.logger.info(info_msg)
+            except Exception as e:
+                warn_msg = f"set_material_properties(), the following exception was thrown "
+                warn_msg += f"when getting the shader nodes of the material '{material_name}': '{str(e)}'"
+                self.logger.warning(warn_msg)
+                return
+
+            # 3. Set the attribute values
+            info_msg = f"set_material_properties(), set attributes to shader node '{target_node.name}'."
+            try:
+                for attr_name, attr_value in node_attributes.items():
+                    target_node.inputs[attr_name].default_value = attr_value
+
+                    info_msg += f"\n\t attribute '{attr_name}' = value '{attr_value}' "
+            except Exception as e:
+                warn_msg = f"set_material_properties(), the following exception was thrown "
+                warn_msg += f"when setting the attributes of a shader nodes '{target_node.name}': '{str(e)}'"
+                self.logger.warning(warn_msg)
+                return
+            self.logger.info(info_msg)
+
+
+    def set_modifier_properties(
+            self, 
+            object_instance: object=None,
+            modifier_name: str="",
+            node_name: str="",
+            node_attributes: dict={}
+        ):
+        pass
+
 
     def display_objects(
             self,
@@ -277,3 +451,4 @@ class BlendFileHandler:
 
         object_instances = blend_file_handler.load_objects(object_names)
         blend_file_handler.display_objects(object_instances)
+
