@@ -230,7 +230,8 @@ class EditorNode:
             The object instance of the editor node, or None.
         """
         # return self.node_tree.nodes.get(node_name)
-        for node in self.node_tree.nodes:
+        for idx, node in enumerate(self.node_tree.nodes):
+            # self.logger.debug(f"get_node(), node.name=='{node.name}'")
             if node.name == node_name:
                 info_msg = f"get_node(), find a node named '{node_name}'."
                 self.logger.info(info_msg)
