@@ -9,9 +9,13 @@ class NatureGeneratorAddon:
     To retrieve objects from the nature generator addon library, 
     and control its properties.
     """
-    def __init__(self):
+    def __init__(
+            self,
+            texture_folder:str=""
+        ):
         self.logger = None
-        self.blend_file_handler=None
+        self.blend_file_handler = None
+        self.texture_folder = texture_folder
         
         try:
             from logger.logger import Logger
@@ -72,6 +76,68 @@ class NatureGeneratorAddon:
             self.logger.warning(warn_msg)
 
 
+
+    def get_asset_categories(self) -> dict:
+        """
+        This function is not very useful. 
+        """
+        catalog_filepath = os.path.join(
+                os.path.dirname(self.blend_file_handler.blend_filepath),
+                "blender_assets.cats.txt"
+            )
+
+        if not os.path.exists(catalog_filepath):
+            print(f"Asset catalog file not found: {catalog_filepath}")
+            warn_msg = f"get_asset_categories(), Asset catalog file '{catalog_filepath}' doesn't exist."
+            self.logger.warning(warn_msg)
+            return {}
+        
+        with open(catalog_filepath, 'r') as f:
+            lines = f.readlines()
+
+        version_found = False
+        catalog_dict = {}
+        try:
+            for line in lines:
+                line = line.strip()
+                # Skip comments and empty lines
+                if not line or line.startswith('#'):
+                    continue
+                    
+                # Skip the VERSION line
+                if line.startswith('VERSION'):
+                    version_found = True
+                    continue
+
+                # Parse: '2411f423-0447-4397-815e-52a7d41b3854:06_Scatter Objects/01_Plants/01_Flowers:06_Scatter Objects-01_Plants-01_Flowers'
+                parts = line.split(':', 2)
+                if len(parts) == 3:
+                    uuid, path, name = parts
+                    # For parent_path, we'll use the parent path if it exists
+                    path_parts = path.split('/')
+                    subcategory = catalog_dict
+                    for subpath in path_parts:
+                        subpath = subpath.strip()
+                        if subpath in subcategory:
+                            subcategory = subcategory[subpath]
+                        else:
+                            subcategory[subpath] = {}
+
+        except Exception as e:
+            warn_msg = f"get_asset_categories(), the following exception was thrown "
+            warn_msg += f"when parsing the content of '{catalog_filepath}'."
+            self.logger.warning(warn_msg)
+            return {}
+
+
+        info_msg = f"get_asset_categories(), '{self.blend_file_handler.blend_filepath}' "
+        info_msg += f"contains the following asset categories:\n"
+        catalog_dict_str = json.dumps(catalog_dict, ensure_ascii=False, indent=2)
+        info_msg += f"{catalog_dict_str}"
+        self.logger.info(info_msg)
+        return catalog_dict
+
+
     def get_all_asset_names(self) -> dict:
         return self.blend_file_handler.get_all_asset_names()
 
@@ -98,6 +164,16 @@ class NatureGeneratorAddon:
             object_instance: object
         ):
         return self.blend_file_handler.get_materials(object_instance)
+    
+    def load_modifiers(
+            self,
+            object_instance: object=None,
+            modifier_names:list=[]
+        ):
+        return self.blend_file_handler.load_modifiers(
+            object_instance=object_instance,
+            modifier_names=modifier_names
+        ) 
     
     def get_modifiers(
             self, 
@@ -126,12 +202,57 @@ class NatureGeneratorAddon:
             node_name: str="",
             node_attributes: dict={}
         ):
-        self.blend_file_handler.set_material_properties(
+        self.blend_file_handler.set_modifier_properties(
             object_instance=object_instance,
             modifier_name=modifier_name,
             node_name=node_name,
             node_attributes=node_attributes
         )
+
+
+    def add_scatter_effect(
+            self,
+            object_instance: object=None,
+            scatter_asset_name: str="",
+            density: float=55.0
+        ):
+        # 1. The asset object name is like 'NG_flower_ursinia_e'
+        #    However the scatter asset collection's name is like 'NG_flower_ursinia'
+        _ = self.get_objects([scatter_asset_name])
+        collection_names = [c.name for c in bpy.data.collections]
+        scatter_collection_names = []
+        for collection_name in collection_names:
+            if collection_name.lower() in scatter_asset_name.lower():
+                scatter_collection_names.append(collection_name)
+
+        # Select the longest candidate to be the scatter collection. 
+        self.logger.debug(f"add_scatter_effect(), scatter_collection_names: '{scatter_collection_names}'")
+        scatter_collection = max(scatter_collection_names, key=len)
+        self.logger.debug(f"add_scatter_effect(), scatter_collection: '{scatter_collection}'")
+
+        # 2. Load the modifier from the external .blend file.
+        modifier_list = self.load_modifiers(
+            object_instance=object_instance,
+            modifier_names=['NG_Scatter_Effect']
+        )
+
+        # 3. Set the attribute to the modifier for NG_Scatter_Effect 
+        if len(modifier_list) > 0:
+            modifier_list[0]["Socket_135"] = bpy.data.collections[scatter_collection]
+            modifier_list[0]["Socket_136"] = density
+
+        info_msg = f"add_scatter_effect(), for object '{object_instance.name}', "
+        info_msg += f"add scatter collection '{scatter_collection}' with density={density}"
+        self.logger.info(info_msg)
+
+        for idx, modifier in enumerate(object_instance.modifiers):
+            debug_msg = f"add_scatter_effect(), [{idx}] modifier='{modifier.name}'"
+            self.logger.debug(debug_msg)
+
+        self.logger.debug(f"\nEnumerating all the collection in 'bpy.data.collections':")
+        for idx, collection in enumerate(bpy.data.collections):
+            debug_msg = f"add_scatter_effect() [{idx}] collection: '{collection.name}'"
+            self.logger.debug(debug_msg)
     
 
     def control_panel(
@@ -149,24 +270,33 @@ class NatureGeneratorAddon:
         # object_name = 'NG_Ground_Rock_Debris_Scatter_Grass_Flower_Preset'
         object_instances = self.get_objects([object_name])
 
-        material_name = 'NG_Rock instance Material'
-        node_attributes = {
-            "Rock Color": (0.0, 0.0, 0.5, 1.0),
-            3: True
+        # material_name = 'NG_Rock instance Material'
+        material_name = 'NG_Basic Rock Material Snow Preset'
+        node_name = 'Group.001'
+        material_attributes = {
+            "Base Color": (1.0, 0.0, 0.0, 1.0),
+            6: 22.0
         }
 
         self.set_material_properties(
             object_instance=object_instances[0],
             material_name=material_name,
-            node_name="Group.001",
-            node_attributes=node_attributes
+            node_name=node_name,
+            node_attributes=material_attributes
         )
 
+        self.add_scatter_effect(
+            object_instance=object_instances[0],
+            scatter_asset_name="NG_flower_ursinia_e",
+            density=66.6
+        )
 
+ 
 
     @staticmethod
-    def usage_demo():        
-        nature_generator_addon = NatureGeneratorAddon()
+    def usage_demo():  
+        texture_folder = "/home/robot/blender_asset/nature_generator/NatureGenerator_Texture_Options_1.1/2K_Textures/"       
+        nature_generator_addon = NatureGeneratorAddon(texture_folder=texture_folder)
         asset_dict = nature_generator_addon.get_all_asset_names()
 
         object_names = []
@@ -181,6 +311,9 @@ class NatureGeneratorAddon:
                         object_names.append(obj_name)
                         target_obj_names.remove(target_single_name)
 
+        object_names_str = json.dumps(object_names, ensure_ascii=False, indent=2)
+        print(f"usage_demo(), load the following objects: \n{object_names_str}\n")
+
         object_instances = nature_generator_addon.load_objects(object_names)
         nature_generator_addon.display_objects(object_instances)
 
@@ -192,19 +325,7 @@ class NatureGeneratorAddon:
             modifier_names.append(nature_generator_addon.get_modifiers(obj_instance))
             print(f"\n\n")
 
-        nature_generator_addon.control_panel(object_name=object_names[1])
+        # "NG_Basic_Rock_Snow_Preset"
+        nature_generator_addon.control_panel(object_name=object_names[2])
 
-        """
-        selected_material_name = material_names[1][1]
-        print(f"Selected material for testing: '{selected_material_name}'")
-
-        nature_generator_addon.set_material_properties(
-            object_instance=object_instances[1],
-            material_name=selected_material_name,
-            node_name="Group.001",
-            node_attributes={
-                "Rock Color": (0.0, 0.0, 0.5, 1.0),
-                3: True
-            }
-        )        
-        """
+        

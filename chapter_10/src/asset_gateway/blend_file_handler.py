@@ -64,100 +64,6 @@ class BlendFileHandler:
             return {}
 
 
-    def get_all_asset_names_obsolete(self) -> dict:
-        """
-        DON'T USE THIS FUNCTION!! Use get_all_asset_names(). 
-        The purpose to save this obsolete function, is to use it as a demo of the usage of .blend object. 
-        """
-        if not os.path.exists(self.blend_filepath):
-            warn_msg = f"get_all_assets(), Source .blend file doesn't exist: '{self.blend_filepath}'."
-            self.logger.warning(warn_msg)
-            return {}
-    
-        asset_names = {
-            "Objects": [],
-            "Materials": [],
-            "Node Groups": [],
-            "Worlds": [],
-            "Images": []
-        }
-        
-        # Store original data to clean up later
-        original_objects = set(bpy.data.objects)
-        original_materials = set(bpy.data.materials)
-        original_node_groups = set(bpy.data.node_groups)
-        original_worlds = set(bpy.data.worlds)
-        original_images = set(bpy.data.images)
-        
-        try:
-            # Soft link all objects from the external .blend file to the current .blend temporarily
-            with bpy.data.libraries.load(self.blend_filepath, link=True) as (data_from, data_to):
-                # Link objects
-                data_to.objects = data_from.objects
-                # Link materials
-                data_to.materials = data_from.materials
-                # Link node groups
-                data_to.node_groups = data_from.node_groups
-                # Link worlds
-                data_to.worlds = data_from.worlds
-                # Link images
-                data_to.images = data_from.images
-            
-            # Check for object assets
-            for obj in bpy.data.objects:
-                if obj not in original_objects and obj.asset_data:
-                    asset_names["Objects"].append(obj.name)
-            
-            # Check for material assets
-            for mat in bpy.data.materials:
-                if mat not in original_materials and mat.asset_data:
-                    asset_names["Materials"].append(mat.name)
-            
-            # Check for node group assets
-            for ng in bpy.data.node_groups:
-                if ng not in original_node_groups and ng.asset_data:
-                    asset_names["Node Groups"].append(ng.name)
-            
-            # Check for world assets
-            for world in bpy.data.worlds:
-                if world not in original_worlds and world.asset_data:
-                    asset_names["Worlds"].append(world.name)
-            
-            # Check for image assets
-            for img in bpy.data.images:
-                if img not in original_images and img.asset_data:
-                    asset_names["Images"].append(img.name)
-        
-        finally:
-            # Clean up: unlink temporary assets to avoid cluttering the current file
-            for obj in bpy.data.objects:
-                if obj not in original_objects:
-                    bpy.data.objects.remove(obj)
-            
-            for mat in bpy.data.materials:
-                if mat not in original_materials:
-                    bpy.data.materials.remove(mat)
-            
-            for ng in bpy.data.node_groups:
-                if ng not in original_node_groups:
-                    bpy.data.node_groups.remove(ng)
-            
-            for world in bpy.data.worlds:
-                if world not in original_worlds:
-                    bpy.data.worlds.remove(world)
-            
-            for img in bpy.data.images:
-                if img not in original_images:
-                    bpy.data.images.remove(img)
-        
-
-        asset_names_str = json.dumps(asset_names, ensure_ascii=False, indent=2)
-        info_msg = f"get_all_asset_names(), following is all the asset names in the '{self.blend_filepath}' .blend file:\n"
-        info_msg += asset_names_str
-        self.logger.info(info_msg)
-        return asset_names
-
-
 
     def load_objects(
             self,
@@ -232,6 +138,11 @@ class BlendFileHandler:
             info_msg += f"\t{object_instances_names}"
             self.logger.info(info_msg)
 
+            # Make the objects visible in the current view layer
+            for obj_instance in object_instances:
+                if obj_instance.name not in bpy.context.collection.objects:
+                    bpy.context.collection.objects.link(obj_instance) 
+
             return object_instances
         except Exception as e:
             warn_msg = f"get_objects(), the following exception is thrown "
@@ -241,7 +152,7 @@ class BlendFileHandler:
 
     def get_materials(
             self, 
-            object_instance: object
+            object_instance: object=None
         ) -> list:
         """
         Given a mesh object instance, get the names of the material that this object used. 
@@ -269,11 +180,73 @@ class BlendFileHandler:
             self.logger.warning(warn_msg)
         
         return material_name_list
-    
+
+
+
+    def load_modifiers(
+            self,
+            object_instance: object=None,
+            modifier_names:list=[]
+        ) -> list:
+        """
+        Load a list of modifiers from the external .blend file to the current 'bpy.data.node_groups'.
+
+        Args:
+            modifier_names (list): A list of modifier names.
+
+        Returns:
+            list: The list of modifier instances loaded into the current 'bpy.data.node_groups'.
+        """
+        if not os.path.exists(self.blend_filepath):
+            warn_msg = f"load_modifiers(), Source .blend file doesn't exist: '{self.blend_filepath}'."
+            self.logger.warning(warn_msg)
+            return []
+        
+        loaded_node_groups = []  # To store references to loaded modifiers in current 'bpy.data.node_groups'
+        try:
+            # Append (hard copy) specific modifiers from external .blend to current 'bpy.data.node_groups'
+            with bpy.data.libraries.load(self.blend_filepath, link=False) as (data_from, data_to):
+
+                # Step 1: Filter external modifier names to match the target list
+                filtered_external_names = [mod_name for mod_name in data_from.node_groups if mod_name in modifier_names]
+                
+                # Step 2: Tell Blender to load these filtered modifiers, to trigger the full loading procedure.
+                data_to.node_groups = filtered_external_names
+            
+            # Step 3: Collect the loaded objects (data_to.objects now has the instances)
+            loaded_node_groups = data_to.node_groups
+
+        except Exception as e:
+            warn_msg = f"load_modifiers(), the following exception is thrown "
+            warn_msg += f"when doing 'bpy.data.:libraries.load()': '{str(e)}'"
+            self.logger.warning(warn_msg)
+
+        modifier_list = []
+        try:
+            # Add a modifier for each imported Node Group
+            for idx, node_group in enumerate(loaded_node_groups):
+                mod_name = f"Llamedia_{node_group.name}"  
+                # modifier = object_instance.modifiers.new(name=mod_name, type='GEOMETRY_NODES')
+                modifier = object_instance.modifiers.new(name=mod_name, type='NODES')
+                modifier.node_group = node_group  
+                modifier_list.append(modifier)
+
+                info_msg = f"load_modifiers(), create a new modifier '{mod_name}', "
+                info_msg += f"and link '{node_group.name}' to it."
+                self.logger.info(info_msg)
+
+        except Exception as e:
+            warn_msg = f"load_modifiers(), the following exception is thrown "
+            warn_msg += f"when creating a new modifier and link '{node_group.name}' to it: '{str(e)}'"
+            self.logger.warning(warn_msg)
+            return []
+
+        return modifier_list
+          
 
     def get_modifiers(
             self, 
-            object_instance: object
+            object_instance: object=None
         ) -> list:
         """
         Given a mesh object instance, get the names of the modifiers of this object's geometry node groups. 
@@ -337,7 +310,6 @@ class BlendFileHandler:
             self.logger.warning(warn_msg)
             return
         
-
         for idx, target_material in enumerate(target_materials):
             # 2. Find the shader node object
             target_node = None
@@ -362,8 +334,8 @@ class BlendFileHandler:
             try:
                 for attr_name, attr_value in node_attributes.items():
                     target_node.inputs[attr_name].default_value = attr_value
-
                     info_msg += f"\n\t attribute '{attr_name}' = value '{attr_value}' "
+
             except Exception as e:
                 warn_msg = f"set_material_properties(), the following exception was thrown "
                 warn_msg += f"when setting the attributes of a shader nodes '{target_node.name}': '{str(e)}'"
@@ -379,7 +351,80 @@ class BlendFileHandler:
             node_name: str="",
             node_attributes: dict={}
         ):
-        pass
+        if object_instance is None:
+            warn_msg = f"set_modifier_properties(), 'object_instance' is None."
+            self.logger.warning(warn_msg)
+            return 
+
+        # 1. Find the modifier object
+        target_modifiers = []
+        target_modifier_names = []
+        try:
+            for idx, modifier_obj in enumerate(object_instance.modifiers):
+                self.logger.debug(f" modifier[{idx}] '{modifier_obj.name}'")
+
+                if modifier_name.lower() in modifier_obj.name.lower():
+                    target_modifiers.append(modifier_obj)
+                    target_modifier_names.append(modifier_obj.name)
+            
+            info_msg = f"set_modifier_properties(), given 'modifier_name'=='{modifier_name}', "
+            info_msg += f"find these 'target_modifiers'=='{target_modifier_names}'."
+            self.logger.info(info_msg)
+        except Exception as e:
+            warn_msg = f"set_modifier_properties(), the following exception was thrown "
+            warn_msg += f"when getting the materials of the mesh object '{object_instance.name}': '{str(e)}'"
+            self.logger.warning(warn_msg)
+            return
+
+        for idx, target_modifier in enumerate(target_modifiers):
+            # 2. In case the node_name is not given, try to set attributes directly. 
+            if len(node_name) == 0:
+                info_msg = f"set_modifier_properties(), set attributes to modifier '{target_modifier.name}', "
+                info_msg += f"without accessing its internal nodes."
+                try:
+                    for attr_name, attr_value in node_attributes.items():
+                        target_modifier[attr_name] = attr_value
+                        info_msg += f"\n\t attribute '{attr_name}' = value '{attr_value}' "
+                except Exception as e:
+                    warn_msg = f"set_modifier_properties(), the following exception was thrown "
+                    warn_msg += f"when setting the attributes to the modifier '{target_node.name}' "
+                    warn_msg += f"without accessing its internal nodes: '{str(e)}'"
+                    self.logger.warning(warn_msg)
+                    return
+                self.logger.info(info_msg)
+
+            # 3.1 Find the modifier node first, then set its attributes
+            target_node = None
+            try:
+                for idx, node in enumerate(target_modifier.node_tree.nodes):
+                    # self.logger.debug(f"get_node(), [{idx}] node.name=='{node.name}'")
+                    if node_name.lower() in node.name.lower():
+                        target_node = node
+                        break
+
+                info_msg = f"set_modifier_properties(), given 'node_name'=='{node_name}', "
+                info_msg += f"find the 'target_node'=='{target_node.name}'."
+                self.logger.info(info_msg)
+            except Exception as e:
+                warn_msg = f"set_modifier_properties(), the following exception was thrown "
+                warn_msg += f"when getting the node '{node_name}' of the modifier '{modifier_name}': '{str(e)}'"
+                self.logger.warning(warn_msg)
+                return
+
+            # 3.2 Set the node's attribute values
+            info_msg = f"set_modifier_properties(), set attributes to modifier node '{target_node.name}'."
+            try:
+                for attr_name, attr_value in node_attributes.items():
+                    target_node.inputs[attr_name].default_value = attr_value
+                    info_msg += f"\n\t attribute '{attr_name}' = value '{attr_value}' "
+
+            except Exception as e:
+                warn_msg = f"set_modifier_properties(), the following exception was thrown "
+                warn_msg += f"when setting the attributes of a modifier nodes '{target_node.name}': '{str(e)}'"
+                self.logger.warning(warn_msg)
+                return
+            self.logger.info(info_msg)
+
 
 
     def display_objects(
