@@ -66,9 +66,11 @@ class NatureGeneratorAddon:
                 self.logger.warning(warn_msg)
                 return 
             
+            self.blend_file_handler.blend_filepath = asset_lib_path
+            bpy.context.scene.naturegen_props.texture_folder = self.texture_folder
+            
             info_msg = f"get_blend_filepath(), the 'The_Nature_Generator' asset library is in '{asset_lib_path}' file"
             self.logger.info(info_msg)
-            self.blend_file_handler.blend_filepath = asset_lib_path
                 
         except Exception as e:
             warn_msg = f"get_blend_filepath(), the following exception was thrown when finding "
@@ -214,7 +216,15 @@ class NatureGeneratorAddon:
             self,
             object_instance: object=None,
             scatter_asset_name: str="",
-            density: float=55.0
+            density: float=10.0, 
+            wind_time: float=0.0,
+            wind_strength: float=0.0,
+            wind_direction: tuple=(0.0, 0.0, 0.0),
+            wind_scale: float=0.0,
+            wind_detail: float=0.0,
+            wind_roughness: float=0.0,
+            wind_lacunarity: float=0.0,
+            wind_distortion: float=0.0
         ):
         # 1. The asset object name is like 'NG_flower_ursinia_e'
         #    However the scatter asset collection's name is like 'NG_flower_ursinia'
@@ -241,19 +251,32 @@ class NatureGeneratorAddon:
             modifier_list[0]["Socket_135"] = bpy.data.collections[scatter_collection]
             modifier_list[0]["Socket_136"] = density
 
-        info_msg = f"add_scatter_effect(), for object '{object_instance.name}', "
-        info_msg += f"add scatter collection '{scatter_collection}' with density={density}"
-        self.logger.info(info_msg)
+            info_msg = f"add_scatter_effect(), for object '{object_instance.name}', "
+            info_msg += f"add scatter collection '{scatter_collection}' with density={density}"
+            self.logger.info(info_msg)
 
-        for idx, modifier in enumerate(object_instance.modifiers):
-            debug_msg = f"add_scatter_effect(), [{idx}] modifier='{modifier.name}'"
-            self.logger.debug(debug_msg)
+        # 4. Set the wind pattern
+        if len(modifier_list) > 0:
+            modifier_list[0]["Socket_195"] = wind_time
+            modifier_list[0]["Socket_194"] = wind_strength
+            modifier_list[0]["Socket_196"] = wind_direction
+            modifier_list[0]["Socket_198"] = wind_scale
+            modifier_list[0]["Socket_199"] = wind_detail
+            modifier_list[0]["Socket_200"] = wind_roughness
+            modifier_list[0]["Socket_201"] = wind_lacunarity
+            modifier_list[0]["Socket_202"] = wind_distortion
 
-        self.logger.debug(f"\nEnumerating all the collection in 'bpy.data.collections':")
-        for idx, collection in enumerate(bpy.data.collections):
-            debug_msg = f"add_scatter_effect() [{idx}] collection: '{collection.name}'"
-            self.logger.debug(debug_msg)
-    
+            info_msg = f"add_scatter_effect(), for object '{object_instance.name}', set wind pattern:\n"
+            info_msg += f"\t wind_time={wind_time}\n"
+            info_msg += f"\t wind_strength={wind_strength}\n"
+            info_msg += f"\t wind_direction={wind_direction}\n"
+            info_msg += f"\t wind_scale={wind_scale}\n"
+            info_msg += f"\t wind_detail={wind_detail}\n"
+            info_msg += f"\t wind_roughness={wind_roughness}\n"
+            info_msg += f"\t wind_lacunarity={wind_lacunarity}\n"
+            info_msg += f"\t wind_distortion={wind_distortion}\n"
+            self.logger.info(info_msg)  
+ 
 
     def control_panel(
             self, 
@@ -288,7 +311,15 @@ class NatureGeneratorAddon:
         self.add_scatter_effect(
             object_instance=object_instances[0],
             scatter_asset_name="NG_flower_ursinia_e",
-            density=66.6
+            density=66.6,
+            wind_time=11.1,
+            wind_strength=22.2,
+            wind_direction=(0.3, 0.4, 0.5),
+            wind_scale=55.4,
+            wind_detail=0.9,
+            wind_roughness=0.6,
+            wind_lacunarity=2.2,
+            wind_distortion=3.3
         )
 
  
