@@ -83,6 +83,9 @@ class BlendFileHandler:
             self.logger.warning(warn_msg)
             return []
         
+        bpy_object_names_lower = [obj.name.lower() for obj in bpy.data.objects]
+        filtered_object_names = [obj_name for obj_name in object_names if obj_name.lower() not in bpy_object_names_lower]
+        
         loaded_objects = []  # To store references to loaded objects in current 'bpy.data'
         try:
             # Append (hard copy) specific objects from external .blend to current 'bpy.data'
@@ -90,7 +93,7 @@ class BlendFileHandler:
 
                 # Step 1: Filter external object names to match your target list
                 # data_from.objects = list of ALL object names in the external file
-                filtered_external_names = [obj_name for obj_name in data_from.objects if obj_name in object_names]
+                filtered_external_names = [obj_name for obj_name in data_from.objects if obj_name in filtered_object_names]
                 
                 # Step 2: Tell Blender to load these filtered objects, to trigger the full loading procedure.
                 data_to.objects = filtered_external_names
@@ -129,17 +132,21 @@ class BlendFileHandler:
         try:
             object_instances = []
             for obj_instance in bpy.data.objects:
-                if obj_instance.name.lower() in object_names_lower:
+                if (any(obj_name in obj_instance.name.lower() for obj_name in object_names_lower) or 
+                    any(obj_instance.name.lower() in obj_name for obj_name in object_names_lower)
+                    ):
                     object_instances.append(obj_instance)
 
             info_msg = f"get_objects(), given object names: '{object_names}', "
             info_msg += f"find these objects in 'bpy.data.objects': \n"
+
             object_instances_names = [obj.name for obj in object_instances]
-            info_msg += f"\t{object_instances_names}"
+            object_instances_names_str = json.dumps(object_instances_names, ensure_ascii=False, indent=2)
+            info_msg += f"{object_instances_names_str}"
             self.logger.info(info_msg)
 
             # Make the objects visible in the current view layer
-            for obj_instance in object_instances:
+            for obj_instance in object_instances: 
                 if obj_instance.name not in bpy.context.collection.objects:
                     bpy.context.collection.objects.link(obj_instance) 
 
