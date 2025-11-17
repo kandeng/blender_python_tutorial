@@ -293,6 +293,11 @@ class EngonBotaniqAddon:
         ) -> list:
         return self.blend_file_handler.get_objects(object_names)
     
+    def display_objects(
+            self,
+            object_instances:list=[]
+        ):
+        self.blend_file_handler.display_objects(object_instances)
 
 
     @staticmethod
@@ -310,4 +315,5 @@ class EngonBotaniqAddon:
         _ = botaniq_addon.load_objects(object_names=object_names_1)
 
         object_names_2 = ["Forest_Mushrooms_A", "Tree_Phoenix-canariensis_A"]
-        _ = botaniq_addon.get_objects(object_names=object_names_1)
+        object_instances = botaniq_addon.get_objects(object_names=object_names_2)
+        botaniq_addon.display_objects(object_instances)
