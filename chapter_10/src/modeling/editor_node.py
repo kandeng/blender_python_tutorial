@@ -39,10 +39,12 @@ class EditorNode:
             obj (object): An object instance that the materials and geometry are applied to. 
                 It is not useful for 'WORLD' and 'COMPOSITING' types.
         """
-        if editor_name is None: editor_name = ""
+        if editor_name is None: 
+            editor_name = ""
         self.editor_name = editor_name.strip()
 
-        if editor_type is None: editor_type = ""
+        if editor_type is None: 
+            editor_type = ""
         self.editor_type = editor_type.strip()
 
         self.obj = obj         # Not useful for 'WORLD' and 'COMPOSITING' type.
@@ -87,6 +89,7 @@ class EditorNode:
             material_obj.use_nodes = True
             self.obj.data.materials.append(material_obj)            
 
+            self.logger.debug(f"_create_node_tree(), material_obj='{material_obj.name}'")
             self.node_tree = material_obj.node_tree
 
         elif self.editor_type.upper() == "WORLD":
