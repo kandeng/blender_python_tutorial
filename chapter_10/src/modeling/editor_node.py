@@ -79,17 +79,19 @@ class EditorNode:
 
             material_name = f"{self.editor_name}_material"
             material_obj = None
+            """
             if self.obj.data.materials:
                 # Use the first material slot's material
-                # material_obj = self.obj.data.materials[0]
-                self.obj.data.materials.clear()
+                material_obj = self.obj.data.materials[0]
+                self.obj.data.materials.clear()            
+            """
 
             # Create a new default material if none exists
             material_obj = bpy.data.materials.new(name=material_name)
             material_obj.use_nodes = True
             self.obj.data.materials.append(material_obj)            
 
-            self.logger.debug(f"_create_node_tree(), material_obj='{material_obj.name}'")
+            # self.logger.debug(f"_create_node_tree(), material_obj='{material_obj.name}'")
             self.node_tree = material_obj.node_tree
 
         elif self.editor_type.upper() == "WORLD":

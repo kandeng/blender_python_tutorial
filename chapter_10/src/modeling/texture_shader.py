@@ -126,7 +126,7 @@ class TextureShader:
             for file_name in os.listdir(texture_dir):
                 if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.tif', '.exr')):
                     preserved_tags = ['preview', 'displace', 'height', 'disp', 'rough', 'normal', 'metal']
-                    if all(tag not in preserved_tags for tag in preserved_tags):
+                    if all(tag not in file_name.lower() for tag in preserved_tags):
                         file_path = os.path.join(texture_dir, file_name)
                         texture_files['color'] = file_path
 
@@ -849,7 +849,8 @@ class TextureShader:
             warn_msg = f"apply_texture(), An error occurred: {str(e)}."
             self.logger.warn(warn_msg)
 
-        info_msg = f"Given a texture file directory and a mesh object, "
+        info_msg = f"apply_texture(), Given a texture file directory '{texture_dir}', "
+        info_msg += f"and a mesh object '{self.obj.name}', "
         info_msg += f"apply the texture images in that directory to the object."
         self.logger.info(info_msg)
         
@@ -924,13 +925,50 @@ class TextureShader:
 
     @staticmethod
     def usage_demo_flower():
-        pass
+        from asset_gateway.glb_gltf_file_handler import GlbGltfFileHandler
+        glb_gltf_handler = GlbGltfFileHandler() 
+        
+        blender_asset_dir = "/home/robot/blender_asset"
+        glb_gltf_filepaths = [
+            f"{blender_asset_dir}/sketchfab/flower_rose/model.glb",
+            f"{blender_asset_dir}/sketchfab/flower_rose/model_out/model.gltf"
+        ]
 
+        for idx in range(len(glb_gltf_filepaths)):
+            object_names = glb_gltf_handler.import_glb_gltf(
+                glb_gltf_filepath=glb_gltf_filepaths[idx]
+            ) 
+            object_instances = glb_gltf_handler.get_objects(object_names)
+
+            texture_dirpath = os.path.dirname(os.path.abspath(glb_gltf_filepaths[idx])) 
+            for item_name in os.listdir(texture_dirpath):
+                item_path = os.path.join(texture_dirpath, item_name)
+                
+                if os.path.isdir(item_path):
+                    if 'texture' in item_path.lower():
+                        # self.logger.debug(f"load_materials(): item_path='{item_path}'")
+                        texture_dirpath = item_path
+            
+            for obj in object_instances[:1]:
+                texture_applier = TextureShader(obj)
+                texture_applier.apply_texture(texture_dir=texture_dirpath)
+
+
+        # Set up the sun. 
+        bpy.context.scene.render.engine = 'CYCLES'
+        sun_data = bpy.data.lights.new(name="Sun_Light", type='SUN')
+        sun_data.energy = 30.0  # Strength (irradiance in Watts/m²)
+        sun_obj = bpy.data.objects.new(name="Sun", object_data=sun_data)
+        sun_obj.location = (15, 10.0, 50.0) 
+        bpy.context.collection.objects.link(sun_obj)
 
 
     @staticmethod
     def usage_demo():
         TextureShader.usage_demo_floor()
+        # TextureShader.usage_demo_flower()
+
+
 
 if __name__ == "__main__":
     TextureShader.usage_demo()
