@@ -372,7 +372,9 @@ class TextureShader:
         # Create and connect nodes for each texture type found
         node_y = 1300
 
-        if 'color' in self.texture_paths:
+        if (('color' in self.texture_paths) and
+            (len(self.texture_paths['color']) > 0)
+            ):
             node_y = node_y - 300
             color_node_name = "Color_Node"
             color_node = self.create_imagetexture_node(
@@ -392,7 +394,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[0]    # Base Color                
             )
 
-        if 'roughness' in self.texture_paths:
+        if (('roughness' in self.texture_paths) and 
+            (len(self.texture_paths['roughness']) > 0)
+            ):
             node_y = node_y - 300
             rough_node_name = "Rough_Node"
             rough_node =  self.create_imagetexture_node(
@@ -412,7 +416,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[2]    # Roughness                
             )
 
-        if 'normal' in self.texture_paths:
+        if (('normal' in self.texture_paths) and 
+            (len(self.texture_paths['normal']) > 0)
+            ):
             node_y = node_y - 300
             normal_node_name = "Normal_Node"
             normal_map_node_name = "Normal_Map_Node"
@@ -434,7 +440,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[5]    # Normal                
             )
 
-        if 'metalness' in self.texture_paths:
+        if (('metalness' in self.texture_paths) and 
+            (len(self.texture_paths['metalness']) > 0)
+            ):
             node_y = node_y - 300
             metal_node_name = "Metal_Node"
             metal_node = self.create_imagetexture_node(
@@ -454,7 +462,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[1]    # Normal                
             )
 
-        if 'displacement' in self.texture_paths:
+        if (('displacement' in self.texture_paths) and 
+            (len(self.texture_paths['displacement']) > 0)
+            ):
             node_y = node_y - 300
             texture_node_name = "Displace_Texture_Node"
             displace_node_name = "Displace_Map_Node"
@@ -503,7 +513,9 @@ class TextureShader:
 
         # Create and connect nodes for each texture type found
         node_y = -200
-        if 'color' in self.secondary_texture_paths:
+        if (('color' in self.secondary_texture_paths) and 
+            (len(self.texture_paths['color']) > 0)
+            ):
             node_y = node_y - 300
             color_node_name = "Secondary_Color_Node"
             color_node = self.create_imagetexture_node(
@@ -525,7 +537,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[0]    # Base Color                
             )
 
-        if 'roughness' in self.secondary_texture_paths:
+        if (('roughness' in self.secondary_texture_paths) and
+            (len(self.texture_paths['roughness']) > 0)
+            ):
             node_y = node_y - 300
             rough_node_name = "Secondary_Rough_Node"
             rough_node =  self.create_imagetexture_node(
@@ -570,7 +584,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[5]    # Normal                
             )
 
-        if 'metalness' in self.secondary_texture_paths:
+        if (('metalness' in self.secondary_texture_paths) and
+            (len(self.texture_paths['metalness']) > 0)
+            ):
             node_y = node_y - 300
             metal_node_name = "Secondary_Metal_Node"
             metal_node = self.create_imagetexture_node(
@@ -591,7 +607,9 @@ class TextureShader:
                 to_node_input = principled_bsdf_node.inputs[1]    # Normal                
             )
 
-        if 'displacement' in self.secondary_texture_paths:
+        if (('displacement' in self.secondary_texture_paths) and
+            (len(self.texture_paths['displacement']) > 0)
+            ):
             node_y = node_y - 300
             texture_node_name = "Secondary_Displace_Texture_Node"
             displace_node_name = "Secondary_Displace_Map_Node"
