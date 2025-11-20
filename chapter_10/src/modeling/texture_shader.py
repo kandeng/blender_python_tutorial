@@ -455,33 +455,28 @@ class TextureShader:
             )
 
         if 'displacement' in self.texture_paths:
-            info_msg = f"Usually we use modifier to handle 'displacement', "
-            info_msg += f"but we implement the texture mapping way for 'displacement' for the rare cases."
-            self.logger.info(info_msg)
+            node_y = node_y - 300
+            texture_node_name = "Displace_Texture_Node"
+            displace_node_name = "Displace_Map_Node"
 
-            """
-            if not self.use_modifier:
-                node_y = node_y - 300
-                texture_node_name = "Displace_Texture_Node", 
-                displace_node_name = "Displace_Map_Node", 
-                displace_texture_node, displace_map_node = self.create_displacement_node(
-                    texture_image = self.texture_paths['displacement'], 
-                    texture_node_name = texture_node_name, 
-                    displace_node_name = displace_node_name, 
-                    node_location = (-300, node_y)
-                )
-                self.node_names.append(texture_node_name)   
-                self.node_names.append(displace_node_name)   
+            self.logger.debug(f"create_texture_nodes(), self.texture_paths['displacement']='{self.texture_paths['displacement']}'. ")
+            displace_texture_node, displace_map_node = self.create_displacement_node(
+                texture_image = self.texture_paths['displacement'], 
+                texture_node_name = texture_node_name, 
+                displace_node_name = displace_node_name, 
+                node_location = (-300, node_y)
+            )
+            self.node_names.append(texture_node_name)   
+            self.node_names.append(displace_node_name)   
 
-                self.editor_node.create_link(
-                    from_node_output = coordinate_mapping_node.outputs[0],  # Vector
-                    to_node_input = displace_texture_node.inputs[0]              # Vector             
-                )
-                self.editor_node.create_link(
-                    from_node_output = displace_map_node.outputs[0],     # Displacement
-                    to_node_input = output_node.inputs[2]         # Displacement                
-                )            
-            """
+            self.editor_node.create_link(
+                from_node_output = coordinate_mapping_node.outputs[0],       # Vector
+                to_node_input = displace_texture_node.inputs[0]              # Vector             
+            )
+            self.editor_node.create_link(
+                from_node_output = displace_map_node.outputs[0],     # Displacement
+                to_node_input = output_node.inputs[2]                # Displacement                
+            )            
 
         info_msg = f"create_texture_nodes(), Creates image texture nodes for all available texture maps."
         self.logger.info(info_msg)
@@ -597,36 +592,27 @@ class TextureShader:
             )
 
         if 'displacement' in self.secondary_texture_paths:
-            info_msg = f"Usually we use modifier to handle 'displacement', "
-            info_msg += f"but we implement the texture mapping way for 'displacement' for the rare cases."
-            self.logger.info(info_msg)
+            node_y = node_y - 300
+            texture_node_name = "Secondary_Displace_Texture_Node"
+            displace_node_name = "Secondary_Displace_Map_Node"
+            displace_texture_node, displace_map_node = self.create_displacement_node(
+                texture_image = self.secondary_texture_paths['displacement'], 
+                texture_node_name = texture_node_name, 
+                displace_node_name = displace_node_name, 
+                node_location = (-300, node_y)
+            )
+            self.node_names.append(texture_node_name)   
+            self.node_names.append(displace_node_name)   
+            displace_texture_node.projection = 'BOX'
 
-            """
-            # If use modifier, then don't do anything here. 
-            # Instead, call create_displacement_modifier() in a separated step.
-            if not self.use_modifier:
-                node_y = node_y - 300
-                texture_node_name = "Secondary_Displace_Texture_Node"
-                displace_node_name = "Secondary_Displace_Map_Node"
-                displace_texture_node, displace_map_node = self.create_displacement_node(
-                    texture_image = self.secondary_texture_paths['displacement'], 
-                    texture_node_name = texture_node_name, 
-                    displace_node_name = displace_node_name, 
-                    node_location = (-300, node_y)
-                )
-                self.node_names.append(texture_node_name)   
-                self.node_names.append(displace_node_name)   
-                displace_texture_node.projection = 'BOX'
-
-                self.editor_node.create_link(
-                    from_node_output = coordinate_mapping_node.outputs[0],  # Vector
-                    to_node_input = displace_texture_node.inputs[0]              # Vector             
-                )
-                self.editor_node.create_link(
-                    from_node_output = displace_map_node.outputs[0],     # Displacement
-                    to_node_input = output_node.inputs[2]         # Displacement                
-                )            
-            """
+            self.editor_node.create_link(
+                from_node_output = coordinate_mapping_node.outputs[0],  # Vector
+                to_node_input = displace_texture_node.inputs[0]              # Vector             
+            )
+            self.editor_node.create_link(
+                from_node_output = displace_map_node.outputs[0],     # Displacement
+                to_node_input = output_node.inputs[2]         # Displacement                
+            )            
 
         info_msg = f"create_secondary_texture_nodes(), "
         info_msg += f"Creates secondary image texture nodes for all available texture maps."
@@ -832,12 +818,14 @@ class TextureShader:
             self.create_base_nodes()
             self.create_texture_nodes()
 
+            """
             path = self.texture_paths['displacement']
             self.create_displacement_modifier(
                 file_path=path,
                 disp_strength=0.2, 
                 midlevel=0.5
             )
+            """
             
         except (ValueError, FileNotFoundError) as e:
             warn_msg = f"apply_texture(), An error occurred: {str(e)}."
@@ -864,12 +852,14 @@ class TextureShader:
             self.create_secondary_base_nodes()
             self.create_secondary_texture_nodes()
 
+            """
             path = self.secondary_texture_paths['displacement']
             self.create_displacement_modifier(
                 file_path=path,
                 disp_strength=0.2, 
                 midlevel=0.5
             )
+            """
             
         except (ValueError, FileNotFoundError) as e:
             warn_msg = f"apply_texture(), An error occurred: {str(e)}."
@@ -918,7 +908,7 @@ class TextureShader:
     def usage_demo_flower():
         pass
 
-    
+
 
     @staticmethod
     def usage_demo():
