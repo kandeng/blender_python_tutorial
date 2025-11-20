@@ -54,7 +54,7 @@ class EditorNode:
 
         try:
             from logger.logger import Logger
-            self.logger = Logger(self.editor_name).getLogger()
+            self.logger = Logger("Modeling").getLogger()
 
             # Create the node_tree from scratch
             self.reset()

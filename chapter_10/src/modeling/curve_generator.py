@@ -15,6 +15,22 @@ class CurveGenerator:
         self.length = length
         self.subdivisions = subdivisions
 
+        self.logger = None
+
+        try:
+            from logger.logger import Logger
+            self.logger = Logger("Modeling").getLogger()
+
+            info_msg = f"CurveGenerator class initialized, "
+            self.logger.info(info_msg)
+
+        except ImportError as e:
+            if self.logger:
+                self.logger.error(f"Could not initialize CurveGenerator class, error message: '{str(e)}'")
+            else:
+                print(f"[ERROR] Could not initialize CurveGenerator class, error message: '{str(e)}'")
+                        
+
     def create_bezier_curve(self, num_deviations=10):
         deviations = self.create_deviations(num_deviations)
         curve = self.interpolate_bezier(deviations)

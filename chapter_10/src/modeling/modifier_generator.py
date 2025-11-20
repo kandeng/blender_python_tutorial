@@ -24,7 +24,7 @@ class ModifierGenerator:
 
         try:
             from logger.logger import Logger
-            self.logger = Logger("Modifier").getLogger()
+            self.logger = Logger("Modeling").getLogger()
 
             if self.obj and hasattr(self.obj, 'type') and self.obj.type == 'MESH':
                 self.logger.info(f"Create a modifier generator for a mesh object named '{self.obj.name}'.")
