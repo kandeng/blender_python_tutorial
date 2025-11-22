@@ -82,7 +82,8 @@ class VideoEditor:
 
         # 3. Print out the meta-data and return it.
         video_metadata_str = json.dumps(video_metadata, indent=2, ensure_ascii=False)
-        info_msg = f"render_to_image_sequence(), scene_output_settings:\n{video_metadata_str}\n"
+        info_msg = f"get_video_metadata(), for video '{video_filepath}' "
+        info_msg += f"following is its meta-data: \n{video_metadata_str}\n"
         self.logger.info(info_msg)  
         return video_metadata
 
