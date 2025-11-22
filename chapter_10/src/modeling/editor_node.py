@@ -74,7 +74,7 @@ class EditorNode:
         if self.editor_type.upper() == "MATERIAL":
             if self.obj is None:
                 warn_msg = f"_create_node_tree(), self.obj is None."
-                self.logger.warning(warn_msg)
+                self.logger.debug(warn_msg)
                 return 
 
             material_name = f"{self.editor_name}_material"
