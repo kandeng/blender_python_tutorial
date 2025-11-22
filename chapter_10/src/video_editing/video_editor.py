@@ -44,7 +44,7 @@ class VideoEditor:
                 # Handle permissions errors or other OS-level issues
                 warn_msg = f"_mkdir(), cannot delete directory ''. "
                 warn_msg += f"The error message is: \n\t {str(e)}"
-                self.logger.warn(warn_msg)
+                self.logger.warning(warn_msg)
                 return
 
         # 2. mkdir. 
@@ -58,19 +58,27 @@ class VideoEditor:
         # 1. Double check if the input filepath and the output directory exist.
         if not os.path.isfile(video_filepath):
             warn_msg = f"video_to_image_sequence(), the input video_filepath '{video_filepath}' doesn't exist"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return {}
 
         # 2. Retrieve the video properties, and save them to 'video_metadata.json' 
-        video_obj = cv2.VideoCapture(video_filepath)
-        video_metadata = {
-            "resolution_x": int(video_obj.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            "resolution_y": int(video_obj.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-            "fps": video_obj.get(cv2.CAP_PROP_FPS),
-            "codec_fourcc": int(video_obj.get(cv2.CAP_PROP_FOURCC)),
-            "format_id": int(video_obj.get(cv2.CAP_PROP_FORMAT)),
-            "frame_count": int(video_obj.get(cv2.CAP_PROP_FRAME_COUNT))
-        }
+        video_metadata = {}
+
+        try:
+            video_obj = cv2.VideoCapture(video_filepath)
+            video_metadata = {
+                "resolution_x": int(video_obj.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                "resolution_y": int(video_obj.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+                "fps": video_obj.get(cv2.CAP_PROP_FPS),
+                "codec_fourcc": int(video_obj.get(cv2.CAP_PROP_FOURCC)),
+                "format_id": int(video_obj.get(cv2.CAP_PROP_FORMAT)),
+                "frame_count": int(video_obj.get(cv2.CAP_PROP_FRAME_COUNT))
+            }
+        except Exception as e:
+            warn_msg = f"get_video_metadata(), following exception was thrown "
+            warn_msg += f"when using CV2 to get metadata from video '{video_filepath}'."
+            self.logger.warning(warn_msg)
+            return {}
 
         # 3. Print out the meta-data and return it.
         video_metadata_str = json.dumps(video_metadata, indent=2, ensure_ascii=False)
@@ -102,7 +110,7 @@ class VideoEditor:
         # 1. Double check if the input filepath and the output directory exist.
         if not os.path.isfile(video_filepath):
             warn_msg = f"video_to_image_sequence(), the input video_filepath '{video_filepath}' doesn't exist"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         
         image_sequence_dir = image_sequence_dir.rstrip('/')
@@ -141,7 +149,7 @@ class VideoEditor:
                 except Exception as e:
                     warn_msg = f"video_to_image_sequence(), when doing 'cv2.imwrite()', an exception is thrown: "
                     warn_msg += f"'{str(e)}'."
-                    self.logger.warn(warn_msg)
+                    self.logger.warning(warn_msg)
                     break
                 count += 1      
 
@@ -192,7 +200,7 @@ class VideoEditor:
         
         if not image_files:
             warn_msg = f"image_sequence_to_mp4(), No image files found in the directory '{image_sequence_dir}'."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         
         # 4. Create a video clip from the image sequence
@@ -235,7 +243,7 @@ class VideoEditor:
         # 1. Double check if the input video file and the output file exist.
         if not os.path.isfile(raw_filepath):
             warn_msg = f"convert_to_mp4(), the input file '{raw_filepath}' doesn't exist."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return False
         
         if os.path.isfile(mp4_filepath):
@@ -275,7 +283,7 @@ class VideoEditor:
             warn_msg = f"convert_to_mp4(), FFmpeg Execution Failed, "
             warn_msg += f"\n\t Error executing command: {command_str}"
             warn_msg += f"\n\t FFmpeg stderr error message: '{e.stderr}'"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return False
 
         info_msg = f"convert_to_mp4(), FFmpeg transcoding from MOV to MP4 (High Quality) completes successfully."
@@ -357,7 +365,7 @@ class VideoEditor:
         # 1. Double check if the input video file and output file exist.
         if not os.path.isfile(input_video_filepath):
             warn_msg = f"subclip(), the input_video_filepath '{input_video_filepath}' doesn't exist."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
 
         dir_path, file_name = os.path.split(output_mp4_filepath)
@@ -373,7 +381,7 @@ class VideoEditor:
 
         if video_obj is None:
             warn_msg = f"subclip(), the input video file '{input_video_filepath}' cannot be loaded by 'VideoFileClip()'."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return 
         
         # 3. Get a subclip from the video object. 
@@ -421,7 +429,7 @@ class VideoEditor:
 
             if video_obj is None:
                 warn_msg = f"concatenate(), the input video file '{video_filepath}' cannot be loaded by 'VideoFileClip()'."
-                self.logger.warn(warn_msg)
+                self.logger.warning(warn_msg)
                 continue
         
             video_objects.append(video_obj)
@@ -478,7 +486,7 @@ class VideoEditor:
         # 1. Double check if the input and output video filepath exist.
         if not os.path.isfile(colorful_video_filepath):
             warn_msg = f"black_and_white(), the input colorful_video_filepath '{colorful_video_filepath}' doesn't exist."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         
         if os.path.isfile(gray_video_filepath):
@@ -555,30 +563,30 @@ class VideoEditor:
         # 1. Double check if raw_filepath, mp4_filepath, image_filepath exist.
         if not os.path.isfile(raw_filepath):
             warn_msg = f"overlay(), the input video file '{raw_filepath}' doesn't exist."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         
         if os.path.isfile(mp4_filepath):
             warn_msg = f"overlay(), the output video file '{mp4_filepath}' already exists. We will delete it, and create a new one."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             os.remove(mp4_filepath)  
 
         if image_filepath and not os.path.isfile(image_filepath):
             warn_msg = f"overlay(), the input image file '{image_filepath}' doesn't exist."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         elif image_filepath:
             image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
             if not image_filepath.lower().endswith(image_extensions):
                 warn_msg = f"overlay(), the image file '{image_filepath}' does not have a valid image extension."
-                self.logger.warn(warn_msg)     
+                self.logger.warning(warn_msg)     
                 return   
 
         # Load the main video clip
         video_clip = self._load_video_file(raw_filepath)
         if video_clip is None:
             warn_msg = f"overlay(), the input video file '{raw_filepath}' cannot be loaded."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
         
         W, H = video_clip.size
@@ -616,7 +624,7 @@ class VideoEditor:
                 self.logger.info(info_msg)
             except Exception as e:
                 warn_msg = f"overlay(), failed to create subtitle clip: {str(e)}"
-                self.logger.warn(warn_msg)
+                self.logger.warning(warn_msg)
 
         # 3. Create the image clip.
         if image_filepath and os.path.isfile(image_filepath):
@@ -639,7 +647,7 @@ class VideoEditor:
                 self.logger.info(info_msg)
             except Exception as e:
                 warn_msg = f"overlay(), failed to create image clip from '{image_filepath}': {str(e)}"
-                self.logger.warn(warn_msg)
+                self.logger.warning(warn_msg)
 
         # 4. Overlay the subtitle text and image to the raw_filepath, to create mp4_filepath.
         info_msg = f"overlay(), start to add "
@@ -661,7 +669,7 @@ class VideoEditor:
             )
         except Exception as e:
             warn_msg = f"overlay(), failed to create composite video: {str(e)}"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
 
         # 5. Close the clips
@@ -671,14 +679,14 @@ class VideoEditor:
             except Exception as e:
                 warn_msg = f"overlay(), an exception is throwned when closing a clip. "
                 warn_msg += f"\n\t The error message is '{str(e)}'"
-                self.logger.warn(warn_msg)
+                self.logger.warning(warn_msg)
 
         try:
             overlaid_clip.close()
         except Exception as e:
             warn_msg = f"overlay(), an exception is throwned when closing a clip. "
             warn_msg += f"\n\t The error message is '{str(e)}'"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
 
 
         # 6. Print out the log
