@@ -341,21 +341,19 @@ class ImageVideoProjector:
             f"{project_dir}/input/battle_field.png"
         ]
 
-        # Keep track of screen positions to avoid overlap
-        screen_positions = [
-            (-3, 0, 0),  # First screen to the left
-            (3, 0, 0)    # Second screen to the right
-        ]
-        
-        for i, filepath in enumerate(input_video_filepaths[4:]):
+        """
+        Must display in the "rendered preview mode" with "cycles" rendering engineer.
+        If displayed in the "material preview mode", the frames on different screens will be mixed together.        
+        """
+        for i, filepath in enumerate(input_video_filepaths[:]):
             image_video_projector = ImageVideoProjector()
             image_video_projector.project_image_video_to_screen(
                 filepath=filepath
             )
         
             image_video_projector.control_panel(
-                screen_location=screen_positions[i],
+                # screen_location=screen_positions[i],
                 # screen_scale=(1.0, 1.0, 1.0),
-                screen_rotation=(0.0, 0.0, 0.0),
+                # screen_rotation=(0.0, 0.0, 0.0),
                 is_cyclic=False,     # cyclic playback the video clip
             )
