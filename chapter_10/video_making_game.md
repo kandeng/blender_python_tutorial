@@ -58,3 +58,110 @@ The game UI consists of the following parts，
    <p align="center" vertical-align="top">
      <img alt="The outlook of the client side UI, similar to a city-building game" src="./asset/virtual_studio.png" width="80%">
    </p> 
+
+
+We will use Unity to develop the client side game application. 
+The game app acts as a digital stage manager, allowing the user to set up all the expressive data:
+
+1. Scene Layout
+
+    The list of all assets (e.g., Building_A, Actor_01), including their file references, position, rotation, and scale (Transform data).
+
+2. Camera Path
+
+    A series of keyframes defining the virtual camera's position, rotation, and lens settings (e.g., focal length, depth of field settings).
+
+3. Lighting State
+
+    The properties of every light source (type, color, intensity, shadows), which must match Blender's setup.
+
+4. Greenscreen Projection
+
+   Neither Blender nor Unity can effectively make mesh objects mimic a human actor's performance.
+   
+   In practice, we ask human actors to perform in front of a green screen, shoot video clips,
+   and then project these clips onto transparent mesh planes.
+
+5. Animation Events
+
+   The specific animation clip to play for each actor and the timing/duration of that clip (e.g., Actor_01 plays Walk from frame 10 to 50).
+
+6. Data Bridge
+
+   The unity-based client app serializes the unity scene description, the lighting state and the animation paths, into a json file,
+   and transmits the json file to the server side.
+
+   Also, the data bridge receives the object mesh data, including their textures from the server side.
+
+
+
+&nbsp;
+### 2.2 Server side
+
+The server side is a farm of headless (No graphical user interface) Blender instances.
+
+The server receives the data from the client side, then executes our Blender python package to perform the following actions,
+
+1. Data Parsing
+
+   Read the incoming JSON payload from the unity-based client side.
+
+2. Asset Retrieval
+
+   Following the client side scene description, find the related 3D mesh objects from the asset database that we maintain.
+
+   While the mesh objects on the client side are always in low-polygon mode,
+   their counterparts on the server side may be in high-polygon mode,
+   to generate video clip with better quality.
+
+3. Asset Database
+
+   The database stores the .gltf and .fbx files of the pre-created 3D objects, as well as their texture images.
+
+   For each 3D object, the database uses the `Decimate Modifier` to create multiple versions,
+   in low-polygon, medium-poly, and high-poly modes.
+
+   The database calculates the difference in surface orientation (the normals)
+   between the high-poly mesh and the low-poly mesh, and saves the diretional information into a `normal map` texture image.
+
+   Since mobile phones prefer one single texture file (atlas) rather than multiple materials on one object, 
+   the database bakes the multiple texture images into one singel texture file (atlas) for each 3D object.
+
+4. Scene Construction
+
+   Using our Blender python package to iterate through the json data from the client side,
+   and construct the symmetrical scene on the server side. 
+
+   Recreate the camera path, i.e. the camera animation keyframes.
+
+   Configure all light sources on the Blender server side, to match the light setting on the Unity client side.
+
+5. Greenscreen Projection
+
+   Neither Blender nor Unity can effectively make mesh objects mimic a human actor's performance.
+   
+   In practice, we ask human actors to perform in front of a green screen, shoot video clips,
+   and then project these clips onto transparent mesh planes.
+
+   The Unity client defines these projection settings,
+   the Blender server replicates the projection to place the actors 'inside' the virtual environment.
+
+6. Animation Events
+
+   The Unity client defines the animation events, including the movement of the camera, and the changes of the lighting.
+   The Blender server replicates these animation event. 
+
+7. Video rendering
+
+   The server side Blender executes the Cycles rendering engine to generate the sequence of frame images,
+   and then stitch these frames into the final .mp4 video.
+
+   Once the .mp4 video is generated, the server side delivers the .mp4 file back to the client.
+
+
+   <p align="center" vertical-align="top">
+     <img alt="greenscreen video displayed in blender, without environment" src="./asset/greenscreen_projection_in_blender_without_environment.png" width="48%">
+     &nbsp;
+     <img alt="greenscreen video displayed in blender, with environment" src="./asset/greenscreen_projection_in_blender_with_environment.png" width="48%">
+   </p>  
+   
