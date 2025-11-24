@@ -165,3 +165,6 @@ The server receives the data from the client side, then executes our Blender pyt
      <img alt="greenscreen video displayed in blender, with environment" src="./asset/greenscreen_projection_in_blender_with_environment.png" width="48%">
    </p>  
    
+Click the following image to view a demo video clip that was rendered by Blender cycles rendering engine.
+
+[![A greenscreen video projected on a transparent mesh plane](https://img.youtube.com/vi/_o9cW8rdY88/hqdefault.jpg)](https://www.youtube.com/watch?v=_o9cW8rdY88)
