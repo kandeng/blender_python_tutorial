@@ -56,5 +56,5 @@ The game UI consists of the following parts，
     The quality of the preview video is of low-fidelity. The player can click the "rendering" button to remotely control the background GPU-empowered Blender cycles rendering engine, to generate high-fidelity .mp4 video.
 
    <p align="center" vertical-align="top">
-     <img alt="The outlook of the client side UI, similar to a city-building game" src="../asset/virtual_studio.png" width="80%">
+     <img alt="The outlook of the client side UI, similar to a city-building game" src="./asset/virtual_studio.png" width="80%">
    </p> 
