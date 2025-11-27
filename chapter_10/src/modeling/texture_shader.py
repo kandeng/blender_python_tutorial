@@ -33,7 +33,10 @@ class TextureShader:
             from modeling.modifier_generator import ModifierGenerator
             self.modifier_generator = ModifierGenerator()
 
-            self.logger.info(f"Create a texture_shader named for a mesh object named '{self.obj.name}'.")
+            if self.obj:
+                self.logger.info(f"Create a texture_shader for a mesh object named '{self.obj.name}'.")
+            else:
+                self.logger.info(f"Create a texture_shader, without mesh object temporarily.")
         except Exception as e:
             print(f"[ERROR] Could not initialize TextureShader object. The error message: '{str(e)}'.")
 
@@ -54,7 +57,14 @@ class TextureShader:
             self.logger.warning(warn_msg)
             return
         
+        material_name = f"{self.editor_node.editor_name}_material"
+        material_obj = bpy.data.materials.new(name=material_name)
+        material_obj.use_nodes = True
+
         self.obj = mesh_object
+        self.obj.data.materials.append(material_obj)     
+        self.editor_node.node_tree = material_obj.node_tree   
+
         info_msg = f"set_object(), object name = '{self.obj.name}'."
         self.logger.info(info_msg)
 
@@ -71,7 +81,7 @@ class TextureShader:
         """
         if not os.path.isdir(texture_dir):
             warn_msg = f"set_texture_directory(), Texture directory not found: {texture_dir}"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return 
         
         self.texture_dir = texture_dir
@@ -93,7 +103,7 @@ class TextureShader:
         """
         if not os.path.isdir(secondary_texture_dir):
             warn_msg = f"set_secondary_texture_directory(), Texture directory not found: {secondary_texture_dir}"
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return         
         
         self.secondary_texture_dir = secondary_texture_dir
@@ -161,7 +171,7 @@ class TextureShader:
 
         # Create the main Principled BSDF shader node
         principled_bsdf_node_name = "Principled_BSDF_Node"  
-        self.principled_bsdf = self.editor_node.create_node(
+        principled_bsdf_node = self.editor_node.create_node(
             node_type='ShaderNodeBsdfPrincipled', 
             node_name=principled_bsdf_node_name,
             location=(0, 0)
@@ -202,14 +212,14 @@ class TextureShader:
         self.node_names.append(material_output_node_name)
 
         # Check that nodes were created successfully before linking
-        if self.principled_bsdf and material_output_node:
+        if principled_bsdf_node and material_output_node:
             self.editor_node.create_link(
-                from_node_output=self.principled_bsdf.outputs[0],  # BSDF
+                from_node_output=principled_bsdf_node.outputs[0],  # BSDF
                 to_node_input=material_output_node.inputs[0]   # Surface
             )
         else:
             warn_msg = f"create_base_nodes(), Failed to create shader nodes."
-            self.logger.warn(warn_msg)
+            self.logger.warning(warn_msg)
             return
 
         info_msg = f"create_base_nodes(), Base texture_shader nodes created."
@@ -745,7 +755,6 @@ class TextureShader:
 
     def create_displacement_modifier(
             self, 
-            file_path="",
             disp_strength=0.1, 
             midlevel=0.5
         ):
@@ -766,11 +775,12 @@ class TextureShader:
 
         try:
             # Load the displacement texture
-            # path = self.texture_paths['displacement']
+            file_path = self.texture_paths['displacement']
             disp_image = bpy.data.images.load(file_path, check_existing=True)
             disp_image.colorspace_settings.name = 'Non-Color'
+
         except Exception as e:
-            print(f"[ERROR] Could not load displacement texture: {e}")
+            self.logger.warning(f"create_displacement_modifier(), Could not load displacement texture: '{str(e)}'")
             return
         
         """
@@ -836,15 +846,6 @@ class TextureShader:
             self.create_base_nodes()
             self.create_texture_nodes()
 
-            """
-            path = self.texture_paths['displacement']
-            self.create_displacement_modifier(
-                file_path=path,
-                disp_strength=0.2, 
-                midlevel=0.5
-            )
-            """
-            
         except (ValueError, FileNotFoundError) as e:
             warn_msg = f"apply_texture(), An error occurred: {str(e)}."
             self.logger.warn(warn_msg)
@@ -871,15 +872,6 @@ class TextureShader:
             self.create_secondary_base_nodes()
             self.create_secondary_texture_nodes()
 
-            """
-            path = self.secondary_texture_paths['displacement']
-            self.create_displacement_modifier(
-                file_path=path,
-                disp_strength=0.2, 
-                midlevel=0.5
-            )
-            """
-            
         except (ValueError, FileNotFoundError) as e:
             warn_msg = f"apply_texture(), An error occurred: {str(e)}."
             self.logger.warn(warn_msg)
