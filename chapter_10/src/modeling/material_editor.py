@@ -465,6 +465,28 @@ class MaterialEditor:
             self.logger.warning(warn_msg)
 
 
+        self.insert_nodes_to_group(
+            group_name=group_name,
+            group_nodes=group_nodes
+        ) 
+
+        return group_node
+
+
+
+    def insert_nodes_to_group(
+            self,
+            group_name: str="",
+            group_nodes: list=[]
+        ) -> object:
+        group_name = group_name.strip()
+        self.activate_material.use_nodes = True
+
+        # 1. Get the group node object instance.
+        group_node = self.get_node_or_group(
+            node_name=group_name
+        )
+
         # 2. Find the nodes to be grouped 
         nodes_to_group = []
         for node_name in group_nodes:
@@ -507,53 +529,7 @@ class MaterialEditor:
                 self.logger.warning(warn_msg)
                 continue
 
-
-
-    def insert_nodes_to_group(
-            self,
-            node_names:list=[],
-            group_name:str=""
-        ) -> object:
-        # 1. Deselect all nodes first for a clean operation
-        for node in self.material_node_tree.nodes:
-            node.select = False
-
-        # 2. Select the specific nodes to be grouped 
-        for node_name in node_names:
-            try:
-                node_to_select = self.get_node_or_group(
-                    node_name=node_name
-                )
-                node_to_select.select = True
-            
-            except Exception as e:
-                warn_msg = f"insert_nodes_to_group(), Required node '{node_name}' not found in the material's node tree, "
-                warn_msg += f"the exception is: '{str(e)}'."
-                self.logger.warning(warn_msg)
-                continue
-
-        # 3. Execute the Group Make Operator
-        try:
-            self.activate_material.use_nodes = True
-            target_group = self.get_node_or_group(group_name)
-            
-            override = {
-                'active_node': target_group, # Crucial: The destination group node
-                'node_tree': self.material_node_tree,
-                'selected_nodes': [n for n in self.material_node_tree.nodes if n.select]
-            }
-            bpy.ops.node.group_insert(context=override)
-
-            info_msg = f"insert_nodes_to_group(), inserted shader nodes {node_names} into node_group '{group_name}'."
-            self.logger.info(info_msg)
-            return target_group
-
-        except Exception as e:
-            warn_msg = f"insert_nodes_to_group(), following exception was thrown, "
-            warn_msg += f"when inserting shader nodes {node_names} into node_group '{group_name}': '{str(e)}'."
-            self.logger.warning(warn_msg)
-            return None
-
+        return group_node
 
 
     def get_or_create_group_socket(
@@ -600,7 +576,7 @@ class MaterialEditor:
 
 
 
-    def copy_group(
+    def clone_group(
             self,
             source_group_name: str="",
             target_group_name: str=""
@@ -610,24 +586,34 @@ class MaterialEditor:
         )
 
         if source_group is None:
-            warn_msg = f"copy_group(), source_group '{source_group_name}' doesn't exist."
+            warn_msg = f"clone_group(), source_group '{source_group_name}' doesn't exist."
             self.logger.warning(warn_msg)
             return None
                     
-        elif source_group.type == 'GROUP':    
-            target_group = source_group.copy()
-            target_group.name = target_group_name
-
-            info_msg = f"copy_group(), make a copy of source_group '{source_group_name}' to '{target_group_name}'."
-            self.logger.info(info_msg)
-            return target_group
-        
-        else:
-            warn_msg = f"copy_group(), source_group '{source_group_name}' is not a group, "
+        elif source_group.type != 'GROUP':    
+            warn_msg = f"clone_group(), source_group '{source_group_name}' is not a group, "
             warn_msg += f"its type is '{source_group.type}'."
             self.logger.warning(warn_msg)
             return None
-    
+
+        elif target_group_name in bpy.data.node_groups:
+            warn_msg = f"clone_group(), target_group '{target_group_name}' already exists, "
+            warn_msg += f"do nothing, and result the existent node group."
+            self.logger.warning(warn_msg)
+            return bpy.data.node_groups[target_group_name]             
+
+        target_group = source_group.id_data.nodes.new("ShaderNodeGroup")
+        target_group.name = target_group_name
+        target_group.location = (source_group.location.x + 200, source_group.location.y)
+
+        target_group.node_tree = source_group.node_tree.copy()
+        target_group.node_tree.name = f"{target_group_name}_node_tree"
+
+        info_msg = f"clone_group(), make a copy of source_group '{source_group_name}' to '{target_group_name}'."
+        self.logger.info(info_msg)
+        return target_group
+        
+
 
 
     @staticmethod
@@ -741,25 +727,13 @@ class MaterialEditor:
             group_nodes=['Principled BSDF', 'DemoEmissionNode', 'DemoMixShader']
         )
 
-        """
-        source_group = material_editor.insert_nodes_to_group(
-            group_name="DemoSourceGroup",
-            node_names=['DemoMixShader', 'DemoEmissionNode']
-        )         
 
-
-        in_socket = material_editor.create_group_socket(
-            group_name="DemoSourceGroup",
-            socket_name="DemoInSocket",
-            in_or_out="INPUT",  # INPUT | OUTPUT
-            socket_type="NodeSocketVector"
-        ) 
-
-        target_group = material_editor.copy_group(
+        target_group = material_editor.clone_group(
             source_group_name="DemoSourceGroup",
             target_group_name="DemoTargetGroup"
         )
-        """
+        print(f"[INFO] clone source_group='{source_group.name}' to target_group='{target_group.name}'")
+        
 
         print("[INFO] --- MaterialEditor Demo Finished ---\n\n")
         
