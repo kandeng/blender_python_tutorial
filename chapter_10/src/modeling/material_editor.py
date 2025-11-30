@@ -1,5 +1,6 @@
 import bpy
 import json
+import re
 
 class MaterialEditor:
     """
@@ -73,8 +74,7 @@ class MaterialEditor:
 
                     return mat_obj
 
-            warn_msg = f"get_material(), the material '{material_name}' is not yet associated with "
-            warn_msg += f"object '{self.obj.name}'."
+            warn_msg = f"get_material(), object '{self.obj.name}' doesn't have a material '{material_name}' yet."
             self.logger.warning(warn_msg)
             return None
         
@@ -86,11 +86,56 @@ class MaterialEditor:
         
 
 
+    def _rename(
+            self, 
+            input_string: str="", 
+            previous_string: str=""
+        ) -> str:
+        # Rule 1: If strings are different, return input_string directly
+        if input_string != previous_string:
+            return input_string
+        
+        # Rule 2: Strings are equal - handle suffix logic
+        # Regex pattern to match ".ddd" (3 digits) at the end of the string
+        suffix_pattern = re.compile(r'\.(\d{3})$')
+        match = suffix_pattern.search(previous_string)
+        
+        # 2.1: No 3-digit suffix - add .001
+        if not match:
+            return f"{input_string}.001"
+        
+        # 2.2: Has 3-digit suffix - increment the number
+        current_suffix = match.group(1)  # Get the 3-digit string (e.g., "002")
+        current_num = int(current_suffix)  # Convert to integer (e.g., 2)
+        
+        # Increment (wrap to 000 if exceeds 999 - optional logic)
+        new_num = current_num + 1
+        if new_num > 999:
+            new_num = 0  # Optional: reset to 000 when maxed out (remove if you want 1000 → 1000)
+        
+        # Format back to 3-digit string (pad with leading zeros)
+        new_suffix = f"{new_num:03d}"
+        
+        # Replace the old suffix with new suffix in the input string
+        # Remove old suffix first, then add new one (handles exact matches)
+        base_string = suffix_pattern.sub('', input_string)
+        return f"{base_string}.{new_suffix}"
+
+
     def create_material(
             self,
             material_name:str=""
-        ):    
+        ) -> object:    
         material_name = material_name.strip()
+        
+        # If the material name has been used, rename it to 'material_name.001'
+        is_material_exist = True
+        while is_material_exist:
+            existent_material = self.get_material(material_name=material_name)
+            if existent_material:
+                material_name = self._rename(material_name, existent_material.name)
+            else:
+                is_material_exist = False
 
         try:
             # Create a new default material if none exists
@@ -636,9 +681,12 @@ class MaterialEditor:
             obj=active_obj
         )
 
-        material_editor.create_material(
-            material_name="DemoEditor"
-        ) 
+        # Test create_material with repeated names.
+        for i in range(3):
+            material_editor.create_material(
+                material_name="DemoEditor"
+            ) 
+
 
         output_node = material_editor.get_node_or_group(
             node_name="Material Output"
