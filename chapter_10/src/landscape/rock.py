@@ -9,6 +9,11 @@ class Rock:
     """
     A class to create and manipulate individual rock objects using Blender's
     built-in rock generator addon.
+
+    Reference:
+    Rocky River Realistic Nature Animation - Part 1 (Blender Tutorial)
+    https://www.youtube.com/watch?v=vWFN5srwBy0
+    19:36 Adding Some Rocks
     """
 
     def __init__(
