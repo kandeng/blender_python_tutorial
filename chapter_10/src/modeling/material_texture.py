@@ -235,9 +235,10 @@ class MaterialTexture:
             node_name=displace_map_node_name, 
             location=(0, node_y)
         )
-        disp_map_node.inputs['Height'].default_value = 0.0
-        disp_map_node.inputs['Midlevel'].default_value = 0.0
-        disp_map_node.inputs['Scale'].default_value = 0.1
+        # For unknown reason, these 3 line don't work.
+        disp_map_node.inputs[0].default_value = 0.0         # 'Height'
+        disp_map_node.inputs[1].default_value = 0.0          # 'Midlevel'
+        disp_map_node.inputs[2].default_value = 0.1          # 'Scale'
 
         # Set link from tex_node to disp_node
         self.material_editor.create_link(
@@ -249,14 +250,6 @@ class MaterialTexture:
             from_node_output = coordinate_mapping_node.outputs[0],       # Vector
             to_node_input = displace_tex_node.inputs[0]              # Vector             
         )
-
-        """
-        # The normal_map's output should be linked to the material_output node. 
-        self.material_editor.create_link(
-            from_node_output = displace_map_node.outputs[0],     # Displacement
-            to_node_input = output_node.inputs[2]                # Displacement                
-        )               
-        """
 
         info_msg = f"create_texture_nodes(), Creates image texture nodes for all available texture maps."
         self.logger.info(info_msg)
@@ -397,8 +390,8 @@ class MaterialTexture:
             ]
             color_node.image = bpy.data.images.load(texture_files['color'])
             color_node.image.colorspace_settings.name = 'sRGB'
-            color_node.projection = 'BOX'
-            color_node.projection_blend = 0.2
+            # color_node.projection = 'BOX'
+            # color_node.projection_blend = 0.2
 
         if (('roughness' in texture_files) and
             (len(texture_files['roughness']) > 0)
@@ -408,8 +401,8 @@ class MaterialTexture:
             ]
             rough_node.image = bpy.data.images.load(texture_files['roughness'])
             rough_node.image.colorspace_settings.name = 'Non-Color'
-            rough_node.projection = 'BOX'
-            rough_node.projection_blend = 0.2
+            # rough_node.projection = 'BOX'
+            # rough_node.projection_blend = 0.2
 
         if (('normal' in texture_files) and 
             (len(texture_files['normal']) > 0)
@@ -422,8 +415,8 @@ class MaterialTexture:
             ]  
             normal_node.image = bpy.data.images.load(texture_files['normal'])
             normal_node.image.colorspace_settings.name = 'Non-Color'
-            normal_node.projection = 'BOX'
-            normal_node.projection_blend = 0.2
+            # normal_node.projection = 'BOX'
+            # normal_node.projection_blend = 0.2
 
         if (('metalness' in texture_files) and
             (len(texture_files['metalness']) > 0)
@@ -433,7 +426,7 @@ class MaterialTexture:
             ]
             metal_node.image = bpy.data.images.load(texture_files['metalness'])
             metal_node.image.colorspace_settings.name = 'Non-Color'
-            metal_node.projection = 'BOX'
+            # metal_node.projection = 'BOX'
 
         if (('displacement' in texture_files) and
             (len(texture_files['displacement']) > 0)
@@ -446,7 +439,10 @@ class MaterialTexture:
             ]
             displace_texture_node.image = bpy.data.images.load(texture_files['displacement'])
             displace_texture_node.image.colorspace_settings.name = 'Non-Color'
-            displace_texture_node.projection = 'BOX'
+            # displace_texture_node.projection = 'BOX'
+            displace_map_node.inputs[0].default_value = 0.0
+            displace_map_node.inputs[1].default_value = 0.0
+            displace_map_node.inputs[2].default_value = 0.1
 
 
 
@@ -463,6 +459,8 @@ class MaterialTexture:
             self.logger.warning(warn_msg)
             return 
         
+        self.material_obj.use_nodes = True
+
         texture_group_node = self.create_texture_group(
             texture_name=dirname
         ) 
