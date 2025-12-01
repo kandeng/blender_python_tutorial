@@ -9,99 +9,209 @@ class Sky:
     """
     A class to use HDRI image as sky and apply sky_texture to adjust the lighting.
     """
-    def __init__(self):
+    def __init__(
+            self,
+            world_name:str=""
+        ):
         self.logger = None
-        self.editor_node = None
+        self.world_name = world_name.strip()
+        self.world_node_tree = None
         
         try:
             from logger.logger import Logger
             self.logger = Logger("Landscape").getLogger()
-            self.logger.info(f"Sky class initialized.")
 
-            from modeling.editor_node import EditorNode
-            self.editor_node = EditorNode(
-                editor_name="WorldSky", 
-                editor_type="WORLD", 
-                obj=None
-            )
+            _ = self.get_or_create_world()
+            self.logger.info(f"Sky(), a Sky object is initialized.")
 
         except ImportError as e:
             if self.logger:
-                self.logger.error(f"Could not initialize Sky class, error message: '{str(e)}'")
+                self.logger.error(f"Could not initialize Sky object, error message: '{str(e)}'")
             else:
-                print(f"[ERROR] Could not initialize Sky class, error message: '{str(e)}'")
+                print(f"[ERROR] Could not initialize Sky object, error message: '{str(e)}'")
+
+
+    def get_or_create_world(self) -> object:
+        try:
+            world = bpy.context.scene.world
+            if world is None:
+                world = bpy.data.worlds.new(
+                    name=self.world_name
+                )
+                bpy.context.scene.world = world
+
+            # Enable nodes for the world (required to use a shader graph)
+            world.use_nodes = True
+
+            # Clear existing nodes (optional but useful for a clean setup)
+            self.world_node_tree = world.node_tree
+            self.world_node_tree.nodes.clear()
+            return world
+
+        except Exception as e:
+            warn_msg = f"create_world(), when create world the following exception was thrown: '{str(e)}'."
+            self.logger.warning(warn_msg)
+            return None
+
+
+
+    def create_node(
+            self, 
+            node_type:str="", 
+            node_name:str="",
+            location=(0.0, 0.0)            
+        ) -> object:
+        if not self.world_node_tree:
+            warn_msg =f"create_node(), world_node_tree is not set."
+            self.logger.warning(warn_msg)
+            return None
+        
+        if len(node_type) == 0:
+            warn_msg =f"create_node(), Input node_type is an empty string."
+            self.logger.warning(warn_msg)
+            return None       
+
+        if len(node_name) == 0:
+            warn_msg =f"create_node(), Input node_name is an empty string, rename it to '{node_name}'."
+            self.logger.warning(warn_msg)           
+            return None 
+
+        new_node = self.world_node_tree.nodes.new(type=node_type)
+        new_node.name = node_name
+        new_node.location = location
+
+        info_msg = f"create_node(), create a world node, node_name='{node_name}', node_type='{node_type}'."
+        self.logger.info(info_msg)
+
+        return new_node
+
+
+    def get_node(
+            self,
+            node_name:str=""
+        ) -> object:
+        # return self.world_node_tree.nodes.get(node_name)
+        for idx, node in enumerate(self.world_node_tree.nodes):
+            if node.name.lower() == node_name.strip().lower():
+                info_msg = f"get_node(), find a node named '{node_name}'."
+                # self.logger.info(info_msg)
+                return node
+        return None
+    
+
+    def create_link(
+            self,
+            from_node_output:object=None, 
+            to_node_input:object=None
+        ):
+        if not self.world_node_tree:
+            warn_msg =f"create_link(), world_node_tree is not set."
+            self.logger.warning(warn_msg)
+            return None
+
+        if from_node_output and to_node_input:
+            try:
+                new_link = self.world_node_tree.links.new(from_node_output, to_node_input)
+
+                info_msg = f"create_link(), Create a link, "
+                info_msg += f"from '{from_node_output.node.name}.{from_node_output.name}', "
+                info_msg += f"to '{to_node_input.node.name}.{to_node_input.name}'."
+                self.logger.info(info_msg)
+                return new_link
+
+            except Exception as e:
+                warn_msg = f"create_link(), failed to create a world link, the exception is: '{str(e)}'."
+                self.logger.warning(warn_msg)
+                return None
+            
+        else:
+            warn_msg = f"create_link(), Could not create link, "
+            if from_node_output is None and to_node_input is None:
+                warn_msg += f"both 'from_node_output' and 'to_node_input' are None."
+            elif from_node_output and to_node_input is None:
+                warn_msg += f"from '{from_node_output.node.name}.{from_node_output.name}', to a None 'to_node'."
+            elif from_node_output is None and to_node_input:
+                warn_msg += f"from a None 'from_node', to '{to_node_input.node.name}.{to_node_input.name}'."
+            else:
+                warn_msg += f"from '{from_node_output.node.name}.{from_node_output.name}', "
+                warn_msg += f"to '{to_node_input.node.name}.{to_node_input.name}', for unknown reason."      
+
+            self.logger.warning(warn_msg)      
+            return None
 
 
     def create_sky_hdri(
             self,
             hdri_filepath: str=""
         ):  
-        output_node = self.editor_node.create_node(
+        output_node = self.create_node(
             node_type='ShaderNodeOutputWorld', 
             node_name="WorldOutput",
             location=(900, 300)
         )     
-        background_node = self.editor_node.create_node(
+        background_node = self.create_node(
             node_type='ShaderNodeBackground', 
             node_name="WorldBackground",
             location=(300, 300)
         )  
 
-        hdri_node = self.editor_node.create_node(
+        hdri_node = self.create_node(
             node_type='ShaderNodeTexEnvironment', 
             node_name="WorldSky", 
             location=(0, 300)
         )     
+
         try:
             hdri_image = bpy.data.images.load(hdri_filepath)
             hdri_node.image = hdri_image
+
         except Exception as e:
             warn_msg = f"create_sky_hdri(), Could not load HDRI file: {hdri_filepath}, "
             warn_msg += f"the error message is: '{str(e)}'."
             self.logger.warning(warn_msg)
             return
 
-        mapping_node = self.editor_node.create_node(
+        mapping_node = self.create_node(
             node_type='ShaderNodeMapping', 
             node_name="WorldMapping", 
             location=(-300, 300)
         )   
-        coordinator_node = self.editor_node.create_node(
+        coordinator_node = self.create_node(
             node_type='ShaderNodeTexCoord', 
             node_name="WorldCoordinator", 
             location=(-600, 300)
         )  
         
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=background_node.outputs[0], 
             to_node_input=output_node.inputs[0]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=hdri_node.outputs[0], 
             to_node_input=background_node.inputs[0]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=mapping_node.outputs[0], 
             to_node_input=hdri_node.inputs[0]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=coordinator_node.outputs[0], 
             to_node_input=mapping_node.inputs[0]
         )
 
 
     def create_sky_lighting(self):
-        mix_shader_node = self.editor_node.create_node(
+        mix_shader_node = self.create_node(
             node_type='ShaderNodeMixShader', 
             node_name="SkyMixShader",
             location=(600, 0)
         )  
-        sky_background_node = self.editor_node.create_node(
+        sky_background_node = self.create_node(
             node_type='ShaderNodeBackground', 
             node_name="SkyBackground",
             location=(300, 0)
         )  
-        sky_node = self.editor_node.create_node(
+        sky_node = self.create_node(
             node_type='ShaderNodeTexSky', 
             node_name="SkyTexture",
             location=(0, 0)
@@ -110,35 +220,36 @@ class Sky:
         sky_node.sun_elevation = math.radians(-10)
         sky_node.sun_rotation = math.radians(-20)
 
-        lighting_node = self.editor_node.create_node(
+        lighting_node = self.create_node(
             node_type='ShaderNodeLightPath', 
             node_name="LightingPath",
             location=(0, -300)
         )  
 
-        hdri_background_node = self.editor_node.get_node("WorldBackground")
-        world_output_node = self.editor_node.get_node("WorldOutput")
+        hdri_background_node = self.get_node(node_name="WorldBackground")
+        world_output_node = self.get_node(node_name="WorldOutput")
 
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=mix_shader_node.outputs[0], 
             to_node_input=world_output_node.inputs[0]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=lighting_node.outputs[0], 
             to_node_input=mix_shader_node.inputs[0]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=sky_background_node.outputs[0], 
             to_node_input=mix_shader_node.inputs[1]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=hdri_background_node.outputs[0], 
             to_node_input=mix_shader_node.inputs[2]
         )
-        self.editor_node.create_link(
+        self.create_link(
             from_node_output=sky_node.outputs[0], 
             to_node_input=sky_background_node.inputs[0]
         )
+
 
 
     def get_sun_angles(
@@ -222,7 +333,7 @@ class Sky:
         self.create_sky_lighting()
 
         elevation_deg, azimuth_deg = self.get_sun_angles(hdri_filepath)      
-        sky_node = self.editor_node.get_node(node_name="SkyTexture")  
+        sky_node = self.get_node(node_name="SkyTexture")  
         sky_node.sun_elevation = math.radians(elevation_deg)
         sky_node.sun_rotation = math.radians(azimuth_deg)
 
@@ -237,14 +348,14 @@ class Sky:
             sun_rotation_degree: float=0.0
         ):
         if sky_z_rotation_degree != 0.0:
-            mapping_node = self.editor_node.get_node("WorldMapping")
+            mapping_node = self.get_node("WorldMapping")
             mapping_node.inputs[2].default_value[2] = math.radians(sky_z_rotation_degree)
 
         if sun_strength > 0.0:
-            sky_background_node = self.editor_node.get_node("SkyBackground")
+            sky_background_node = self.get_node("SkyBackground")
             sky_background_node.inputs[1].default_value = sun_strength
 
-        sky_node = self.editor_node.get_node("SkyTexture")
+        sky_node = self.get_node("SkyTexture")
         if shadow_intensity > 0.0:
             sky_node.sun_intensity = shadow_intensity
         if sun_elevation_degree != 0.0:
