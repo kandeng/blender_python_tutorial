@@ -8,6 +8,10 @@ import numpy as np
 class Sky:
     """
     A class to use HDRI image as sky and apply sky_texture to adjust the lighting.
+    Reference:
+    Creating an Epic Kingdom - Blender Tutorial
+    https://www.youtube.com/watch?v=N10fxBy_Jqs
+    01:31 Sky & Lighting: HDRI + Sky_texture_shading
     """
     def __init__(
             self,
