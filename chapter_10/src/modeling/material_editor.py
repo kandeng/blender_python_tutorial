@@ -75,7 +75,7 @@ class MaterialEditor:
                     return mat_obj
 
             warn_msg = f"get_material(), object '{self.obj.name}' doesn't have a material '{material_name}' yet."
-            self.logger.warning(warn_msg)
+            # self.logger.warning(warn_msg)
             return None
         
         except Exception as e:
@@ -146,14 +146,20 @@ class MaterialEditor:
             self.activate_material = material_obj   
             self.material_node_tree = material_obj.node_tree
 
+            for node in self.activate_material.node_tree.nodes:
+                if node.name != "Material Output":
+                    self.activate_material.node_tree.nodes.remove(node)            
+
             info_msg = f"create_material(), a new material '{material_name}' has been created, "
             info_msg += f"and been set to the object '{self.obj.name}'s activate material_node_tree."
             self.logger.info(info_msg)
+            return self.activate_material
 
         except Exception as e:
             warn_msg = f"create_material(), couldn't create '{material_name}' for object '{self.obj.name}', "
             warn_msg += f"the exception is: '{str(e)}'."
             self.logger.warning(warn_msg)
+            return None
 
 
 
@@ -202,7 +208,7 @@ class MaterialEditor:
             self.set_node_attribute(node_name, node_attributes)
         
         info_msg = f"create_node(), node_name='{node_name}', node_type='{node_type}'."
-        self.logger.info(info_msg)
+        # self.logger.info(info_msg)
 
         return new_node
 
@@ -289,7 +295,7 @@ class MaterialEditor:
             info_msg = f"create_link(), Create a link, "
             info_msg += f"from '{from_node_output.node.name}.{from_node_output.name}', "
             info_msg += f"to '{to_node_input.node.name}.{to_node_input.name}'."
-            self.logger.info(info_msg)
+            # self.logger.info(info_msg)
             return new_link
         
         else:
@@ -382,7 +388,7 @@ class MaterialEditor:
             from_socket_identifier = original_link.from_socket.identifier
             to_socket_identifier = original_link.to_socket.identifier
        
-            # Clone the links that both from_node and to_node are in the group. 
+            # 1. Clone the links that both from_node and to_node are in the group. 
             if (from_node_name in nodes_in_group) and (to_node_name in nodes_in_group):
                 from_node_obj = nodes_in_group[from_node_name]
                 to_node_obj = nodes_in_group[to_node_name]
@@ -392,7 +398,7 @@ class MaterialEditor:
 
                 debug_msg += f"\t from_node_name.from_socket.identifier='{from_node_name}.{original_link.from_socket.identifier}', "
                 debug_msg += f"to_node_name.to_socket.identifier='{to_node_name}.{original_link.to_socket.identifier}'.\n"
-                self.logger.debug(debug_msg)
+                # self.logger.debug(debug_msg)
 
                 try:
                     group_links.new(
@@ -411,7 +417,7 @@ class MaterialEditor:
                         continue
 
 
-            # Clone the links that from_node is outside of the group and to_node is in the group. 
+            # 2. Clone the links that from_node is outside of the group and to_node is in the group. 
             elif (from_node_name not in nodes_in_group) and (to_node_name in nodes_in_group):
                 from_node_obj = self.get_node_or_group(node_name=from_node_name)
                 to_node_obj = nodes_in_group[to_node_name]
@@ -442,7 +448,7 @@ class MaterialEditor:
                     self.logger.warning(warn_msg)
 
 
-            # Clone the links that from_node is in the group and to_node is outside of the group. 
+            # 3. Clone the links that from_node is in the group and to_node is outside of the group. 
             elif (from_node_name in nodes_in_group) and (to_node_name not in nodes_in_group):
                 from_node_obj = nodes_in_group[from_node_name] 
                 to_node_obj = self.get_node_or_group(node_name=to_node_name)
@@ -488,18 +494,27 @@ class MaterialEditor:
         # 1. Create the node group, including its internal node_tree.
         group_node = None
         try:
-            # Create a new Node Group data block
-            # The type must be 'ShaderNodeTree' for material shader groups.
+            # 1.1. Create a new Node Group data block
+            #      The type must be 'ShaderNodeTree' for material shader groups.
             group_tree = bpy.data.node_groups.new(name=f"{group_name}_node_tree", type='ShaderNodeTree')
             group_input = group_tree.nodes.new("NodeGroupInput")
-            group_input.location = (-400, 0)
+            group_input.location = (-1200, 0)
             group_output = group_tree.nodes.new("NodeGroupOutput")
-            group_output.location = (400, 0)
+            group_output.location = (800, 0)
 
 
-            # Add the node group to the material.
+            # 1.2. Add the node group to the material.
             group_node = self.material_node_tree.nodes.new(type='ShaderNodeGroup')
             group_node.node_tree = group_tree
+
+            # 1.3 Assign name to this newly created group.
+            is_group_exist = True
+            while is_group_exist:
+                existent_group = self.get_node_or_group(node_name=group_name)
+                if existent_group:
+                    group_name = self._rename(group_name, existent_group.name)
+                else:
+                    is_group_exist = False
             group_node.name=group_name
 
             debug_msg = f"create_group(), create a new node group '{group_tree.name}' for object '{self.obj.name}'."
@@ -510,6 +525,7 @@ class MaterialEditor:
             self.logger.warning(warn_msg)
 
 
+        # 2. Move the nodes into the newly created group.
         self.insert_nodes_to_group(
             group_name=group_name,
             group_nodes=group_nodes
