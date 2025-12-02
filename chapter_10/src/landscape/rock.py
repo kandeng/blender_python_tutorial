@@ -32,7 +32,7 @@ class Rock:
 
         try:
             from logger.logger import Logger
-            self.logger = Logger("Modeling").getLogger()
+            self.logger = Logger("Landscape").getLogger()
             self._create_rock(
                 rock_name=rock_name
             )
