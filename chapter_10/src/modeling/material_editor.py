@@ -11,11 +11,6 @@ class MaterialEditor:
             self, 
             obj:object=None
         ):
-        if not obj or not hasattr(obj, 'type') or obj.type != 'MESH':
-            warn_msg = f"MaterialEditor(), the input mesh object is not valid, either none or of wrong type."
-            self.logger.warning(warn_msg)
-            return
-
         self.obj = obj   
         self.activate_material = None
         self.material_node_tree = None
@@ -25,6 +20,11 @@ class MaterialEditor:
             from logger.logger import Logger
             self.logger = Logger("Modeling").getLogger()
 
+            if not obj or not hasattr(obj, 'type') or obj.type != 'MESH':
+                warn_msg = f"MaterialEditor(), the input mesh object is not valid, either none or of wrong type: '{obj.type}'."
+                self.logger.warning(warn_msg)
+                return
+            
             info_msg = f"MaterialEditor of '{self.obj.name}' is initialized."
             self.logger.info(info_msg)
 
