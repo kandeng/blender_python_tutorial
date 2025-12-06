@@ -134,11 +134,12 @@ class ANTLandscapeAddon:
         # 3. Set the attributes to the terrain object.
         valid_attributes = []
         for attr_name, attr_value in terrain_attributes.items():
-            # self.logger.debug(f"set_terrain_attributes(), attribute name='{attr_name}', value='{attr_value}'")
-            if attr_name.lower() == "height":
-                bpy.context.object.ant_landscape.height = float(attr_value)
-                valid_attributes.append(attr_name)
+            attr_name = attr_name.lower()
 
+            if attr_name.lower() in bpy.context.object.ant_landscape.__dir__():
+                setattr(bpy.context.object.ant_landscape, attr_name, attr_value)
+                valid_attributes.append(attr_name)
+                
             else:
                 debug_msg = f"set_terrain_attributes(), terrain attribute '{attr_name}' does not exist. \n"
                 debug_msg += f"\tThe valid terrain attribute names are:\n\t"
