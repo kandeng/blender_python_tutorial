@@ -40,7 +40,11 @@ class MaterialTexture:
             self.logger.info(info_msg)
 
         except Exception as e:
-            print(f"[ERROR] Could not initialize MaterialTexture object. The error message: '{str(e)}'.")
+            error_msg = f"MaterialTexture(), Could not initialize MaterialTexture object. The error message: '{str(e)}'."
+            if self.logger:
+                self.logger.error(error_msg)
+            else:
+                print(f"[ERROR] {error_msg}")
 
 
 

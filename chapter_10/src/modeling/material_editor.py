@@ -517,9 +517,6 @@ class MaterialEditor:
                     is_group_exist = False
             group_node.name=group_name
 
-            debug_msg = f"create_group(), create a new node group '{group_tree.name}' for object '{self.obj.name}'."
-            self.logger.debug(debug_msg)
-
         except Exception as e:
             warn_msg = f"create_group(), following exception was thrown when creating a node group '{group_name}': '{str(e)}'"
             self.logger.warning(warn_msg)
