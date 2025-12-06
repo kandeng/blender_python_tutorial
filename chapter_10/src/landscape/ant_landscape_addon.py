@@ -6,8 +6,7 @@ import json
 
 class ANTLandscapeAddon:
     """
-    A class to build a mountain covered by snow and two kinds of rocks,
-    using ANT-Landscape build-in addon.
+    A class to use ANT_landscape build-in addon to generate mountain, valley, lake, flat terrain etc.
 
     Reference:
     CGBoost course - Master 3D Environment 
@@ -21,7 +20,6 @@ class ANTLandscapeAddon:
         """
         self.logger = None
         self.landscape_object = None
-        self.material_texture = None
 
         try:
             from logger.logger import Logger
@@ -73,7 +71,7 @@ class ANTLandscapeAddon:
             self, 
             landscape_name:str="",
             landscape_preset_type:str=""
-        ):
+        ) -> object:
         # 1. Get the preset parameters.
         preset_kwargs = self.get_preset_terrain(
             preset_terrain=landscape_preset_type
@@ -92,15 +90,9 @@ class ANTLandscapeAddon:
         except RuntimeError as e:
             warn_msg = f"create_landscape(), Failed to call 'bpy.ops.mesh.landscape_add()': '{str(e)}'"
             self.logger.warning(warn_msg)
-            return
-        
+            return None
 
-        # 3. Create the material for the newly created terrain.
-        from modeling.material_texture import MaterialTexture
-        self.material_texture = MaterialTexture(
-            object_instance=self.landscape_object,
-            material_name=f"{landscape_name}_material"
-        )
+        return self.landscape_object
 
 
     def get_preset_terrain(
