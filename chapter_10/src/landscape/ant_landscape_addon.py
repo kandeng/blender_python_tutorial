@@ -114,6 +114,49 @@ class ANTLandscapeAddon:
                 return ANTLandscapeAddon.preset_mountain_2
 
 
+    def set_terrain_attributes(
+            self, 
+            terrain_name:str="",
+            terrain_attributes: dict={}
+        ):
+        
+        # 1. Get the terrain object.
+        terrain_obj = bpy.data.objects.get(terrain_name)
+        if not terrain_obj:
+            warn_msg = f"set_terrain_attributes(), terrain '{terrain_name}' does not exist.\n"
+            self.logger.warning(warn_msg)
+            return 
+        
+        # 2. Set the terrain object to be active.
+        terrain_obj.select_set(True)
+        bpy.context.view_layer.objects.active = terrain_obj
+    
+        # 3. Set the attributes to the terrain object.
+        valid_attributes = []
+        for attr_name, attr_value in terrain_attributes.items():
+            # self.logger.debug(f"set_terrain_attributes(), attribute name='{attr_name}', value='{attr_value}'")
+            if attr_name.lower() == "height":
+                bpy.context.object.ant_landscape.height = float(attr_value)
+                valid_attributes.append(attr_name)
+
+            else:
+                debug_msg = f"set_terrain_attributes(), terrain attribute '{attr_name}' does not exist. \n"
+                debug_msg += f"\tThe valid terrain attribute names are:\n\t"
+                for valid_attr_name in  bpy.context.object.ant_landscape.__dir__():
+                    debug_msg += f"'{valid_attr_name}', "
+                self.logger.debug(f"{debug_msg} \n")
+        
+        bpy.ops.mesh.ant_landscape_refresh()
+
+        # 4. Print out the info message.
+        if len(valid_attributes) > 0:
+            info_msg = f"set_terrain_attributes(), set the following attributes to terrain '{terrain_name}': \n"
+            for idx, valid_attr_name in enumerate(valid_attributes):
+                attr_value = terrain_attributes[valid_attr_name]
+                info_msg += f"[{idx}] attribute name='{valid_attr_name}', value={attr_value}\n"
+            self.logger.info(info_msg)
+
+
 
     """
     Reference:
@@ -292,10 +335,16 @@ class ANTLandscapeAddon:
             landscape_name="ant_mountain",
             landscape_preset_type="mountain_2"
         )
-        # mountain.height = 1.2
-        bpy.context.object.ant_landscape.height = 1.6
-        bpy.ops.mesh.ant_landscape_refresh()
-      
+
+        # bpy.context.object.ant_landscape.height = 1.6
+        # bpy.ops.mesh.ant_landscape_refresh()
+        mountain.set_terrain_attributes(
+            terrain_name="ant_mountain",
+            terrain_attributes={
+                "height": 1.234,
+                "non_exist": "Nonsense"
+            }
+        )
 
         # Set up the sun. 
         bpy.context.scene.render.engine = 'CYCLES'
