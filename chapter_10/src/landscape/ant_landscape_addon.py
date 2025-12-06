@@ -11,7 +11,7 @@ class ANTLandscapeAddon:
     Reference:
     CGBoost course - Master 3D Environment 
     https://www.cgboost.com/courses/master-3d-environments-in-blender
-    第 4 章-ANT景观-孤山, 18:50-34:30
+    第 4 章-ANT景观-孤山, 02:00-17:20   
     """
 
     def __init__(self):
