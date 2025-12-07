@@ -191,24 +191,22 @@ class Mountain:
 
 
 
-    def create_mixin_shaders(
-            self,
-            soil_texture_group_node:str="",
-            rock_texture_group_node:str="",
-            snow_texture_group_node:str=""           
-        ):
+    def _create_mixin_framework(
+            self 
+        ) -> object:
+
         # 1. Create primary and subsidiary mixin policy node groups.
         primary_mixin_policy_name = "primary_mixin_policy"
         primary_mixin_group = self._create_mixin_group(
             mixin_policy_name=primary_mixin_policy_name
         ) 
-        primary_mixin_group.location = (-300, 100)
+        primary_mixin_group.location = (-300, 0)
 
         subsidiary_mixin_policy_name = "subsidiary_mixin_policy"
         subsidiary_mixin_group = self._create_mixin_group(
             mixin_policy_name=subsidiary_mixin_policy_name
         ) 
-        subsidiary_mixin_group.location = (-300, -100)
+        subsidiary_mixin_group.location = (-300, -200)
 
 
         # 2. Set the color ramps of the mixin policy node groups.
@@ -243,27 +241,32 @@ class Mountain:
         subsidiary_combine_xyz_node.inputs[2].default_value = 0.2
 
 
-        # 3. Create and link the multiply node
-        math_node_name = f"mixin_policy_multiply"
-        math_node = self.material_texture.material_editor.create_node(
-            node_type='ShaderNodeMath', 
-            node_name=math_node_name, 
+        # 4. Create and link the multiply node
+        mixin_color_node_name = f"mixin_policy_multiply"
+        mixin_color_node = self.material_texture.material_editor.create_node(
+            node_type='ShaderNodeMix', 
+            node_name=mixin_color_node_name, 
             location=(0, 0)
         )
-        math_node.operation = 'MULTIPLY'
-        math_node.use_clamp = False
+        mixin_color_node.data_type = 'RGBA'
+        mixin_color_node.blend_type = 'MULTIPLY'
+        mixin_color_node.clamp_result = True
+        mixin_color_node.clamp_factor = False
+        mixin_color_node.inputs[0].default_value = 0.9
 
         primary_mixin_group_socket_name = f"{primary_mixin_policy_name}_group_socket"
-        self.material_texture.material_obj.node_tree.links.new(
-            primary_mixin_group.outputs[primary_mixin_group_socket_name],
-            math_node.inputs[0]
+        self.material_texture.material_editor.create_link(
+            from_node_output=primary_mixin_group.outputs[primary_mixin_group_socket_name],
+            to_node_input=mixin_color_node.inputs['A']
         )  
 
         subsidiary_mixin_group_socket_name = f"{subsidiary_mixin_policy_name}_group_socket"
-        self.material_texture.material_obj.node_tree.links.new(
-            subsidiary_mixin_group.outputs[subsidiary_mixin_group_socket_name],
-            math_node.inputs[1]
+        self.material_texture.material_editor.create_link(
+            from_node_output=subsidiary_mixin_group.outputs[subsidiary_mixin_group_socket_name],
+            to_node_input=mixin_color_node.inputs['B']
         )  
+
+        return mixin_color_node
 
 
 
@@ -273,7 +276,7 @@ class Mountain:
             rock_texture_dir:str="",
             snow_texture_dir:str=""
         ):
-        # 1. create a UV map for the rock so textures can be applied correctly.
+        # 1. Create a UV map for the rock so textures can be applied correctly.
         bpy.context.view_layer.objects.active = self.mountain
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -281,27 +284,116 @@ class Mountain:
         bpy.ops.uv.smart_project()
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        # 2. apply the two textures. 
+
+        # 2. Create three texture groups. 
         soil_texture_group = self.material_texture.load_texture(
             texture_dirpath=soil_texture_dir
         )
-        soil_texture_group.location = (0, 600)    # Locate the shader nodes in Blender interface.
+        soil_texture_group.location = (-300, 600)    # Locate the shader nodes in Blender interface.
 
         rock_texture_group = self.material_texture.load_texture(
             texture_dirpath=rock_texture_dir
         )
-        rock_texture_group.location = (0, 400)    # Locate the shader nodes in Blender interface.      
+        rock_texture_group.name = "rock_texture_group" 
+        rock_texture_group.location = (-300, 400)    # Locate the shader nodes in Blender interface.      
 
         snow_texture_group = self.material_texture.load_texture(
             texture_dirpath=snow_texture_dir
         )
+        snow_texture_group.name = "snow_texture_group"
         snow_texture_group.location = (0, 200)    # Locate the shader nodes in Blender interface.    
 
-        self.create_mixin_shaders(
-            soil_texture_group_node=soil_texture_group,
-            rock_texture_group_node=rock_texture_group,
-            snow_texture_group_node=snow_texture_group           
+
+        # 3. Mix the soil and rock BSDF textures. 
+        soil_rock_mix_shader_node = self.material_texture.material_editor.create_node(
+            node_type='ShaderNodeMixShader', 
+            node_name="soil_rock_mix_shader_node", 
+            location=(0, 400)
         )
+        soil_rock_mix_shader_node.inputs[0].default_value = 0.45   # Fac
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=soil_texture_group.outputs['principled_bsdf_socket'],
+            to_node_input=soil_rock_mix_shader_node.inputs[1]
+        )  
+            
+        self.material_texture.material_editor.create_link(
+            from_node_output=rock_texture_group.outputs['principled_bsdf_socket'],
+            to_node_input=soil_rock_mix_shader_node.inputs[2]
+        )  
+
+        # 4. Mix the soil and rock displacement textures. 
+        soil_rock_mix_math_node = self.material_texture.material_editor.create_node(
+            node_type='ShaderNodeMath', 
+            node_name="soil_rock_mix_math_node", 
+            location=(0, 600)
+        )
+        soil_rock_mix_math_node.operation = 'ADD'
+        soil_rock_mix_math_node.use_clamp = False
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=soil_texture_group.outputs['displace_map_socket'],
+            to_node_input=soil_rock_mix_math_node.inputs[0]
+        )  
+            
+        self.material_texture.material_editor.create_link(
+            from_node_output=rock_texture_group.outputs['displace_map_socket'],
+            to_node_input=soil_rock_mix_math_node.inputs[1]
+        )  
+
+        soil_rock_mix_displace_node = self.material_texture.material_editor.create_node(
+            node_type='ShaderNodeDisplacement', 
+            node_name="soil_rock_mix_displace_node", 
+            location=(300, 600)
+        )
+        soil_rock_mix_displace_node.inputs[0].default_value = 0.1    # Height
+        soil_rock_mix_displace_node.inputs[1].default_value = 0.2    # Midlevel
+        soil_rock_mix_displace_node.inputs[2].default_value = 1.0    # Scale
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=soil_rock_mix_math_node.outputs[0],
+            to_node_input=soil_rock_mix_displace_node.inputs[3]     # Normal
+        )  
+
+
+        # 5. Mix the earth texture with the snow texture.
+        mixin_policy_node = self._create_mixin_framework()
+
+        snow_earth_mix_shader_node = self.material_texture.material_editor.create_node(
+            node_type='ShaderNodeMixShader', 
+            node_name="snow_earth_mix_shader_node", 
+            location=(300, 0)
+        )
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=mixin_policy_node.outputs['Result'],
+            to_node_input=snow_earth_mix_shader_node.inputs['Fac']   # Fac
+        )  
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=soil_rock_mix_shader_node.outputs['Shader'],
+            to_node_input=snow_earth_mix_shader_node.inputs[1]
+        )  
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=snow_texture_group.outputs['principled_bsdf_socket'],
+            to_node_input=snow_earth_mix_shader_node.inputs[2]
+        )  
+
+        # 6. Link to the material output node. 
+        output_node = self.material_texture.material_editor.get_node_or_group("Material Output")
+        output_node.location = (600, 0)
+
+        self.material_texture.material_editor.create_link(
+            from_node_output=snow_earth_mix_shader_node.outputs['Shader'],
+            to_node_input=output_node.inputs['Surface']
+        )  
+        
+        self.material_texture.material_editor.create_link(
+            from_node_output=soil_rock_mix_displace_node.outputs['Displacement'],
+            to_node_input=output_node.inputs['Displacement']
+        )  
+
 
 
     @staticmethod
@@ -321,7 +413,7 @@ class Mountain:
         first_mountain = Mountain(
             mountain_name="first_mountain"        
         )
-        bpy.context.object.location = (5.0, 5.0, 0.0) 
+        bpy.context.object.location = (1.0, 2.0, 0.0) 
         first_mountain.set_mountain_attributes(
             mountain_name="first_mountain",
             mountain_attributes={
@@ -334,6 +426,7 @@ class Mountain:
             snow_texture_dir=texture_directories[2]
         )
 
+        """
         # Create the second mountain.
         second_mountain = Mountain(
             mountain_name="second_mountain",
@@ -346,7 +439,9 @@ class Mountain:
                 "random_seed": 16,
                 "non_exist": "Nonsense"
             }            
-        )
+        )        
+        """
+
 
         # Set up the sun. 
         bpy.context.scene.render.engine = 'CYCLES'
