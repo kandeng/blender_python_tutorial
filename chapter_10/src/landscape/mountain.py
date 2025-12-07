@@ -249,8 +249,8 @@ class Mountain:
             location=(0, 0)
         )
         mixin_color_node.data_type = 'RGBA'
-        mixin_color_node.blend_type = 'MULTIPLY'
-        mixin_color_node.clamp_result = True
+        mixin_color_node.blend_type = 'MULTIPLY'     # 'MIX' 'ADD' 
+        mixin_color_node.clamp_result = False
         mixin_color_node.clamp_factor = False
         mixin_color_node.inputs[0].default_value = 0.9
 
