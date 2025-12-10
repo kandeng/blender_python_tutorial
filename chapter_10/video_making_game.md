@@ -1,4 +1,4 @@
-# A game for scene building and video making 
+# Proposal: a game for scene building and video making 
 
 
 ## 1. Objectives
