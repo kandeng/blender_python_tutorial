@@ -44,3 +44,17 @@ Also similar to Anthropic, we use multi-agents to do this job.
 2. The `Sub Agents` are specialized workers responsible for execution.
    Their job is primarily tactical and focused on producing high-quality output for a specific, narrow task defined by the Lead Agent.
 
+
+&nbsp;
+# 2. Client side
+
+We used VUE3 to create a webpage, implementing a chatbot that is similar to [Google gemini app](https://gemini.google.com/app)
+
+The initial version looks like the following screenshot,
+
+   <p align="center" vertical-align="top">
+     <img alt="The chatbot webpage that mimicks gemini app" src="./asset/gemini_chatbot_20251210.png" width="80%">
+   </p>  
+
+To setup the project and run the app, please read [Chatbot vue3 webpage](./src/client/chatbot_vue3.md)
+
