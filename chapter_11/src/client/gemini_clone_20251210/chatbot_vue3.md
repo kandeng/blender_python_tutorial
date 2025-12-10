@@ -41,5 +41,5 @@ Open the chrome browser and visit http://localhost:5173/
 You will see the webpage as the following screenshot, 
 
    <p align="center" vertical-align="top">
-     <img alt="The chatbot webpage that mimicks gemini app" src="./asset/gemini_chatbot_20251210.png" width="80%">
+     <img alt="The chatbot webpage that mimicks gemini app" src="../../../asset/gemini_chatbot_20251210.png" width="80%">
    </p>  
