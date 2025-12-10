@@ -40,3 +40,4 @@ Here is the content table of the Blender python tutorials.
 
 9. [Integrate AI models and Moviepy to Blender](./chapter_09/ai_moviepy.md)
 
+10. [Proposal: A game for scene building and video making](./chapter_10/video_making_game.md)
