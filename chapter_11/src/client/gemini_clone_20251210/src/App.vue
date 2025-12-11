@@ -94,21 +94,27 @@
               ></el-avatar>
               <div class="message-content">
                 <p>{{ msg.content }}</p>
-                <!-- File Preview -->
-                <div v-if="msg.files.length" class="file-preview">
+                <!-- ✅ Fixed File Preview: Use script helper functions -->
+                <div v-if="hasFiles(msg)" class="file-preview">
                   <el-descriptions :column="1" border>
                     <el-descriptions-item 
-                      v-for="file in msg.files" 
-                      :key="file.name" 
+                      v-for="(file, fileIndex) in msg.files" 
+                      :key="fileIndex" 
                       label="Attached File"
                     >
+                      <!-- Use helper to get download URL (safe) -->
                       <el-link 
-                        :download="file.name" 
-                        :href="URL.createObjectURL(file)" 
+                        v-if="isValidFile(file)" 
+                        :download="getFileName(file)" 
+                        :href="getFileUrl(file)" 
                         type="primary"
                       >
-                        <el-icon icon="Download"></el-icon> {{ file.name }} ({{ formatFileSize(file.size) }})
+                        <el-icon icon="Download"></el-icon> {{ getFileName(file) }} ({{ formatFileSize(getFileSize(file)) }})
                       </el-link>
+                      <!-- Fallback for non-File objects -->
+                      <span v-else>
+                        <el-icon icon="File"></el-icon> {{ getFileName(file) }} ({{ formatFileSize(getFileSize(file)) }})
+                      </span>
                     </el-descriptions-item>
                   </el-descriptions>
                 </div>
@@ -240,10 +246,52 @@
 
 
 <script setup>
-// ✅ Import ALL required Vue APIs (including onUnmounted)
+// ✅ Import ALL required Vue APIs (first line)
 import { ref, watch, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios' // Required for HTTP requests to FastAPI
+import axios from 'axios'
+
+// --------------------------
+// ✅ DEFINE HELPER FUNCTIONS FIRST (before template usage)
+// --------------------------
+/** Check if a message has valid files (exposed to template) */
+const hasFiles = (msg) => {
+  return !!msg && Array.isArray(msg.files) && msg.files.length > 0
+}
+
+/** Check if a file is a valid File/Blob object */
+const isValidFile = (file) => {
+  return file && (file instanceof File || file instanceof Blob || !!file.raw)
+}
+
+/** Get safe file name (fallback to 'Unknown File') */
+const getFileName = (file) => {
+  return file?.name || 'Unknown File'
+}
+
+/** Get safe file size (fallback to 0) */
+const getFileSize = (file) => {
+  return file?.size || 0
+}
+
+/** Safe URL.createObjectURL (only for valid File/Blob) */
+const getFileUrl = (file) => {
+  if (!isValidFile(file)) return ''
+  const fileToUse = file.raw || file
+  try {
+    return URL.createObjectURL(fileToUse)
+  } catch (e) {
+    console.warn('Failed to create object URL:', e)
+    return ''
+  }
+}
+
+/** Format file size */
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(2)} KB`
+  return `${(bytes / 1048576).toFixed(2)} MB`
+}
 
 // --------------------------
 // Server Configuration
@@ -252,7 +300,7 @@ const SERVER_URL = 'http://localhost:8000'
 const WS_URL = `ws://localhost:8000/ws/`
 
 // --------------------------
-// Core State
+// Core State (All Defined After Helpers)
 // --------------------------
 // Sidebar State
 const isSidebarCollapsed = ref(false)
@@ -281,9 +329,7 @@ const handleRegister = () => {
   authTab.value = 'login'
 }
 
-// --------------------------
 // Chatbot State (Integrated with FastAPI)
-// --------------------------
 const chatMessages = ref([
   { sender: 'ai', content: 'Hello! How can I help you today?', files: [], timestamp: new Date().toISOString() }
 ])
@@ -389,22 +435,15 @@ const handleFileUpload = (file) => {
   uploadFiles.value.push(file.raw)
 }
 
-// Format File Size
-const formatFileSize = (bytes) => {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(2)} KB`
-  return `${(bytes / 1048576).toFixed(2)} MB`
-}
-
 // Send Message (main function)
 const sendMessage = () => {
   if (!messageInput.value.trim() && uploadFiles.value.length === 0) return
 
-  // Add user message to local chat
+  // Add user message to local chat (store RAW File objects)
   const userMsg = {
     sender: 'user',
     content: messageInput.value.trim(),
-    files: uploadFiles.value.map(f => ({ name: f.name, size: f.size })),
+    files: [...uploadFiles.value], // ✅ Store raw File objects (not metadata)
     timestamp: new Date().toISOString()
   }
   chatMessages.value.push(userMsg)
@@ -458,7 +497,7 @@ const archiveItems = ref([
 // Initialize WebSocket on mount
 initWebSocket()
 
-// Cleanup WebSocket on unmount (✅ onUnmounted is now defined)
+// Cleanup WebSocket on unmount
 onUnmounted(() => {
   if (ws) {
     ws.close()
