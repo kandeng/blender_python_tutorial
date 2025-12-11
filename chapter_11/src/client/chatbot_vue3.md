@@ -28,6 +28,9 @@ $ npm run dev
 ~~~
 $ pwd
   /home/robot/langchain_20251209/client/gemini_clone_20251210
+$ npm --version
+  11.6.2
+
 $ npm run dev
   VITE v7.2.7  ready in 127 ms
 
