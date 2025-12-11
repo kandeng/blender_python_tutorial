@@ -238,13 +238,22 @@
   </div>
 </template>
 
+
 <script setup>
-import { ref, watch, computed } from 'vue'
+// ✅ Import ALL required Vue APIs (including onUnmounted)
+import { ref, watch, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios' // Required for HTTP requests to FastAPI
 
-// ❌ NO DIRECT ICON IMPORTS (eliminates all export errors)
-// All icons use Element Plus's native icon string system
+// --------------------------
+// Server Configuration
+// --------------------------
+const SERVER_URL = 'http://localhost:8000'
+const WS_URL = `ws://localhost:8000/ws/`
 
+// --------------------------
+// Core State
+// --------------------------
 // Sidebar State
 const isSidebarCollapsed = ref(false)
 
@@ -272,17 +281,111 @@ const handleRegister = () => {
   authTab.value = 'login'
 }
 
-// Chatbot State
+// --------------------------
+// Chatbot State (Integrated with FastAPI)
+// --------------------------
 const chatMessages = ref([
-  { sender: 'ai', content: 'Hello! How can I help you today?', files: [] }
+  { sender: 'ai', content: 'Hello! How can I help you today?', files: [], timestamp: new Date().toISOString() }
 ])
 const messageInput = ref('')
 const uploadFiles = ref([])
 const messagesContainer = ref(null)
 const aiAvatar = ref('https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d55811281jpeg.jpeg')
 
-// Handle File Upload
+// User ID (unique identifier for WebSocket/HTTP)
+const userId = ref('user_' + Math.random().toString(36).substr(2, 9))
+let ws = null // WebSocket instance
+
+// --------------------------
+// WebSocket & Server Communication
+// --------------------------
+// Initialize WebSocket Connection
+const initWebSocket = () => {
+  // Close existing connection
+  if (ws) {
+    ws.close()
+  }
+  
+  // Create new WebSocket
+  ws = new WebSocket(`${WS_URL}${userId.value}`)
+  
+  // WebSocket Open
+  ws.onopen = () => {
+    console.log('WebSocket connected to FastAPI server')
+    ElMessage.success('Connected to chat server!')
+  }
+  
+  // Receive message from server
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data)
+    chatMessages.value.push(msg)
+  }
+  
+  // WebSocket Error
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error)
+    ElMessage.error('Failed to connect to chat server (falling back to HTTP)')
+  }
+  
+  // WebSocket Close (auto-reconnect)
+  ws.onclose = () => {
+    console.log('WebSocket disconnected')
+    setTimeout(initWebSocket, 3000) // Reconnect after 3s
+  }
+}
+
+// Send Message via WebSocket (preferred)
+const sendMessageViaWS = (content, files) => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    sendMessageViaHTTP(content, files) // Fallback to HTTP
+    return
+  }
+  
+  // Prepare file metadata (send names for demo; use paths in production)
+  const fileMetadata = files.map(file => ({
+    name: file.name,
+    type: file.type,
+    size: file.size
+  }))
+  
+  ws.send(JSON.stringify({
+    content: content,
+    files: fileMetadata
+  }))
+}
+
+// Send Message via HTTP (/receive/ endpoint)
+const sendMessageViaHTTP = async (content, files) => {
+  try {
+    const formData = new FormData()
+    formData.append('user_id', userId.value)
+    formData.append('content', content)
+    
+    // Add files to FormData
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+    
+    // Call FastAPI /receive/ endpoint
+    const response = await axios.post(`${SERVER_URL}/receive/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    
+    // Add AI response to chat
+    chatMessages.value.push(response.data.ai_message)
+  } catch (error) {
+    console.error('HTTP send error:', error)
+    ElMessage.error('Failed to send message to server')
+  }
+}
+
+// Handle File Upload (validate type)
 const handleFileUpload = (file) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'audio/mpeg', 'video/mp4', 'application/pdf']
+  if (!allowedTypes.includes(file.raw.type)) {
+    ElMessage.error(`Invalid file type: ${file.raw.type}. Allowed: JPG/PNG/MP3/MP4/PDF`)
+    return
+  }
   uploadFiles.value.push(file.raw)
 }
 
@@ -293,30 +396,28 @@ const formatFileSize = (bytes) => {
   return `${(bytes / 1048576).toFixed(2)} MB`
 }
 
-// Send Message
+// Send Message (main function)
 const sendMessage = () => {
   if (!messageInput.value.trim() && uploadFiles.value.length === 0) return
 
-  chatMessages.value.push({
+  // Add user message to local chat
+  const userMsg = {
     sender: 'user',
     content: messageInput.value.trim(),
-    files: [...uploadFiles.value]
-  })
+    files: uploadFiles.value.map(f => ({ name: f.name, size: f.size })),
+    timestamp: new Date().toISOString()
+  }
+  chatMessages.value.push(userMsg)
 
+  // Send to server (WebSocket + HTTP fallback)
+  sendMessageViaWS(messageInput.value.trim(), uploadFiles.value)
+
+  // Clear input/files
   messageInput.value = ''
   uploadFiles.value = []
-
-  // Simulate AI Response
-  setTimeout(() => {
-    chatMessages.value.push({
-      sender: 'ai',
-      content: 'Thank you for your message! I\'m processing your request and will respond shortly.',
-      files: []
-    })
-  }, 1000)
 }
 
-// Auto-scroll to bottom
+// Auto-scroll to bottom of chat
 watch(chatMessages, () => {
   setTimeout(() => {
     if (messagesContainer.value) {
@@ -325,7 +426,9 @@ watch(chatMessages, () => {
   }, 0)
 })
 
-// Gallery Data
+// --------------------------
+// Gallery & Archive Data
+// --------------------------
 const galleryImages = ref([
   { url: 'https://picsum.photos/800/600?random=1', title: 'Landscape Photo 1' },
   { url: 'https://picsum.photos/800/600?random=2', title: 'Portrait Photo 2' },
@@ -335,7 +438,7 @@ const galleryImages = ref([
   { url: 'https://picsum.photos/800/600?random=6', title: 'Architecture Photo 6' }
 ])
 
-// Computed for gallery preview URLs (avoids inline expression errors)
+// Computed for gallery preview URLs
 const getGalleryPreviewUrls = computed(() => {
   return galleryImages.value.map(img => img.url)
 })
@@ -348,7 +451,21 @@ const archiveItems = ref([
   { title: 'Audio Recording', date: '2025-01-03', type: 'Audio' },
   { title: 'Video Presentation', date: '2025-01-01', type: 'Video' }
 ])
+
+// --------------------------
+// Lifecycle Hooks
+// --------------------------
+// Initialize WebSocket on mount
+initWebSocket()
+
+// Cleanup WebSocket on unmount (✅ onUnmounted is now defined)
+onUnmounted(() => {
+  if (ws) {
+    ws.close()
+  }
+})
 </script>
+
 
 <style scoped>
 /* Base Layout */
