@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi import File, Form, UploadFile
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import UploadFile, File, Form, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +7,7 @@ import uvicorn
 
 import os
 import sys
+import uuid
 import signal
 import subprocess
 import psutil
@@ -14,12 +15,12 @@ from multiprocessing import Process
 from threading import Thread
 from pathlib import Path
 import asyncio
+import aiofiles
 import json
 import gc
 import time
 import datetime
-import pprint
-
+from typing import Dict, List, Optional
 
 from logger.logger import Logger
 from ai_gateway.qwen3_coder import Qwen3Coder
@@ -36,6 +37,16 @@ public_dir = f"{server_home_dir}/public"
 os.makedirs(public_dir, exist_ok=True)
 
 blender_agent_server = None
+
+
+# --------------------------
+# Global State (for demo)
+# --------------------------
+# Store active WebSocket connections (user_id -> WebSocket)
+active_connections: Dict[str, WebSocket] = {}
+# Store chat history (user_id -> list of messages)
+chat_history: Dict[str, List[Dict]] = {}
+
 
 
 
@@ -73,16 +84,13 @@ otherwise, cannot use it as a decorator.
 engine = FastAPI()
 engine.mount("/public", StaticFiles(directory="public"), name="public")
 
-
-"""
 engine.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://127.0.0.1:7788"],
+    allow_origins=["http://127.0.0.1:5173"],  # Vue dev server URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-"""
 
 
 """
@@ -133,6 +141,31 @@ def shutdown():
 
 
 
+
+"""
+For demo only
+"""
+def generate_ai_response(
+        user_message: str, 
+        files: List[str] = None
+    ) -> str:
+    """Mock AI response (replace with real LLM integration)"""
+    if files:
+        return f"Received your message: '{user_message}' + {len(files)} attached files. I'm processing them now..."
+    return f"Thank you for your message: '{user_message}'. I'm an AI assistant built with FastAPI!"
+
+@engine.get("/history/{user_id}")
+async def get_chat_history(user_id: str):
+    """Retrieve chat history for a user"""
+    if user_id not in chat_history:
+        return JSONResponse({"history": []})
+    return JSONResponse({"history": chat_history[user_id]})
+
+
+
+
+
+
 @engine.get("/")
 async def greet():
     greeting_msg = f"Given a sketch of a 3D object or a scene, Blender AI Agent uses AI model "
@@ -156,13 +189,90 @@ async def doc_api():
 
 
 @engine.post("/receive/")
-async def receive(req: dict):
-    req_str = json.dumps(req, ensure_ascii=False, indent=2)
-    blender_agent_server.logger.debug(f"receive(), req:\n{req_str}\n")
+async def receive_message(
+        user_id: str = Form(...),
+        content: str = Form("")
+    ):
+    curr_time = datetime.datetime.now().strftime("%Y.%m.%d.%H:%M")
 
-    req_text = req["text"].strip()
-    result = await blender_agent_server.master_agent.post_request(req_text)
-    return result
+    # Add user message to history
+    user_msg = {
+        "sender": user_id,
+        "content": content,
+        "timestamp": curr_time
+    }
+    if user_id not in chat_history:
+        chat_history[user_id] = []
+    chat_history[user_id].append(user_msg)
+    
+    # Generate AI response
+    content = content.strip()
+    result = await blender_agent_server.master_agent.post_request(content)
+    ai_msg = {
+        "sender": "ai",
+        "content": result["response"],
+        "timestamp": curr_time
+    }
+    chat_history[user_id].append(ai_msg)
+    
+    # Proactively send AI message to client via WebSocket (if connected)
+    if user_id in active_connections:
+        try:
+            await active_connections[user_id].send_json(ai_msg)
+        except Exception as e:
+            print(f"Failed to send message to {user_id}: {e}")
+    
+    return JSONResponse({
+        "status": "success",
+        "user_message": user_msg,
+        "ai_message": ai_msg
+    })
+
+
+
+@engine.post("/transmit/")
+async def transmit_message(
+        user_id: str = Form(...), 
+        content: str = Form(...)
+    ):
+    curr_time = datetime.datetime.now().strftime("%Y.%m.%d.%H:%M")
+
+    """Proactively send a message from server to client (e.g., AI notifications)"""
+    if not user_id or not content:
+        raise HTTPException(status_code=400, detail="User ID and content are required")
+    
+    # Create system/AI message
+    transmit_msg = {
+        "sender": "ai",
+        "content": content,
+        "files": [],
+        "timestamp": curr_time
+    }
+    
+    # Add to chat history
+    if user_id not in chat_history:
+        chat_history[user_id] = []
+    chat_history[user_id].append(transmit_msg)
+    
+    # Send via WebSocket (real-time)
+    if user_id in active_connections:
+        try:
+            await active_connections[user_id].send_json(transmit_msg)
+            return JSONResponse({
+                "status": "success",
+                "message": "Message transmitted to client",
+                "data": transmit_msg
+            })
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to transmit: {str(e)}")
+    else:
+        # Fallback: message stored but not sent (client disconnected)
+        return JSONResponse({
+            "status": "pending",
+            "message": "Client not connected, message stored",
+            "data": transmit_msg
+        })
+
 
 
 @engine.post("/upload/")
@@ -191,8 +301,9 @@ async def upload(
 
         # Handle file (e.g., save it)
         filepath = f"{upload_dir}/{file.filename}"
-        with open(filepath, "wb") as buffer:
-            buffer.write(await file.read())
+        async with aiofiles.open(filepath, "wb") as f:
+            content = await file.read()
+            await f.write(content)
 
         response_json["filepath"] = filepath
     else:
@@ -203,6 +314,64 @@ async def upload(
     blender_agent_server.logger.debug(f"upload(), response_json:\n{response_json_str}\n")
 
     return response_json
+
+
+
+@engine.websocket("/ws/{user_id}")
+async def websocket_chat(
+        websocket: WebSocket, 
+        user_id: str
+    ):
+    curr_time = datetime.datetime.now().strftime("%Y.%m.%d.%H:%M")
+
+    await websocket.accept()
+
+    active_connections[user_id] = websocket
+    # Initialize chat history if not exists
+    if user_id not in chat_history:
+        chat_history[user_id] = [{
+            "sender": "ai", 
+            "content": "Hello! How can I help you today?", 
+            "files": [], 
+            "timestamp": curr_time
+        }]
+        # Send initial welcome message
+        await websocket.send_json(chat_history[user_id][0])
+    
+    try:
+        while True:
+            # Receive message from client (text + file paths)
+            data = await websocket.receive_json()
+            user_message = data.get("content", "")
+            file_paths = data.get("files", [])
+            
+            # Add user message to history
+            user_msg = {
+                "sender": "user",
+                "content": user_message,
+                "files": file_paths,
+                "timestamp": curr_time
+            }
+            chat_history[user_id].append(user_msg)
+            
+            # Generate AI response
+            ai_response = generate_ai_response(user_message, file_paths)
+            ai_msg = {
+                "sender": "ai",
+                "content": ai_response,
+                "files": [],
+                "timestamp": curr_time
+            }
+            chat_history[user_id].append(ai_msg)
+            
+            # Send AI response back to client
+            await websocket.send_json(ai_msg)
+    
+    except WebSocketDisconnect:
+        # Remove connection on disconnect
+        del active_connections[user_id]
+        blender_agent_server.logger.debug(f"websocket_chat(), User '{user_id}' disconnected.")
+
 
 
 
