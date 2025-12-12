@@ -9,9 +9,11 @@
       multiple
       accept=".jpg,.png,.mp3,.mp4,.pdf"
     >
-      <el-button icon="UploadFilled" circle></el-button>
+      <el-button class="upload-btn" circle>
+        <img src="@/assets/icons/upload.svg" alt="Upload" class="icon" />
+      </el-button>
     </el-upload>
-    <!-- ✅ Use v-model on LOCAL reactive variable (not prop) -->
+
     <el-input
       v-model="localMessageInput"
       type="textarea"
@@ -19,6 +21,7 @@
       class="message-input"
       @keyup.enter="sendMessage"
     ></el-input>
+
     <el-button
       type="primary"
       icon="PaperPlaneFilled"
@@ -111,5 +114,11 @@ const sendMessage = () => {
 
 .send-btn {
   flex-shrink: 0;
+}
+
+.icon {
+  width: 20px;  /* Adjust size as needed */
+  height: 20px; /* Keep width and height equal for proper scaling */
+  object-fit: contain; /* Ensures the icon maintains its aspect ratio */
 }
 </style>
