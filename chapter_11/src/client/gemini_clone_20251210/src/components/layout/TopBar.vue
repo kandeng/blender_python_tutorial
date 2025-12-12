@@ -1,32 +1,23 @@
-<!-- Top bar (tabs + user profile) -->
 <template>
-  <el-header class="top-bar">
-    <!-- ✅ Use v-model on LOCAL reactive variable (not prop) -->
-    <el-tabs
-      v-model="localActiveTab"
-      class="top-tabs"
-      type="card"
-      @tab-change="handleTabChange"
-    >
-      <el-tab-pane name="chatbot">
-        <template #label>
-          <el-icon icon="ChatDotRound"></el-icon>
-          Chatbot
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="gallery">
-        <template #label>
-          <el-icon icon="Picture"></el-icon>
-          Gallery
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="archive">
-        <template #label>
-          <el-icon icon="FolderOpened"></el-icon>
-          My Archive
-        </template>
-      </el-tab-pane>
-    </el-tabs>
+  <el-header class="pinterest-top-bar">
+    <!-- Pinterest-style tab navigation -->
+    <div class="tab-container">
+      <div 
+        class="tab-item"
+        v-for="tab in tabs" 
+        :key="tab.name"
+        :class="{ active: localActiveTab === tab.name }"
+        @click="switchTab(tab.name)"
+      >
+        <el-icon :icon="tab.icon" class="tab-icon"></el-icon>
+        <!-- Label wrapper for precise text/underbar alignment -->
+        <div class="tab-label-container">
+          <span class="tab-label">{{ tab.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- User avatar (preserved) -->
     <div class="user-profile" @click="showLoginModal = true">
       <el-avatar :src="userAvatar" class="avatar" icon="User"></el-avatar>
     </div>
@@ -35,8 +26,16 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { ChatDotRound, Picture, FolderOpened } from '@element-plus/icons-vue'
 
-// ✅ Define read-only props (from parent App.vue)
+// Tab config (unchanged)
+const tabs = ref([
+  { name: 'chatbot', label: '对话', icon: ChatDotRound },
+  { name: 'gallery', label: '展厅', icon: Picture },
+  { name: 'archive', label: '我的作品', icon: FolderOpened }
+])
+
+// Props & Emits (unchanged functionality)
 const props = defineProps({
   activeTab: {
     type: String,
@@ -48,54 +47,125 @@ const props = defineProps({
   }
 })
 
-// ✅ Define emits to communicate with parent
 const emit = defineEmits(['tab-change', 'open-login'])
 
-// ✅ Local reactive variable (mirrors parent's activeTab prop)
 const localActiveTab = ref(props.activeTab)
 const showLoginModal = ref(false)
 
-// ✅ Sync parent prop changes to local variable (if parent updates activeTab)
 watch(
   () => props.activeTab,
-  (newValue) => {
-    localActiveTab.value = newValue
-  },
-  { immediate: true } // Sync initial value
+  (newVal) => { localActiveTab.value = newVal },
+  { immediate: true }
 )
 
-// ✅ Handle tab change (emit to parent)
-const handleTabChange = (tab) => {
-  localActiveTab.value = tab // Update local state
-  emit('tab-change', tab)    // Forward to parent
+const switchTab = (tabName) => {
+  localActiveTab.value = tabName
+  emit('tab-change', tabName)
 }
 
-// ✅ Emit login modal open event
 watch(showLoginModal, (val) => {
   if (val) emit('open-login')
 })
 </script>
 
 <style scoped>
-.top-bar {
+/* Base top bar */
+.pinterest-top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  background-color: white;
-  border-bottom: 1px solid #e6e6e6;
+  padding: 0 24px;
+  background-color: #ffffff;
+  height: 60px;
+  box-shadow: none;
+  border: none;
 }
 
-.top-tabs {
-  flex: 1;
+/* Tab container */
+.tab-container {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  height: 100%;
 }
 
+/* Individual tab item */
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 4px;
+  cursor: pointer;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 700; /* Bold text */
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+/* Hover state */
+.tab-item:hover {
+  color: #e60023; /* Pinterest red */
+}
+
+/* Active tab text color */
+.tab-item.active {
+  color: #e60023;
+}
+
+/* --------------------------
+   Critical: Text + Underbar Alignment
+--------------------------- */
+/* Label container (anchors text and underbar) */
+.tab-label-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center text horizontally */
+  position: relative;
+  height: 100%; /* Match tab height for vertical centering */
+}
+
+/* Tab label (ensures text is centered) */
+.tab-label {
+  line-height: 1;
+  text-align: center; /* Explicit text centering */
+}
+
+/* Active tab underbar (matches text width + centered under text) */
+.tab-item.active .tab-label-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0; /* Align to bottom of tab bar */
+  left: 0; /* Match text container's left edge */
+  width: 100%; /* Exact width of text container */
+  height: 4px; /* Pinterest-style thickness */
+  background-color: #e60023; /* Pinterest red */
+  border-radius: 2px 2px 0 0;
+  /* Ensure underbar is centered relative to text */
+  transform: none; /* No offset needed (matches text width) */
+}
+
+/* Tab icon (aligned with text) */
+.tab-icon {
+  font-size: 20px;
+  align-self: center; /* Match text vertical alignment */
+}
+
+/* User avatar */
 .user-profile {
   cursor: pointer;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+/* Reset Element Plus defaults */
+:deep(.el-header) {
+  border: none !important;
+  padding: 0 !important;
 }
 </style>
