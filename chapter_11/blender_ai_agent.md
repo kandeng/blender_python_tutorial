@@ -46,15 +46,75 @@ Also similar to Anthropic, we use multi-agents to do this job.
 
 
 &nbsp;
-# 2. Client side
+# 2. Run the client and server
 
-We used VUE3 to create a webpage, implementing a chatbot that is similar to [Google gemini app](https://gemini.google.com/app)
+## 2.1. the Fastapi backend engine.
 
-The initial version looks like the following screenshot,
+1. Startup the fastapi backend server.
+   
+~~~
+$ pwd
+  /home/robot/langchain_20251209/server
+
+$  bash startup.sh 
+  [INFO] startup.sh is starting up the Blender AI Agent server.
+~~~
+
+2. Shutdown
+
+~~~
+$ pwd
+  /home/robot/langchain_20251209/server
+
+$ bash shutdown.sh 
+  shutdown.sh is shuting down the Blender AI agent ... 
+  Terminate: 
+  2436454 python3 langchain/blender_agent_server.py
+  PGID: 2436452, PID: 2436454
+~~~
+
+3. Webpage
+   
+Open a browser, and visit: `http://localhost:8000/`, 
+to verify if the fastapi backend server works well.
+
+   <p align="center" vertical-align="top">
+     <img alt="The chatbot webpage that mimicks gemini app" src="./asset/gemini_fastapi_20251210.png" width="80%">
+   </p>  
+   
+
+## 2.2. the VUE frontpage server
+
+We used VUE3 to create the front tier webpages, implementing a chatbot that is similar to [Google gemini app](https://gemini.google.com/app)
+
+To setup the front tier, please read [Chatbot vue3 webpage](./src/client/chatbot_vue3.md)
+
+1. Startup the vue frontpage server
+   
+~~~
+$ pwd
+  /home/robot/langchain_20251209/client/gemini_clone_20251210
+$ npm --version
+  11.6.2
+
+$ npm run dev
+  VITE v7.2.7  ready in 127 ms
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+~~~
+
+2. Shutdown
+
+~~~
+Ctrl-c
+~~~
+
+3. Webpage
+   
+Open a browser, and visit: `http://localhost:5173/`,
+to verify if the vue frontpage server works well.
 
    <p align="center" vertical-align="top">
      <img alt="The chatbot webpage that mimicks gemini app" src="./asset/gemini_chatbot_20251210.png" width="80%">
    </p>  
-
-To setup the project and run the app, please read [Chatbot vue3 webpage](./src/client/chatbot_vue3.md)
-
