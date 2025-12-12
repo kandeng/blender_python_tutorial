@@ -15,9 +15,12 @@ First, create a new Vue 3 project and install dependencies:
 $ pwd
   /home/robot/langchain_20251209/client
 $ npm create vite@latest gemini_clone_20251210 -- --template vue
+
 $ cd gemini_clone_20251210
 $ npm install
 $ npm install element-plus @element-plus/icons-vue axios
+$ npm install vue-router@4
+
 $ npm run dev
 ~~~
 
