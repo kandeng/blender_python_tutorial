@@ -1,13 +1,19 @@
 <!--  Sidebar (navigation) -->
 <template>
-  <el-aside class="sidebar" transition="width-collapse">
-    <!-- Collapse Toggle Button -->
-    <el-button
-      @click="isSidebarCollapsed = !isSidebarCollapsed"
-      class="collapse-btn"
-      circle
-      icon="Menu"
-    ></el-button>
+  <el-aside 
+    class="sidebar" 
+    transition="width-collapse"
+    :style="{ width: isSidebarCollapsed ? '64px' : 'auto' }"
+  >
+    <!-- Collapse Toggle Button (inside sidebar) -->
+    <div class="collapse-btn-wrapper">
+      <el-button
+        @click="isSidebarCollapsed = !isSidebarCollapsed"
+        class="collapse-btn"
+        circle
+        icon="Menu"
+      ></el-button>
+    </div>
 
     <!-- Main Content Area (constrained width) -->
     <div class="sidebar-content">
@@ -40,10 +46,10 @@
         </div>
       </div>
 
-      <!-- Historic Topics List (HIDDEN when collapsed - CRITICAL FIX) -->
+      <!-- Historic Topics List (HIDDEN when collapsed) -->
       <el-scrollbar 
         class="history-container" 
-        v-if="!isSidebarCollapsed" 
+        v-if="!isSidebarCollapsed"
       >
         <el-menu
           default-active="1"
@@ -101,11 +107,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+// ✅ Add missing import for watch
+import { ref, watch } from 'vue'
 import { Clock } from '@element-plus/icons-vue'
 
 // Emit events to parent (App.vue)
-const emit = defineEmits(['menu-select', 'new-topic'])
+const emit = defineEmits(['menu-select', 'new-topic', 'collapse-change'])
 
 // Sidebar collapse state
 const isSidebarCollapsed = ref(false)
@@ -119,30 +126,45 @@ const handleMenuSelect = (index) => {
 const handleNewTopic = () => {
   emit('new-topic')
 }
+
+// Emit collapse state change to App.vue
+const watchCollapse = () => {
+  emit('collapse-change', isSidebarCollapsed.value)
+}
+// Watch for collapse state changes
+watch(isSidebarCollapsed, watchCollapse)
 </script>
 
 <style scoped>
 /* Core Sidebar Styles */
 .sidebar {
   background-color: #f5f7fa;
-  border-right: none;
+  border-right: 1px solid #e6e6e6;
   transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  width: 100%;
-  overflow: hidden !important; /* Prevent child overflow */
+  overflow: hidden !important;
+  min-width: 64px !important;
+  max-width: 500px !important;
 }
 
-/* Collapse Toggle Button */
+/* Collapse Button Wrapper (center button in collapsed state) */
+.collapse-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+/* Collapse Toggle Button (inside sidebar) */
 .collapse-btn {
-  margin: 16px;
   background-color: #409eff;
   color: white;
-  align-self: flex-start;
   width: 40px !important;
   height: 40px !important;
   border-radius: 50% !important;
+  margin: 0 !important;
 }
 
 /* Sidebar Content Wrapper (constrained width) */
@@ -152,7 +174,7 @@ const handleNewTopic = () => {
   flex-direction: column;
   flex: 1;
   width: 100% !important;
-  box-sizing: border-box !important; /* Include padding in width */
+  box-sizing: border-box !important;
   overflow: hidden !important;
 }
 
@@ -166,13 +188,13 @@ const handleNewTopic = () => {
 /* Tall "开始新话题" Button (ONLY visible when expanded) */
 .new-topic-btn {
   width: 100% !important;
-  height: 48px !important; /* Tall height for expanded state */
-  line-height: 48px !important; /* Vertical alignment */
+  height: 48px !important;
+  line-height: 48px !important;
   padding: 0 16px !important;
   font-size: 15px !important;
   background-color: #409eff;
   color: white;
-  border-radius: 8px !important; /* Rounded rect */
+  border-radius: 8px !important;
   border: none !important;
   justify-content: center;
 }
@@ -182,18 +204,18 @@ const handleNewTopic = () => {
   margin-bottom: 16px;
   width: 100% !important;
   box-sizing: border-box !important;
-  height: 44px !important; /* Tall height (customizable) */
+  height: 44px !important;
 }
 
 /* Override Element Plus Input Inner Styles */
 :deep(.el-input__wrapper) {
-  height: 100% !important; /* Match search box height */
+  height: 100% !important;
   padding: 0 12px !important;
   box-sizing: border-box !important;
 }
 :deep(.el-input__inner) {
   height: 100% !important;
-  line-height: 44px !important; /* Vertical text alignment */
+  line-height: 44px !important;
   font-size: 14px !important;
 }
 
@@ -257,15 +279,8 @@ const handleNewTopic = () => {
 
 /* Override Element Plus Menu Styles */
 :deep(.el-menu-item) {
-  padding: 0 8px !important; /* Reduce padding to fit sidebar */
+  padding: 0 8px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 64px !important;
-  }
 }
 </style>
