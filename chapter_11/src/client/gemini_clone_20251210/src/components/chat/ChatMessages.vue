@@ -21,12 +21,14 @@ const props = defineProps({
     required: true
   },
   aiAvatar: {
-    type: String,
-    required: true
+    type: [String, Object],
+    required: false,
+    default: 'Robot'
   },
-  userAvatar: {
-    type: String,
-    required: true
+  userAvatar: { // Fix userAvatar prop
+    type: [String, Object], // Accept icon name (e.g., 'User') or image URL
+    required: false, // Remove "required: true"
+    default: 'User' // Default to Element Plus "User" icon
   },
   // ✅ Fix 1: Allow null/undefined (or make optional)
   messagesContainer: {
@@ -57,9 +59,82 @@ defineExpose({
 </script>
 
 <style scoped>
+/*
 .chat-messages {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+}
+*/
+
+.chat-messages-container {
+  width: 100%;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+}
+
+/*
+.message {
+  display: flex;
+  margin-bottom: 16px;
+  max-width: 70%;
+  width: 100%; 
+}
+*/
+
+/*
+.user-message {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+  justify-content: flex-start; 
+*/
+
+/*
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  margin: 0 0 0 12px; 
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+*/
+
+
+/**** */
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  /* Add this to make messages align properly within container */
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 16px;
+  max-width: 70%;
+  /* Remove width: 100% to allow proper alignment */
+}
+
+.user-message {
+  flex-direction: row-reverse;
+  /* Align user messages to the right side of the container */
+  align-self: flex-end;
+  /* Add this to push avatar to far right */
+  margin-left: auto;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  /* Adjust margins for reversed layout */
+  margin: 0 0 0 12px;
+  flex-shrink: 0;
 }
 </style>
