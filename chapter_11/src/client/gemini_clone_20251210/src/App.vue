@@ -1,18 +1,25 @@
 <template>
   <div class="app-container">
-    <!-- Sidebar (resizable width) -->
-    <div class="sidebar-wrapper" :style="{ width: sidebarWidth + 'px' }">
-      <Sidebar @menu-select="activeTab = $event" />
+    <!-- Resizable Sidebar (sync collapse state) -->
+    <div 
+      class="sidebar-wrapper" 
+      :style="{ width: isSidebarCollapsed ? '64px' : sidebarWidth + 'px' }"
+    >
+      <Sidebar 
+        @menu-select="activeTab = $event"
+        @collapse-change="handleSidebarCollapse" 
+      />
     </div>
 
-    <!-- Draggable Vertical Resizer -->
+    <!-- Draggable Resizer (hidden when sidebar collapsed) -->
     <div 
       class="resizer" 
       @mousedown="startDrag"
       :class="{ dragging: isDragging }"
+      v-if="!isSidebarCollapsed" 
     ></div>
 
-    <!-- Main Chatbot Panel (no extra margin) -->
+    <!-- Main Chatbot Panel -->
     <el-container class="main-container">
       <TopBar 
         :active-tab="activeTab"
@@ -40,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import Sidebar from './components/layout/Sidebar.vue'
 import TopBar from './components/layout/TopBar.vue'
@@ -49,14 +56,15 @@ import LoginModal from './components/auth/LoginModal.vue'
 import { useChatStore } from './composables/useChatStore'
 import { useWebSocket } from './composables/useWebSocket'
 
-// Sidebar resizing state
+// Sidebar state (sync collapse + resize)
 const sidebarWidth = ref(260)
-const resizerWidth = 4 // Resizer line width
+const resizerWidth = 4
 const isDragging = ref(false)
+const isSidebarCollapsed = ref(false) // Sync with Sidebar.vue
 const startX = ref(0)
 const startWidth = ref(0)
 
-// Min/max sidebar width limits
+// Min/max width limits (only for expanded state)
 const MIN_WIDTH = 200
 const MAX_WIDTH = 500
 
@@ -75,8 +83,14 @@ const {
 
 const { sendMessage } = useWebSocket(chatMessages, uploadFiles)
 
-// Resizer logic (fixed drag calculation)
+// Sync collapse state from Sidebar.vue
+const handleSidebarCollapse = (collapsed) => {
+  isSidebarCollapsed.value = collapsed
+}
+
+// Resizer logic (only for expanded state)
 const startDrag = (e) => {
+  if (isSidebarCollapsed.value) return
   isDragging.value = true
   startX.value = e.clientX
   startWidth.value = sidebarWidth.value
@@ -86,10 +100,9 @@ const startDrag = (e) => {
 }
 
 const handleDrag = (e) => {
-  if (!isDragging.value) return
+  if (!isDragging.value || isSidebarCollapsed.value) return
   const deltaX = e.clientX - startX.value
   const newWidth = startWidth.value + deltaX
-  // Constrain width to min/max
   if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
     sidebarWidth.value = newWidth
   }
@@ -101,7 +114,7 @@ const stopDrag = () => {
   document.body.style.userSelect = ''
 }
 
-// Event listener cleanup
+// Event listeners
 onMounted(() => {
   document.addEventListener('mousemove', handleDrag)
   document.addEventListener('mouseup', stopDrag)
@@ -112,6 +125,13 @@ onUnmounted(() => {
   document.removeEventListener('mouseup', stopDrag)
 })
 
+// Reset width when expanding sidebar
+watch(isSidebarCollapsed, (collapsed) => {
+  if (!collapsed && sidebarWidth.value < MIN_WIDTH) {
+    sidebarWidth.value = 260 // Reset to default expanded width
+  }
+})
+
 const handleLoginSuccess = (avatarUrl) => {
   userAvatar.value = avatarUrl
   ElMessage.success('Welcome back!')
@@ -119,7 +139,6 @@ const handleLoginSuccess = (avatarUrl) => {
 </script>
 
 <style scoped>
-/* Core layout fix: flex-based, no extra margins */
 .app-container {
   display: flex;
   height: 100vh;
@@ -128,45 +147,47 @@ const handleLoginSuccess = (avatarUrl) => {
   margin: 0;
 }
 
-/* Sidebar wrapper (resizable, no extra padding) */
+/* Sidebar Wrapper (fixed collapsed width) */
 .sidebar-wrapper {
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  flex-shrink: 0;
   height: 100%;
-  padding: 0;
-  margin: 0;
-  transition: width 0.1s ease; /* Smooth resize */
+  transition: width 0.3s ease;
 }
 
-/* Draggable resizer (no absolute positioning) */
+/* Draggable Resizer */
 .resizer {
   width: v-bind(resizerWidth + 'px');
   height: 100%;
   background-color: #e5e7eb;
   cursor: col-resize;
-  flex-shrink: 0; /* Prevent resizer from shrinking */
+  flex-shrink: 0;
   transition: background-color 0.2s ease;
 }
-
 .resizer:hover {
   background-color: #cbd5e1;
 }
-
 .resizer.dragging {
   background-color: #94a3b8;
 }
 
-/* Main chatbot panel (fill remaining space, no margin) */
+/* Main Chatbot Panel */
 .main-container {
-  flex: 1; /* Critical: fill all remaining space */
+  flex: 1;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 0 !important; /* Remove Element Plus default padding */
+  padding: 0 !important;
   margin: 0 !important;
   overflow: hidden;
 }
 
-/* Mobile responsive fix */
+/* Override Element Plus defaults */
+:deep(.el-aside) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .sidebar-wrapper {
     width: 64px !important;
@@ -174,11 +195,5 @@ const handleLoginSuccess = (avatarUrl) => {
   .resizer {
     display: none;
   }
-}
-
-/* Remove deep styles for sidebar (no extra padding) */
-:deep(.el-aside) {
-  padding: 0 !important;
-  margin: 0 !important;
 }
 </style>
