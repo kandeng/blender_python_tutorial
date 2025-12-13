@@ -1,105 +1,137 @@
 <!-- Wrapper for tab content -->
 <template>
-  <el-main class="content-panel">
+  <div class="main-content">
+    <!-- Tab Content Switcher (preserve original logic) -->
     <div v-if="activeTab === 'chatbot'" class="chatbot-panel">
-      <ChatMessages
-        :chat-messages="chatMessages"
-        :ai-avatar="aiAvatar"
-        :user-avatar="userAvatar"
-      />
-      <ChatInput
-        :message-input="messageInput"
-        @update:message-input="emit('update:message-input', $event)"
-        :upload-files="uploadFiles"
-        @upload-file="emit('upload-file', $event)"
-        @send-message="emit('send-message', $event)"
-      />
+      <!-- Centered chat container (80% width like Gemini) -->
+      <div class="chat-container">
+        <!-- Chat Messages (import existing ChatMessages component) -->
+        <ChatMessages 
+          :bot-messages="botMessages" 
+          :user-messages="userMessages"
+          :chat-messages="chatMessages"
+          :ai-avatar="aiAvatar || 'Robot'"
+          :user-avatar="userAvatar || 'User'"
+          class="chat-messages"
+        />
+
+        <!-- Chat Input with Draggable Resizer -->
+        <ChatInput 
+          :message-input="messageInput"
+          :upload-files="uploadFiles"
+          @update:messageInput="handleInputUpdate"
+          @upload-file="handleFileUpload"
+          @send-message="handleSendMessage"
+        />
+      </div>
     </div>
-    
-    <!-- Gallery Panel -->
-    <GalleryPanel v-if="activeTab === 'gallery'" />
-    
-    <!-- Archive Panel -->
-    <ArchivePanel v-if="activeTab === 'archive'" />
-    
-    <!-- Fallback for unknown tabs -->
-    <div v-else class="empty-panel">
-      <el-empty description="No content available for this tab"></el-empty>
-    </div>
-  </el-main>
+
+    <!-- Preserve original tabs (Gallery/Archive) -->
+    <GalleryPanel v-else-if="activeTab === 'gallery'" />
+    <ArchivePanel v-else-if="activeTab === 'archive'" />
+  </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import ChatMessages from '../chat/ChatMessages.vue'
+import ChatInput from '../chat/ChatInput.vue'
+import GalleryPanel from '../gallery/GalleryPanel.vue'
+import ArchivePanel from '../archive/ArchivePanel.vue'
 
-// Import components
-import ChatMessages from '@/components/chat/ChatMessages.vue'
-import ChatInput from '@/components/chat/ChatInput.vue'
-import GalleryPanel from '@/components/gallery/GalleryPanel.vue'
-import ArchivePanel from '@/components/archive/ArchivePanel.vue'
-
-// ✅ Define props (all read-only)
+// Preserve original props (no changes)
 const props = defineProps({
   activeTab: {
     type: String,
-    required: true,
     default: 'chatbot'
+  },
+  botMessages: {
+    type: Array,
+    default: () => []
+  },
+  userMessages: {
+    type: Array,
+    default: () => []
   },
   chatMessages: {
     type: Array,
-    required: true
+    default: () => []
   },
-  messageInput: {  // Read-only prop from parent
+  messageInput: {
     type: String,
-    required: true
+    default: ''
   },
   uploadFiles: {
     type: Array,
-    required: true
-  },
-  aiAvatar: {
-    type: String,
-    required: true
-  },
-  userAvatar: {
-    type: String,
-    required: true
+    default: () => []
   }
 })
 
-// ✅ Define emits (forward all events to parent)
+// Preserve original emits (no changes)
 const emit = defineEmits([
-  'update:message-input',  // For messageInput v-model
-  'upload-file',           // For file uploads
-  'send-message'           // For sending messages
+  'update:messageInput',
+  'upload-file',
+  'send-message'
 ])
 
-// ❌ Remove local sendMessage/handleFileUpload (forward events directly)
+// Preserve original handlers (no changes)
+const handleInputUpdate = (val) => emit('update:messageInput', val)
+const handleFileUpload = (file) => emit('upload-file', file)
+const handleSendMessage = (val) => emit('send-message', val)
+
+// Default avatars (add userAvatar here)
+const aiAvatar = ref('Robot') // For AI/bot
+const userAvatar = ref('User') // For user (new)
 </script>
 
 <style scoped>
-.content-panel {
-  flex: 1;
-  padding: 0;
-  overflow: auto;
-  background-color: #f9f9f9;
+/* Base main content */
+.main-content {
+  width: 100%;
+  height: calc(100vh - 60px); /* Full height minus top bar */
+  background-color: #f9f9f9; /* Match Gemini's light background */
+  overflow: hidden;
 }
 
+/* Chatbot panel wrapper */
 .chatbot-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center; /* Center chat container horizontally */
+  align-items: flex-start;
+  padding: 20px 0;
+}
+
+/* Centered chat container (80% width like Gemini) */
+.chat-container {
+  width: 80%;
+  max-width: 1200px; /* Prevent overstretching on large screens */
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 0;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.empty-panel {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+/* Chat messages area (fills available space) */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
+/* Replace .chat-input-wrapper with this (targets ChatInput's root) */
+:deep(.chat-input-root) {
+  flex-shrink: 0;
+}
+
+/* Responsive adjustment (Gemini mobile style) */
 @media (max-width: 768px) {
-  .message {
-    max-width: 95%;
+  .chat-container {
+    width: 95%; /* Full width on mobile */
   }
 }
 </style>
