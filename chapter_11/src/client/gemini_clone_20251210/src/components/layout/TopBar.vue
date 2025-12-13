@@ -6,18 +6,17 @@
         class="tab-item"
         v-for="tab in tabs" 
         :key="tab.name"
-        :class="{ active: localActiveTab === tab.name }"
+        :class="{ active: activeTab === tab.name }"
         @click="switchTab(tab.name)"
       >
         <el-icon :icon="tab.icon" class="tab-icon"></el-icon>
-        <!-- Label wrapper for precise text/underbar alignment -->
         <div class="tab-label-container">
           <span class="tab-label">{{ tab.label }}</span>
         </div>
       </div>
     </div>
 
-    <!-- User avatar (preserved) -->
+    <!-- User avatar -->
     <div class="user-profile" @click="showLoginModal = true">
       <el-avatar :src="userAvatar" class="avatar" icon="User"></el-avatar>
     </div>
@@ -28,14 +27,14 @@
 import { ref, watch } from 'vue'
 import { ChatDotRound, Picture, FolderOpened } from '@element-plus/icons-vue'
 
-// Tab config (unchanged)
+// Tab configuration
 const tabs = ref([
   { name: 'chatbot', label: '对话', icon: ChatDotRound },
   { name: 'gallery', label: '展厅', icon: Picture },
   { name: 'archive', label: '我的作品', icon: FolderOpened }
 ])
 
-// Props & Emits (unchanged functionality)
+// Props
 const props = defineProps({
   activeTab: {
     type: String,
@@ -47,29 +46,27 @@ const props = defineProps({
   }
 })
 
+// Emits
 const emit = defineEmits(['tab-change', 'open-login'])
 
-const localActiveTab = ref(props.activeTab)
+// Local state
 const showLoginModal = ref(false)
 
-watch(
-  () => props.activeTab,
-  (newVal) => { localActiveTab.value = newVal },
-  { immediate: true }
-)
-
+// Handle tab switching
 const switchTab = (tabName) => {
-  localActiveTab.value = tabName
-  emit('tab-change', tabName)
+  if (tabName !== props.activeTab) {
+    emit('tab-change', tabName)
+  }
 }
 
+// Watch for login modal changes
 watch(showLoginModal, (val) => {
   if (val) emit('open-login')
 })
 </script>
 
 <style scoped>
-/* Base top bar */
+/* All styles remain the same */
 .pinterest-top-bar {
   display: flex;
   justify-content: space-between;
@@ -81,7 +78,6 @@ watch(showLoginModal, (val) => {
   border: none;
 }
 
-/* Tab container */
 .tab-container {
   display: flex;
   gap: 24px;
@@ -89,7 +85,6 @@ watch(showLoginModal, (val) => {
   height: 100%;
 }
 
-/* Individual tab item */
 .tab-item {
   display: flex;
   align-items: center;
@@ -99,60 +94,48 @@ watch(showLoginModal, (val) => {
   cursor: pointer;
   color: #333333;
   font-size: 16px;
-  font-weight: 700; /* Bold text */
+  font-weight: 700;
   transition: color 0.2s ease;
   position: relative;
 }
 
-/* Hover state */
 .tab-item:hover {
-  color: #e60023; /* Pinterest red */
+  color: #e60023;
 }
 
-/* Active tab text color */
 .tab-item.active {
   color: #e60023;
 }
 
-/* --------------------------
-   Critical: Text + Underbar Alignment
---------------------------- */
-/* Label container (anchors text and underbar) */
 .tab-label-container {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center text horizontally */
+  justify-content: center;
   position: relative;
-  height: 100%; /* Match tab height for vertical centering */
+  height: 100%;
 }
 
-/* Tab label (ensures text is centered) */
 .tab-label {
   line-height: 1;
-  text-align: center; /* Explicit text centering */
+  text-align: center;
 }
 
-/* Active tab underbar (matches text width + centered under text) */
 .tab-item.active .tab-label-container::after {
   content: '';
   position: absolute;
-  bottom: 0; /* Align to bottom of tab bar */
-  left: 0; /* Match text container's left edge */
-  width: 100%; /* Exact width of text container */
-  height: 4px; /* Pinterest-style thickness */
-  background-color: #e60023; /* Pinterest red */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #e60023;
   border-radius: 2px 2px 0 0;
-  /* Ensure underbar is centered relative to text */
-  transform: none; /* No offset needed (matches text width) */
 }
 
-/* Tab icon (aligned with text) */
 .tab-icon {
   font-size: 20px;
-  align-self: center; /* Match text vertical alignment */
+  align-self: center;
 }
 
-/* User avatar */
 .user-profile {
   cursor: pointer;
 }
@@ -163,7 +146,6 @@ watch(showLoginModal, (val) => {
   border-radius: 50%;
 }
 
-/* Reset Element Plus defaults */
 :deep(.el-header) {
   border: none !important;
   padding: 0 !important;
