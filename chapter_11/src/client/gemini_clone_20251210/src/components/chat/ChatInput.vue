@@ -1,97 +1,114 @@
 <!-- Message input + file upload -->
 <template>
-  <div class="chat-input-area">
-    <el-upload
-      class="upload-btn"
-      :auto-upload="false"
-      :on-change="handleFileUpload"
-      :file-list="uploadFiles"
-      multiple
-      accept=".jpg,.png,.mp3,.mp4,.pdf"
-    >
-      <el-button class="upload-btn" circle>
-        <img src="@/assets/icons/upload.svg" alt="Upload" class="icon" />
+  <div class="chat-input-root" :class="$attrs.class">
+    <div 
+      class="chat-resizer" 
+      @mousedown="startResize"
+      :class="{ dragging: isResizing }"
+    ></div>
+
+    <div class="chat-input-area" :style="{ height: inputHeight + 'px' }">
+      <el-upload
+        class="upload-btn"
+        :auto-upload="false"
+        :on-change="handleFileUpload"
+        :file-list="uploadFiles"
+        multiple
+        accept=".jpg,.png,.mp3,.mp4,.pdf"
+      >
+        <el-button class="upload-btn__circle" circle>
+          <img src="@/assets/icons/upload.svg" alt="Upload" class="icon" />
+        </el-button>
+      </el-upload>
+
+      <el-input
+        v-model="localMessageInput"
+        type="textarea"
+        placeholder="Type your message here..."
+        class="message-input"
+        @keyup.enter="sendMessage"
+        :autosize="false"
+        :style="{ height: (inputHeight - 30) + 'px' }"
+      ></el-input>
+
+      <el-button
+        type="primary"
+        class="send-btn"
+        @click="sendMessage"
+        :disabled="!localMessageInput?.trim() && uploadFiles.length === 0"
+        circle
+      >
+        <img src="@/assets/icons/send.svg" alt="Send" class="send-btn-icon" />
       </el-button>
-    </el-upload>
-
-    <el-input
-      v-model="localMessageInput"
-      type="textarea"
-      placeholder="Type your message here... (supports JPG/PNG/MP3/MP4/PDF)"
-      class="message-input"
-      @keyup.enter="sendMessage"
-    ></el-input>
-
-    <el-button
-      type="primary"
-      icon="PaperPlaneFilled"
-      class="send-btn"
-      @click="sendMessage"
-      :disabled="!localMessageInput?.trim() && uploadFiles.length === 0"
-      circle
-    ></el-button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+// Keep ALL existing script code (no changes)
+import { ref, watch, onUnmounted } from 'vue'
 
-// ✅ Define read-only props (from parent)
 const props = defineProps({
   messageInput: {
     type: String,
-    required: true
+    default: ''
   },
   uploadFiles: {
     type: Array,
-    required: true
+    default: () => []
   }
 })
 
-// ✅ Define emits to communicate with parent
 const emit = defineEmits([
-  'update:messageInput', // For syncing input value
-  'upload-file',         // For file uploads
-  'send-message'         // For sending messages
+  'update:messageInput',
+  'upload-file',
+  'send-message'
 ])
 
-// ✅ Local reactive variable (mirrors parent's messageInput prop)
 const localMessageInput = ref(props.messageInput)
+const isResizing = ref(false)
+const inputHeight = ref(120)
+const startY = ref(0)
+const startHeight = ref(0)
 
-// ✅ Sync parent prop changes to local variable (if parent updates the value)
-watch(
-  () => props.messageInput,
-  (newValue) => {
-    localMessageInput.value = newValue
-  }
-)
+watch(localMessageInput, (val) => emit('update:messageInput', val))
+watch(() => props.messageInput, (val) => localMessageInput.value = val)
 
-// ✅ Sync local variable changes back to parent (optional, for real-time sync)
-watch(
-  localMessageInput,
-  (newValue) => {
-    emit('update:messageInput', newValue)
-  }
-)
+const handleFileUpload = (file) => emit('upload-file', file)
 
-// Handle file upload (forward to parent)
-const handleFileUpload = (file) => {
-  emit('upload-file', file)
-}
-
-// Handle send message (forward to parent + reset local input)
 const sendMessage = () => {
-  const inputValue = localMessageInput.value.trim()
-  
-  // Guard clause (check trimmed string + files)
-  if (!inputValue && props.uploadFiles.length === 0) return
-  
-  // Emit message to parent (use the trimmed value)
-  emit('send-message', inputValue)
-  
-  // Reset local input (updates parent via watch)
+  const val = localMessageInput.value.trim()
+  if (!val && props.uploadFiles.length === 0) return
+  emit('send-message', val)
   localMessageInput.value = ''
 }
+
+const startResize = (e) => {
+  isResizing.value = true
+  startY.value = e.clientY
+  startHeight.value = inputHeight.value
+  document.addEventListener('mousemove', handleResize)
+  document.addEventListener('mouseup', stopResize)
+  e.preventDefault()
+}
+
+const handleResize = (e) => {
+  if (!isResizing.value) return
+  const deltaY = startY.value - e.clientY
+  const newHeight = Math.max(80, Math.min(400, startHeight.value + deltaY))
+  inputHeight.value = newHeight
+}
+
+const stopResize = () => {
+  isResizing.value = false
+  document.removeEventListener('mousemove', handleResize)
+  document.removeEventListener('mouseup', stopResize)
+}
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleResize)
+  document.removeEventListener('mouseup', stopResize)
+})
 </script>
 
 <style scoped>
@@ -106,6 +123,13 @@ const sendMessage = () => {
 
 .upload-btn {
   flex-shrink: 0;
+  /* Ensure equal dimensions for perfect circle */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Critical for circle shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .message-input {
@@ -114,11 +138,60 @@ const sendMessage = () => {
 
 .send-btn {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 40px;  /* Add this - critical for circle */
+  height: 40px; /* Add this - must equal width */
 }
 
-.icon {
-  width: 20px;  /* Adjust size as needed */
-  height: 20px; /* Keep width and height equal for proper scaling */
-  object-fit: contain; /* Ensures the icon maintains its aspect ratio */
+.icon, .send-btn-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Optional: Reset Element Plus button styles */
+:deep(.el-button--circle) {
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+}
+
+
+/* Add styles for the new root container (matches original layout) */
+.chat-input-root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-resizer {
+  height: 4px;
+  background-color: #e0e0e0;
+  cursor: ns-resize;
+  transition: background-color 0.2s ease;
+  border-radius: 2px;
+  margin: 0;
+}
+
+.chat-resizer:hover {
+  background-color: #007bff;
+}
+
+.chat-resizer.dragging {
+  background-color: #007bff;
+  height: 6px;
+}
+
+.message-input :deep(.el-textarea__inner) {
+  height: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  resize: none;
+  padding: 12px;
+  font-size: 15px;
 }
 </style>
