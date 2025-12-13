@@ -16,21 +16,21 @@ import { ref, watch } from 'vue'
 import MessageItem from './MessageItem.vue'
 
 const props = defineProps({
+
+  aiAvatar: {
+    type: String,
+    default: null  // Null means use default icon
+  },
+  userAvatar: {
+    type: String,
+    default: null
+  },
+
   chatMessages: {
     type: Array,
     required: true
   },
-  aiAvatar: {
-    type: [String, Object],
-    required: false,
-    default: 'Robot'
-  },
-  userAvatar: { // Fix userAvatar prop
-    type: [String, Object], // Accept icon name (e.g., 'User') or image URL
-    required: false, // Remove "required: true"
-    default: 'User' // Default to Element Plus "User" icon
-  },
-  // ✅ Fix 1: Allow null/undefined (or make optional)
+
   messagesContainer: {
     type: Object,
     default: null, // Allow null by default
@@ -59,14 +59,6 @@ defineExpose({
 </script>
 
 <style scoped>
-/*
-.chat-messages {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-*/
-
 .chat-messages-container {
   width: 100%;
   height: calc(100vh - 200px);
@@ -76,35 +68,6 @@ defineExpose({
   display: flex; /* Add this */
   flex-direction: column; /* Add this */
 }
-
-/*
-.message {
-  display: flex;
-  margin-bottom: 16px;
-  max-width: 70%;
-  width: 100%; 
-}
-*/
-
-/*
-.user-message {
-  flex-direction: row-reverse;
-  align-self: flex-end;
-  justify-content: flex-start; 
-*/
-
-/*
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  margin: 0 0 0 12px; 
-  flex-shrink: 0;
-  align-self: flex-end;
-}
-*/
-
-
-/**** */
 
 .chat-messages {
   flex: 1;

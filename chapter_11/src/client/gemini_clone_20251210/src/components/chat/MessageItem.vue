@@ -4,8 +4,9 @@
     <el-avatar 
       :src="msg.sender === 'ai' ? aiAvatar : userAvatar" 
       class="message-avatar"
-      :icon="msg.sender === 'ai' ? 'Monitor' : 'User'"
+      :icon="(msg.sender === 'ai' && !aiAvatar) ? Monitor : (!userAvatar ? User : null)"
     ></el-avatar>
+
     <div class="message-content">
       <p>{{ msg.content }}</p>
       <!-- File Preview -->
@@ -37,6 +38,7 @@
 
 <script setup>
 import { useFileHelpers } from '../../composables/useFileHelpers.js'
+import { Monitor, User } from '@element-plus/icons-vue' 
 
 const props = defineProps({
   msg: {
