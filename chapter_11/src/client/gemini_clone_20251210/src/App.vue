@@ -19,7 +19,7 @@
       v-if="!isSidebarCollapsed" 
     ></div>
 
-    <!-- Main Chatbot Panel -->
+    <!-- Main Content Area -->
     <el-container class="main-container">
       <TopBar 
         :active-tab="activeTab"
@@ -27,16 +27,13 @@
         @tab-change="activeTab = $event"
         @open-login="showLoginModal = true"
       />
-      <MainContent
-        :active-tab="activeTab"
-        :chat-messages="chatMessages"
-        v-model:message-input="messageInput"
-        :upload-files="uploadFiles"
-        :ai-avatar="aiAvatar"
-        :user-avatar="userAvatar"
-        @upload-file="handleFileUpload"
-        @send-message="sendMessage"
-      />
+      
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <ChatPanel v-if="activeTab === 'chatbot'" :active="activeTab === 'chatbot'" />
+        <GalleryPanel v-if="activeTab === 'gallery'" :active="activeTab === 'gallery'" />
+        <ArchivePanel v-if="activeTab === 'archive'" :active="activeTab === 'archive'" />
+      </div>
     </el-container>
 
     <LoginModal 
@@ -51,7 +48,9 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import Sidebar from './components/layout/Sidebar.vue'
 import TopBar from './components/layout/TopBar.vue'
-import MainContent from './components/layout/MainContent.vue'
+import ChatPanel from './components/chat/ChatPanel.vue'
+import GalleryPanel from './components/gallery/GalleryPanel.vue'
+import ArchivePanel from './components/archive/ArchivePanel.vue'
 import LoginModal from './components/auth/LoginModal.vue'
 import { useChatStore } from './composables/useChatStore'
 import { useWebSocket } from './composables/useWebSocket'
@@ -139,6 +138,12 @@ const handleLoginSuccess = (avatarUrl) => {
 </script>
 
 <style scoped>
+.tab-content {
+  flex: 1;
+  overflow: hidden;
+  height: calc(100% - 60px); /* Subtract header height */
+}
+
 .app-container {
   display: flex;
   height: 100vh;
