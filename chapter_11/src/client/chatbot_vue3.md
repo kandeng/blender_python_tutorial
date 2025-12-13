@@ -26,7 +26,74 @@ $ npm run dev
 
 
 &nbsp;
-## 3. Running the App
+## 3. File structure
+
+~~~
+$ pwd
+  /home/robot/langchain_20251209/client/gemini_clone_20251213
+
+$ tree .
+.
+├── node_modules
+│   └── ...
+├── index.html
+├── package.json
+├── package-lock.json
+├── public
+│   └── vite.svg   // Useless
+├── src
+│   ├── App.vue
+│   ├── assets
+│   │   ├── icons
+│   │   │   ├── archive.svg
+│   │   │   ├── chatbot.svg
+│   │   │   ├── delete.svg
+│   │   │   ├── download.svg
+│   │   │   ├── edit.svg
+│   │   │   ├── file.svg
+│   │   │   ├── gallery.svg
+│   │   │   ├── help.svg
+│   │   │   ├── menu.svg
+│   │   │   ├── monitoring.svg
+│   │   │   ├── plus.svg
+│   │   │   ├── robot.svg
+│   │   │   ├── search.svg
+│   │   │   ├── send.svg
+│   │   │   ├── settings.svg
+│   │   │   ├── upload.svg
+│   │   │   └── user.svg
+│   │   └── vue.svg    // Useless
+│   ├── components
+│   │   ├── archive
+│   │   │   └── ArchivePanel.vue
+│   │   ├── auth
+│   │   │   └── LoginModal.vue
+│   │   ├── chat
+│   │   │   ├── ChatInput.vue
+│   │   │   ├── ChatMessages.vue
+│   │   │   ├── ChatPanel.vue
+│   │   │   └── MessageItem.vue
+│   │   ├── gallery
+│   │   │   └── GalleryPanel.vue
+│   │   └── layout
+│   │       ├── Sidebar.vue
+│   │       └── TopBar.vue
+│   ├── composables
+│   │   ├── useChatStore.js
+│   │   ├── useFileHelpers.js
+│   │   └── useWebSocket.js
+│   ├── main.js
+│   └── style.css
+└── vite.config.js
+
+11 directories, 38 files
+
+~~~
+
+
+
+&nbsp;
+## 4. Running the App
 
 ~~~
 $ pwd
