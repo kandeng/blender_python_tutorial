@@ -38,7 +38,7 @@ Following is the backend workflow,
 
 
 &nbsp;
-# 2. RabbitMQ, PostgreSQL, and MinIO
+## 2. RabbitMQ, PostgreSQL, and MinIO
 
 A `rabbit-mq` message queue, a `postgre-sql` rdbms database, and `MinIO` object storage service, 
 are deployed in a server. 
