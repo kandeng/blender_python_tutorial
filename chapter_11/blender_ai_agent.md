@@ -50,6 +50,9 @@ Also similar to Anthropic, we use multi-agents to do this job.
 
 ## 2.1. the Fastapi backend engine.
 
+The workflow and the system architecture of the backend server 
+refers to "[Blender Agent Infrastructure](./src/server/blender_agent.md)".
+
 1. Startup the fastapi backend server.
    
 ~~~
@@ -85,9 +88,12 @@ to verify if the fastapi backend server works well.
 
 ## 2.2. the VUE frontpage server
 
-We used VUE3 to create the front tier webpages, implementing a chatbot that is similar to [Google gemini app](https://gemini.google.com/app)
+We used VUE3 to create the front tier webpages, implementing a chatbot 
+that is similar to [Google gemini app](https://gemini.google.com/app).
 
-To setup the front tier, please read [Chatbot vue3 webpage](./src/client/chatbot_vue3.md)
+To setup the front tier, please read 
+"[Chatbot vue3 webpage](./src/client/chatbot_vue3.md)".
+
 
 1. Startup the vue frontpage server
    
