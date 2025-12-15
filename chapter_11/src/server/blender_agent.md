@@ -156,13 +156,11 @@ following [rabbit-mq's official guidance](https://www.rabbitmq.com/docs/install-
    
    # check on service status as observed by service manager
    $ sudo systemctl status rabbitmq-server
-   
-   $ sudo systemctl status rabbitmq-server
      ● rabbitmq-server.service - RabbitMQ Messaging Server
         Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
         Active: active (running) since Mon 2025-12-15 17:04:53 CST; 38min ago
    
-   # Another useful tool
+   # Another useful status diagnostics tool
    $ rabbitmq-diagnostics status
    
    # stop the local node
