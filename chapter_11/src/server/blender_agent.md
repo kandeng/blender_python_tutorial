@@ -40,8 +40,7 @@ Following is the backend workflow,
 &nbsp;
 ## 2. RabbitMQ, PostgreSQL, and MinIO
 
-
-### 2.1. Connection
+### 2.1. Connections
 
 A `rabbit-mq` message queue, a `postgre-sql` rdbms database, and `MinIO` object storage service, 
 are deployed in a server. 
@@ -151,22 +150,22 @@ following [rabbit-mq's official guidance](https://www.rabbitmq.com/docs/install-
 
 4. Run RabbitMQ Server
 
-~~~
-# start it back
-$ sudo systemctl start rabbitmq-server
-
-# check on service status as observed by service manager
-$ sudo systemctl status rabbitmq-server
-
-$ sudo systemctl status rabbitmq-server
-  ● rabbitmq-server.service - RabbitMQ Messaging Server
-     Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
-     Active: active (running) since Mon 2025-12-15 17:04:53 CST; 38min ago
-
-# Another useful tool
-$ rabbitmq-diagnostics status
-
-# stop the local node
-$ sudo systemctl stop rabbitmq-server
-~~~
+   ~~~
+   # start it back
+   $ sudo systemctl start rabbitmq-server
    
+   # check on service status as observed by service manager
+   $ sudo systemctl status rabbitmq-server
+   
+   $ sudo systemctl status rabbitmq-server
+     ● rabbitmq-server.service - RabbitMQ Messaging Server
+        Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
+        Active: active (running) since Mon 2025-12-15 17:04:53 CST; 38min ago
+   
+   # Another useful tool
+   $ rabbitmq-diagnostics status
+   
+   # stop the local node
+   $ sudo systemctl stop rabbitmq-server
+   ~~~
+      
