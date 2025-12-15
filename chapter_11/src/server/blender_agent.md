@@ -40,6 +40,9 @@ Following is the backend workflow,
 &nbsp;
 ## 2. RabbitMQ, PostgreSQL, and MinIO
 
+
+### 2.1. Connection
+
 A `rabbit-mq` message queue, a `postgre-sql` rdbms database, and `MinIO` object storage service, 
 are deployed in a server. 
 
@@ -61,7 +64,7 @@ and access the rabbit-mq, postgre-sql and min-io deployed in a remote server.
 2. When the agents, the blender executor, and the fastapi web server, read or write data to the postgre-sql database,
    they connect the database directly via the database adapter `SQLAlchemy`.
 
-   It is not necessary to wrap the postgre-sql database into a micro-service and connect to the outside via rabbit-mq, because,
+   It is not necessary to wrap the postg. re-sql database into a micro-service and connect to the outside via rabbit-mq, because,
 
    * Overengineering: Adds a redundant layer (DB microservice) with no tangible benefits for our use case.
 
@@ -72,12 +75,98 @@ and access the rabbit-mq, postgre-sql and min-io deployed in a remote server.
 
    * Debugging Complexity: Database operations are hidden behind rabbit-mq messages (hard to trace "who updated job X").
 
- 3. When the agents, the blender executor, and the fastapi web server, upload or download files to or from the min-io object storage service,
-    they connect min-io via http/https, instead of using rabbit-mq.
+3. When the agents, the blender executor, and the fastapi web server, upload or download files to or from the min-io object storage service,
+   they connect min-io via http/https, instead of using rabbit-mq.
 
-    The reason is that rabbit-mq works better for small and frequent messages, but not large files.
+   The reason is that rabbit-mq works better for small and frequent messages, but not large files.
+
+4. As mention aboved, when the agents, the blender executor, and the fastapi web server, send messages to each other,
+   they use rabbit-mq.
+
+   However, when they files to each other, they don't send the file via rabbit-mq. Instead, they take 2 steps.
+
+   * Upload the file to the min-io,
+  
+   * Send the URL of the file to each other via rabbit-mq.
 
 
+### 2.2. Rabbit-mq installation and running
+
+The installation of rabbit-mq is not so easy as expected. 
+
+We successfully installed rabbit-mq in our ubuntu notebook, 
+following [rabbit-mq's official guidance](https://www.rabbitmq.com/docs/install-debian#apt-quick-start). 
+
+1. Install Essential Dependencies
+   
+   ~~~
+   # Our ubuntu's version is 22.04, and its architecture is x86_64
+   $ uname -a
+     Linux robot-test 6.8.0-87-generic #88~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Oct 14 14:03:14 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
    
    
+   $ sudo apt-get update -y
+   
+   $ sudo apt-get install curl gnupg -y
+   
+   $ sudo apt-get install apt-transport-https
+   
+   
+   # Team RabbitMQ's signing key
+   $ curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | sudo gpg --dearmor | sudo tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
+   ~~~
 
+2. Create or modify `/etc/apt/sources.list.d/rabbitmq.list`. 
+
+   We changed `arch=amd64` to `arch=x86_64`. But being honest, we don't know whether or not it is necessary.
+
+   ~~~
+   ## Modern Erlang/OTP releases
+   ##
+   deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb1.rabbitmq.com/rabbitmq-erlang/ubuntu/jammy jammy main
+   deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb2.rabbitmq.com/rabbitmq-erlang/ubuntu/jammy jammy main
+   
+   
+   ## Provides modern RabbitMQ releases
+   ##
+   deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb1.rabbitmq.com/rabbitmq-server/ubuntu/jammy jammy main
+   deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb2.rabbitmq.com/rabbitmq-server/ubuntu/jammy jammy main
+   ~~~
+
+3. Install erlang and rabbit-mq
+   
+   ~~~
+   $ sudo apt-get update -y
+   
+   # Install Erlang packages
+   $ sudo apt-get install -y erlang-base \
+                           erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets \
+                           erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key \
+                           erlang-runtime-tools erlang-snmp erlang-ssl \
+                           erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
+   
+   # Install rabbitmq-server and its dependencies
+   $ sudo apt-get install rabbitmq-server -y --fix-missing
+   ~~~
+
+4. Run RabbitMQ Server
+
+~~~
+# start it back
+$ sudo systemctl start rabbitmq-server
+
+# check on service status as observed by service manager
+$ sudo systemctl status rabbitmq-server
+
+$ sudo systemctl status rabbitmq-server
+  ● rabbitmq-server.service - RabbitMQ Messaging Server
+     Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2025-12-15 17:04:53 CST; 38min ago
+
+# Another useful tool
+$ rabbitmq-diagnostics status
+
+# stop the local node
+$ sudo systemctl stop rabbitmq-server
+~~~
+   
