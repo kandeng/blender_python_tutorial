@@ -77,10 +77,10 @@ const {
   messageInput,
   uploadFiles,
   aiAvatar,
-  handleFileUpload
+  handleFileUpload 
 } = useChatStore()
 
-const { sendMessage } = useWebSocket(chatMessages, uploadFiles)
+const { sendMessage } = useWebSocket(chatMessages, uploadFiles) 
 
 // Sync collapse state from Sidebar.vue
 const handleSidebarCollapse = (collapsed) => {
