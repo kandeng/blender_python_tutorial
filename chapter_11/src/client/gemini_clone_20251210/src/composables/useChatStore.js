@@ -4,6 +4,7 @@ import { ref } from 'vue'
 
 export function useChatStore() {
   // Reactive state
+  /*
   const chatMessages = ref([
     // Initial welcome message
     {
@@ -14,6 +15,8 @@ export function useChatStore() {
       files: []
     }
   ])
+  */
+  const chatMessages = ref([])
   const messageInput = ref('')
   const uploadFiles = ref([])
   const aiAvatar = ref('/src/assets/icons/robot.svg')
@@ -39,6 +42,7 @@ export function useChatStore() {
     console.log('File added successfully:', file.name, 'Total files:', uploadFiles.value.length)
   }
 
+  /*
   // Send message (with files)
   const sendMessage = (message) => {
     // Validate: empty message + no files = do nothing
@@ -70,6 +74,8 @@ export function useChatStore() {
       chatMessages.value.push(aiResponse)
     }, 1000)
   }
+  */
+
 
   // Reset chat (optional)
   const resetChat = () => {
@@ -94,7 +100,6 @@ export function useChatStore() {
     aiAvatar,
     userAvatar,
     handleFileUpload,
-    sendMessage,
     resetChat
-  }
+  }  
 }

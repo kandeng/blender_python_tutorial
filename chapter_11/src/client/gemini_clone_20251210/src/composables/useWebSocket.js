@@ -6,7 +6,7 @@ import axios from 'axios'
 export const useWebSocket = (chatMessages, uploadFiles) => {
   const SERVER_URL = 'http://localhost:8000'
   const WS_URL = `ws://localhost:8000/ws/`
-  const userId = ref('user_' + Math.random().toString(36).substr(2, 9))
+  const userId = ref('user_' + Math.random().toString(36).slice(2, 11))
   let ws = null
 
   // Initialize WebSocket
@@ -28,7 +28,16 @@ export const useWebSocket = (chatMessages, uploadFiles) => {
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data)
-      // Deduplicate messages
+      // Enforce sender for AI messages
+      if (!msg.sender) {
+        msg.sender = 'ai'; 
+      }
+      // Add AI avatar if missing
+      if (msg.sender === 'ai' && !msg.avatar) {
+        msg.avatar = '/src/assets/icons/robot.svg';
+      }
+
+      // Deduplicate and add to chat
       const isDuplicate = chatMessages.value.some(
         m => m.timestamp === msg.timestamp && m.content === msg.content
       )
@@ -52,14 +61,14 @@ export const useWebSocket = (chatMessages, uploadFiles) => {
   const sendMessage = (content) => {
     if (!content.trim() && uploadFiles.value.length === 0) return
 
-    // Add user message to local chat
     const userMsg = {
-      sender: 'user',
+      sender: 'user',  // Explicitly set sender
       content: content.trim(),
       files: [...uploadFiles.value],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      avatar: '/src/assets/icons/user.svg' 
     }
-    chatMessages.value.push(userMsg)
+    chatMessages.value.push(userMsg)    
 
     // Send to server
     if (ws && ws.readyState === WebSocket.OPEN) {
