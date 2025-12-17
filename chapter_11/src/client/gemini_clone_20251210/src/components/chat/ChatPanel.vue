@@ -14,7 +14,7 @@
           <!-- Avatar -->
           <div class="message-avatar-wrapper">
             <img 
-              :src="getAvatarUrl(msg.avatar)" 
+              :src="getAvatarUrl(msg.avatar, msg.sender)" 
               alt="Avatar" 
               class="message-avatar"
               :class="{ 'user-avatar': msg.sender === 'user', 'ai-avatar': msg.sender === 'ai' }"
@@ -59,8 +59,10 @@
 import { ref, onMounted } from 'vue'
 import ChatInput from './ChatInput.vue'
 import { useChatStore } from '@/composables/useChatStore'
+import { useWebSocket } from '@/composables/useWebSocket'
 import userSvg from '@/assets/icons/user.svg'
 import robotSvg from '@/assets/icons/robot.svg'
+
 
 // Props for chat panel
 const props = defineProps({
@@ -71,22 +73,37 @@ const props = defineProps({
 })
 
 // Resolve avatar URL
-const getAvatarUrl = (avatarPath) => {
-  if (!avatarPath) return null
-  if (avatarPath.includes('user.svg')) return userSvg
-  if (avatarPath.includes('robot.svg')) return robotSvg
-  if (avatarPath.startsWith('http')) return avatarPath
-  return robotSvg
-}
+const getAvatarUrl = (avatarPath, sender) => {
+  // Prioritize sender to avoid path dependency
+  if (sender === 'user') {
+    return userSvg; 
+  } else if (sender === 'ai') {
+    return robotSvg; 
+  }
+  // Fallback for edge cases
+  if (avatarPath?.startsWith('http')) return avatarPath;
+  return robotSvg;
+};
+
 
 // Get store state and methods
 const {
   chatMessages,
   messageInput,
   uploadFiles,
-  handleFileUpload: storeHandleFileUpload,
-  sendMessage
+  aiAvatar,
+  handleFileUpload: storeHandleFileUpload
 } = useChatStore()
+
+// Get the REAL sendMessage from useWebSocket (connects to server)
+const { sendMessage: sendToServer } = useWebSocket(chatMessages, uploadFiles)
+
+// Update the sendMessage handler to use the server function
+const sendMessage = (message) => {
+  sendToServer(message)
+}
+
+
 
 // Forward file upload/removal to store
 const handleFileUpload = (file, removeIndex) => {
