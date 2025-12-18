@@ -1,0 +1,10 @@
+{
+    "_comment_USER_AGENT": "Define the user-agent used by the requests library to browse website (string)",
+    "USER_AGENT": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+
+    "_comment_API_DOC": "The URL of the API document", 
+    "API_DOC": "API document URL",
+
+    "_comment_SSL_DIR": "The directory that contains the SSL certificate and private key for HTTPS connection", 
+    "SSL_DIR": "ssl"
+}
