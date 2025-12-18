@@ -1,0 +1,30 @@
+/* Reset default styles and set Arial as global font */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Apply to Element Plus components (override default font) */
+:root {
+  --el-font-family: 'Arial', sans-serif;
+}
+
+/* Optional: Customize font sizes/weights for consistency */
+body {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Chat message text */
+.message-content p {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+}
+
+/* Input/button text */
+.el-input, .el-button, .el-tabs {
+  font-family: 'Arial', sans-serif;
+}
