@@ -18,8 +18,8 @@ sudo systemctl start rabbitmq-server
 sleep 5
 
 echo
-echo "[INFO] nohup python3 langchain/orchestrator_agent.py > logs/orchestrator_agent_log.txt"
-nohup python3 langchain/orchestrator_agent.py > logs/orchestrator_agent_log.txt 2>&1 &
+echo "[INFO] nohup python3 langchain_agent/orchestrator_agent.py > logs/orchestrator_agent_log.txt"
+nohup python3 langchain_agent/orchestrator_agent.py > logs/orchestrator_agent_log.txt 2>&1 &
 
 echo
 echo "[INFO] nohup python3 fastapi_server/fastapi_engine.py > logs/fastapi_engine_log.txt"
