@@ -12,6 +12,7 @@ echo
 echo 
 echo "=========================================================================================="
 echo "    [1] Start up chroma vector database, then wait for 5 seconds."
+echo 
 
 cd /home/robot/aiBlender/aiBlender_20251218/server
 nohup chroma run --host 127.0.0.1 --port 5566 --path ~/chroma_storage > ./logs/chroma.log 2>&1 &
@@ -27,7 +28,7 @@ sudo lsof -i :5566 2>&1
 # Test connectivity (should return a heartbeat timestamp)
 echo
 curl http://localhost:5566/api/v2/heartbeat 2>&1
-
+echo
 
 echo 
 echo 

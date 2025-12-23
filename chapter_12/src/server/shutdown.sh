@@ -11,6 +11,7 @@ echo
 echo 
 echo "=========================================================================================="
 echo "    [1] Shut down chroma vector database, then wait for 5 seconds."
+echo 
 
 cd /home/robot/aiBlender/aiBlender_20251218/server
 CHROMA_PID=$(cat ./logs/chroma.pid)
@@ -31,6 +32,7 @@ echo
 echo 
 echo "=========================================================================================="
 echo "    [2] Shut down fastapi web server, then wait for 5 seconds."
+echo 
 
 # Reference: Is there a way to kill uvicorn cleanly?
 # https://stackoverflow.com/questions/60424390/is-there-a-way-to-kill-uvicorn-cleanly
@@ -53,6 +55,8 @@ echo
 echo 
 echo "=========================================================================================="
 echo "    [3] Shut down rabbitmq message queue service, then wait for 5 seconds."
+echo 
+
 sudo systemctl stop rabbitmq-server
 sleep 5
 
@@ -61,6 +65,7 @@ echo
 echo 
 echo "=========================================================================================="
 echo "    [4] Shut down langchain agents"
+echo 
 
 AGENT_PID="$(pgrep -f 'orchestrator_agent')"
 echo $(ps -p $AGENT_PID -f -o pid -o command | tail -n +2)
