@@ -7,7 +7,7 @@
 ## 2. System architecture
 
 
-&nsbp;
+&nbsp;
 ## 3. Install PostgreSQL database and vector-store 
 
 [PostgreSQL's office website](https://www.postgresql.org/docs/14/admin.html) 
@@ -16,7 +16,6 @@ provides details installation and administration guide.
 To do it quickly, you can follow our steps to install postgre-sql, and start it up as a ubuntu system service. 
 
 ### 3.1 Install PostgreSQL
-
 ~~~
 Step 1: Update System Packages
 $ sudo apt update
@@ -54,7 +53,6 @@ Step 3: Basic Post-Install Configuration
   $ sudo -i -u postgres createdb --owner=robot robot_db  (This one works)
 ~~~
 
-
 &nbsp;
 ### 3.2 Configure Networking
 
@@ -87,12 +85,82 @@ Step 3: Basic Post-Install Configuration
    ~~~
 
 **Step 2. Edit postgresql.conf to Listen for connections**
-
    ~~~
-   $ sudo nano /etc/postgresql/<VERSION>/main/postgresql.conf
+   $ sudo vim /etc/postgresql/<VERSION>/main/postgresql.conf
    ~~~
 
    Update the `listen_addresses` line to allow all interfaces:
    ~~~
    listen_addresses = '*'             # Default is 'localhost'
    ~~~
+
+**Step 3. Restart PostgreSQL to Apply Changes**
+   ~~~
+   $ sudo systemctl status postgresql
+     ● postgresql.service - PostgreSQL RDBMS
+         Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor preset: enabled)
+         Active: active (exited) since Tue 2025-12-23 21:09:07 CST; 30min ago
+        Process: 3940105 ExecStart=/bin/true (code=exited, status=0/SUCCESS)
+       Main PID: 3940105 (code=exited, status=0/SUCCESS)
+            CPU: 805us 
+     Dec 23 21:09:07 robot-test systemd[1]: Starting PostgreSQL RDBMS...
+     Dec 23 21:09:07 robot-test systemd[1]: Finished PostgreSQL RDBMS
+
+   $ sudo systemctl restart postgresql
+   $
+   ~~~
+
+&nbsp;
+### 3.3 Install pgvector
+
+**Step 1. Add the pgvector repository**
+
+   ~~~
+   # Add PG apt repo (if not already added)
+   $ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+   $ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+   # sudo apt update
+    
+   # Install pgvector, replace <VERSION> with 14
+   # sudo apt install postgresql-<VERSION>-pgvector -y
+   ~~~
+
+&nbsp;
+**Step 2. Enable pgvector in the postgre-sql database**
+
+1. Connect to the postgre-sql database and enable the extension
+   ~~~
+   $ psql -U robot -d robot_db -h localhost
+     Password for user robot: 1234567890
+     psql (14.20 (Ubuntu 14.20-0ubuntu0.22.04.1))
+     SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+     Type "help" for help.
+
+   robot_db=# 
+   ~~~
+
+2. Run this SQL command, and verify
+   ~~~
+   robot_db=# CREATE EXTENSION IF NOT EXISTS vector;
+
+   robot_db=# \dx     # Verify that "vector" column does exist.
+                             List of installed extensions
+        Name   | Version |   Schema   |                     Description                      
+      ---------+---------+------------+------------------------------------------------------
+       plpgsql | 1.0     | pg_catalog | PL/pgSQL procedural language
+       vector  | 0.8.1   | public     | vector data type and ivfflat and hnsw access methods
+      (2 rows)
+
+   robot_db=# \q
+   ~~~
+
+&nbsp;
+### 3.4 Uninstall PostgreSQL completely
+~~~
+$ sudo apt purge postgresql postgresql-contrib -y
+
+$ sudo apt autoremove -y
+
+# Delete data directories (CAUTION: irreversibly deletes all databases!)
+$ sudo rm -rf /var/lib/postgresql/
+~~~
