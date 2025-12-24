@@ -8,14 +8,14 @@
 
 
 &nbsp;
-## 3. Install PostgreSQL database and vector-store 
+## 3. Install postgre-sql and pgvector
 
 [PostgreSQL's office website](https://www.postgresql.org/docs/14/admin.html) 
 provides details installation and administration guide.
 
 To do it quickly, you can follow our steps to install postgre-sql, and start it up as a ubuntu system service. 
 
-### 3.1 Install PostgreSQL
+### 3.1 Install postgre-sql
 ~~~
 Step 1: Update System Packages
 $ sudo apt update
@@ -54,17 +54,17 @@ Step 3: Basic Post-Install Configuration
 ~~~
 
 &nbsp;
-### 3.2 Configure Networking
+### 3.2 Configure networking
 
-**Step 1. Edit the pg_hba.conf File**
+**Step 1. Edit the pg_hba.conf file**
 
-1. Check the version of our PostgreSQL 
+1. Check the version of our postgre-sql 
    ~~~
    $ ls /etc/postgresql/
      14
    ~~~
 
-2. Edit the pg_hba.conf File, replace `<VERSION>` as `14`
+2. Edit the pg_hba.conf file, replace `<VERSION>` as `14`
    ~~~
    $ sudo vim /etc/postgresql/<VERSION>/main/pg_hba.conf
    ~~~
@@ -84,7 +84,7 @@ Step 3: Basic Post-Install Configuration
    host       all      all     192.168.1.0/24     md5
    ~~~
 
-**Step 2. Edit postgresql.conf to Listen for connections**
+**Step 2. Edit postgresql.conf to listen for connections**
    ~~~
    $ sudo vim /etc/postgresql/<VERSION>/main/postgresql.conf
    ~~~
@@ -94,7 +94,7 @@ Step 3: Basic Post-Install Configuration
    listen_addresses = '*'             # Default is 'localhost'
    ~~~
 
-**Step 3. Restart PostgreSQL to Apply Changes**
+**Step 3. Restart PostgreSQL to apply changes**
    ~~~
    $ sudo systemctl status postgresql
      ● postgresql.service - PostgreSQL RDBMS
@@ -155,7 +155,7 @@ Step 3: Basic Post-Install Configuration
    ~~~
 
 &nbsp;
-### 3.4 Uninstall PostgreSQL completely
+### 3.4 Uninstall postgre-sql and pgvector completely
 ~~~
 $ sudo apt purge postgresql postgresql-contrib -y
 
