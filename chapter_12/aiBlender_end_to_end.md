@@ -164,3 +164,30 @@ $ sudo apt autoremove -y
 # Delete data directories (CAUTION: irreversibly deletes all databases!)
 $ sudo rm -rf /var/lib/postgresql/
 ~~~
+
+&nbsp;
+### 3.5 Status, starup, shutdown, and reload/restart
+~~~
+# 1. Check PostgreSQL Service Status
+$ sudo systemctl status postgresql
+  ● postgresql.service - PostgreSQL RDBMS
+       Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor preset: enabled)
+       Active: active (exited) since Tue 2025-12-23 19:00:00 UTC; 10min ago
+     Main PID: 1234 (code=exited, status=0/SUCCESS)
+          CPU: 10ms
+
+# 2. Start PostgreSQL Service
+$ sudo systemctl start postgresql
+
+# 3. Shutdown PostgreSQL Service
+$ sudo systemctl stop postgresql
+
+# 4. Restart PostgreSQL Service, or Reload it without downtime
+$ sudo systemctl restart postgresql
+$ sudo systemctl reload postgresql
+~~~
+
+&nbsp;
+### 3.6 Manage postgre-sql and pgvector via langchain
+
+Refer to our source code [`postgre_client.py`](./src/server/postgre_sql/postgre_client.py)
