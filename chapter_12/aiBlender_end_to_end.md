@@ -190,4 +190,12 @@ $ sudo systemctl reload postgresql
 &nbsp;
 ### 3.6 Manage postgre-sql and pgvector via langchain
 
-Refer to our source code [`postgre_client.py`](./src/server/postgre_sql/postgre_client.py)
+Refer to our source code [`postgre_client.py`](./src/server/postgre_sql/postgre_client.py).
+
+To run its `usage_demo()`, 
+~~~
+$ pwd
+  /home/robot/aiBlender/aiBlender_20251218/server
+
+$ python3 postgre_sql/postgre_client.py 
+~~~
