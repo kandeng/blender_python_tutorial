@@ -5,6 +5,7 @@
 
 &nbsp;
 ## 2. System architecture
+![Agents as microservices infrastructure](./asset/agent_infrastructure.png)
 
 
 &nbsp;
