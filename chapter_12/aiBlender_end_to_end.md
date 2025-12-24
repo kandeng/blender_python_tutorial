@@ -25,24 +25,25 @@ $ sudo apt install postgresql postgresql-contrib -y
 $ sudo systemctl status postgresql
 
 Step 3: Basic Post-Install Configuration
-# 1. Switch to the postgres User
-$ sudo -i -u postgres
+  # 1. Switch to the postgres User
+  $ sudo -i -u postgres
 
-# 2. Set a Password for the postgres DB User
-  Run the PostgreSQL CLI (psql):
-postgres$ psql
--> ALTER USER postgres WITH PASSWORD 'your_secure_password';
--> \q
+  # 2. Set a Password for the postgres DB User
+    Run the PostgreSQL CLI (psql):
+  postgres$ psql
+    -> ALTER USER postgres WITH PASSWORD 'your_secure_password';
+    -> \q
 
-# 3. Create a new user (for testing purpose)
-postgres$ createuser --interactive --pwprompt robot
-  Enter password for new role: 1234567890   
-  Enter it again: 1234567890
-  Shall the new role be a superuser? (y/n) y
+  # 3. Create a new user (for testing purpose)
+  postgres$ createuser --interactive --pwprompt robot
+    Enter password for new role: 1234567890   
+    Enter it again: 1234567890
+    Shall the new role be a superuser? (y/n) y
 
-# 4. Create a new database (for testing purpose)
-postgres$ createdb --owner=robot robot_db  (Doesn't work)
-postgres$ CREATE DATABASE robot_db OWNER robot (Doesn't work)
-postgres$ exit
-$ sudo -i -u postgres createdb --owner=robot robot_db  (This one works)
+  # 4. Create a new database (for testing purpose)
+  postgres$ createdb --owner=robot robot_db  (Doesn't work)
+  postgres$ CREATE DATABASE robot_db OWNER robot (Doesn't work)
+  postgres$ exit
+
+  $ sudo -i -u postgres createdb --owner=robot robot_db  (This one works)
 ~~~
