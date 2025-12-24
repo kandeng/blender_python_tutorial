@@ -3,28 +3,44 @@ import json
 from dotenv import load_dotenv
 from typing import Optional, Callable, Awaitable
 
-from sentence_transformers import SentenceTransformer
 from langchain_community.utilities.sql_database import SQLDatabase
+from langchain_community.vectorstores.pgvector import PGVector
+from langchain_core.documents import Document
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import create_engine  
+from sentence_transformers import SentenceTransformer
 
 from logger.logger import Logger
 import traceback
 
 
+# Wrap embedding model for LangChain compatibility
+class MultilingualEmbedding:
+    def __init__(self):
+        model_cache_dir = f"/home/robot/.cache/modelscope/hub/models"
+        paraphrase_multilingual_MiniLM_L12v2 = f"{model_cache_dir}/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        self.model = SentenceTransformer(paraphrase_multilingual_MiniLM_L12v2)
+        
+    def embed_documents(self, texts):
+        return [self.model.encode(text) for text in texts]
+    
+    def embed_query(self, text):
+        return self.model.encode(text)
+    
 
 class PostgreClient:
     def __init__(self):
         self.logger = Logger("postgre_sql").getLogger() 
 
         self.embedding_model = None
+        self.user_name = ""
+        self.user_password = ""
         self.database_name = ""
         self.database_connection = None
+        self.vector_store_connection = None
 
         try:
-            model_cache_dir = f"/home/robot/.cache/modelscope/hub/models"
-            paraphrase_multilingual_MiniLM_L12v2 = f"{model_cache_dir}/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-            self.embedding_model = SentenceTransformer(paraphrase_multilingual_MiniLM_L12v2)
+            self.embedding_model = MultilingualEmbedding()
 
             debug_msg = f"PostgreClient(), PostgreClient initialized successfully."
             self.logger.debug(debug_msg)
@@ -48,11 +64,11 @@ class PostgreClient:
                 config_env = f"{server_home_dir}/config/config.env"
                 load_dotenv(config_env)  
 
-                user_name = os.getenv("POSTGRE_USER")
-                user_password = os.getenv("POSTGRE_PASSWORD")
+                self.user_name = os.getenv("POSTGRE_USER")
+                self.user_password = os.getenv("POSTGRE_PASSWORD")
 
                 debug_msg = f"connect_database(), got 'POSTGRE_USER/POSTGRE_PASSWORD' from config '{config_env}': "
-                debug_msg += f"'{user_name}/{user_password}'"
+                debug_msg += f"'{self.user_name}/{self.user_password}'"
                 # self.logger.debug(debug_msg)
 
             except Exception as e:
@@ -60,10 +76,13 @@ class PostgreClient:
                 warn_msg += f"when getting 'POSTGRE_USER' and 'POSTGRE_PASSWORD' from config file '{config_env}': '{str(e)}'."
                 self.logger.warning(warn_msg)
                 return None
+        else:
+            self.user_name = user_name.strip()
+            self.user_password = user_password.strip()
             
         # e.g. "postgresql+psycopg2://robot:your_password@localhost:5432/robot_db"
         self.database_name = database_name.strip()
-        postgre_url = f"postgresql+psycopg2://{user_name}:{user_password}@localhost:5432/{self.database_name}"
+        postgre_url = f"postgresql+psycopg2://{self.user_name}:{self.user_password}@localhost:5432/{self.database_name}"
 
         try:
             engine = create_engine(
@@ -75,7 +94,7 @@ class PostgreClient:
 
             debug_msg = f"connect_database(), successfully connecting to database '{self.database_name}'."
             self.logger.debug(debug_msg)
-            return database_connection
+            return self.database_connection
       
         except Exception as e:
             warn_msg = f"connect_database(), following exception was thrown, "
@@ -297,6 +316,158 @@ class PostgreClient:
     
 
 
+    def connect_vector_store(
+            self,
+            database_name:str="",
+            vector_store_name:str="",
+            user_name:str="",
+            user_password:str=""
+        ) -> PGVector:
+
+        self.connect_database(
+            database_name=database_name,   # "robot_db", "postgres"
+            user_name=user_name,
+            user_password=user_password
+        )
+            
+        # e.g. "postgresql+psycopg2://robot:your_password@localhost:5432/robot_db"
+        postgre_url = f"postgresql+psycopg2://{self.user_name}:{self.user_password}@localhost:5432/{self.database_name}"
+
+        try:
+            self.vector_store_name = vector_store_name.strip()
+            self.vector_store_connection = PGVector.from_documents(
+                documents=[],
+                embedding=self.embedding_model,
+                collection_name=self.vector_store_name,
+                connection_string=postgre_url,
+                create_extension=True   # Auto-enable pgvector
+            )
+
+            debug_msg = f"connect_vector_store(), successfully connecting to vector_store '{self.vector_store_name}'."
+            self.logger.debug(debug_msg)
+            return self.vector_store_connection
+      
+        except Exception as e:
+            warn_msg = f"connect_vector_store(), following exception was thrown, "
+            warn_msg += f"when connecting to vector_store '{self.vector_store_name}': \n\t '{str(e)}'."
+            self.logger.warning(warn_msg)
+            return None
+
+
+    def insert_vector(
+            self,
+            content_str:str="",
+            metadata_dict:dict={}
+        ) -> list:
+        try:
+            # Add new documents/embeddings
+            new_docs = [
+                Document(
+                    page_content=content_str, 
+                    metadata=metadata_dict
+                )
+            ]
+            inserted_ids = self.vector_store_connection.add_documents(new_docs)
+
+            debug_msg = f"insert_vector(), insert vector {inserted_ids} to vector_store '{self.vector_store_name}' "
+            debug_msg += f"in database '{self.database_name}', "
+
+            new_docs_dict = {
+                "page_content": content_str,
+                "metadata": metadata_dict
+            }
+            new_docs_str = json.dumps(new_docs_dict, ensure_ascii=False, indent=2)
+            debug_msg += f"\n{new_docs_str}\n"
+            self.logger.debug(debug_msg)
+
+            return inserted_ids  
+
+        except Exception as e:
+            warn_msg = f"insert_vector(), following exception was thrown, "
+            warn_msg += f"when insert vector to vector_store '{self.vector_store_name}': \n\t '{str(e)}'."
+            self.logger.warning(warn_msg)
+            return []
+
+
+    def delete_vector(
+            self,
+            ids_list:list=[]
+        ):
+        try:   
+            # Delete specific IDs
+            self.vector_store_connection.delete(ids=ids_list) 
+
+            debug_msg = f"delete_vector(), successfully delete vectors with ids: {ids_list}, \n"
+            debug_msg += f"\t from vector_store '{self.vector_store_name}' in database '{self.database_name}'."
+            self.logger.debug(debug_msg)
+
+        except Exception as e:
+            warn_msg = f"delete_vector(), following exception was thrown: '{str(e)}'."
+            self.logger.warning(warn_msg)
+
+
+    def drop_vector_store(
+            self,
+            database_name:str="",
+            vector_store_name:str=""
+        ):
+        try:
+            curr_database_name = self.database_name
+            curr_vector_store_name = self.vector_store_name
+
+            self.connect_vector_store(
+                database_name=database_name,
+                vector_store_name=vector_store_name
+            ) 
+
+            self.vector_store_connection.delete_collection()
+
+            if curr_vector_store_name and curr_vector_store_name != vector_store_name:
+                self.connect_vector_store(
+                    database_name=curr_database_name,
+                    vector_store_name=curr_vector_store_name
+                ) 
+
+            debug_msg = f"drop_vector_store(), successfully dropped a vector store '{vector_store_name}', "
+            debug_msg += f"in database '{database_name}'."
+            self.logger.debug(debug_msg)
+
+        except Exception as e:
+            warn_msg = f"drop_vector_store(), following exception was thrown: '{str(e)}'."
+            self.logger.warning(warn_msg)
+
+
+    def search_semantics(
+            self,
+            search_query:str="",
+            metadata_filter:dict={},
+            result_amount:int=1
+        ) -> list:
+        try:
+            # Semantic search
+            results = self.vector_store_connection.similarity_search(
+                query=search_query,
+                k=result_amount,  
+                filter=metadata_filter # Filter by metadata
+            )
+
+            debug_msg = f"search_semantics(), search with semantic embedding: '{search_query}', \n"
+            debug_msg += f"\t from vector_store '{self.vector_store_name}' in database '{self.database_name}', "
+            debug_msg += f"find the following results: \n"
+
+            for idx, doc in enumerate(results):
+                debug_msg += f"    [{idx}] {doc.page_content} (metadata: {doc.metadata})\n"
+            self.logger.debug(debug_msg) 
+
+            return results
+        
+        except Exception as e:
+            warn_msg = f"search_semantics(), following exception was thrown: '{str(e)}'."
+            self.logger.warning(warn_msg)
+            return []
+    
+
+
     @staticmethod
     def usage_demo():
         postgre_client = PostgreClient()
@@ -337,6 +508,33 @@ class PostgreClient:
         postgre_client.search_keyword(
             table_name="table_demo",
             where_clause="category = 'Home'"
+        )
+
+
+        postgre_client.connect_vector_store(
+            database_name="langchain_demo",
+            vector_store_name="vector_store_demo"
+        ) 
+
+
+        vector_ids = postgre_client.insert_vector(
+            content_str="Smartphone is a portable electronic device",
+            metadata_dict={"category": "Electronics"}
+        )
+
+        postgre_client.search_semantics(
+            search_query="portable electronics",
+            metadata_filter={"category": "Electronics"},
+            result_amount=2
+        )
+
+        postgre_client.delete_vector(
+            ids_list=vector_ids
+        )
+
+        postgre_client.drop_vector_store(
+            database_name="langchain_demo",
+            vector_store_name="vector_store_demo"
         )
 
         postgre_client.drop_table( 
