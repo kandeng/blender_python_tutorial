@@ -107,7 +107,7 @@ class MinioClient:
             return
         
         local_filepath = local_filepath.strip()
-        if len(minio_filepath.strip()):
+        if len(minio_filepath.strip()) == 0:
             minio_filepath = os.path.basename(local_filepath)
         
         if not os.path.exists(local_filepath):
@@ -251,12 +251,12 @@ class MinioClient:
                 object_name=minio_filepath
             )
 
-            
             current_metadata = {
                 k.lower().replace(self.meta_prefix, ""): v 
                 for k, v in obj_stat.metadata.items() 
                 if k.lower().startswith(self.meta_prefix)
             }
+            
 
             # Step 2: Merge new metadata with existing (overwrite/add keys)
             for key, value in new_metadata.items():
@@ -265,6 +265,7 @@ class MinioClient:
                     current_metadata.pop(normalized_key, None)
                 else:
                     current_metadata[normalized_key] = str(value)
+
 
             # Step 3: Download file to temporary directory
             tmp_minio_dir = "/tmp/minio"
@@ -277,22 +278,18 @@ class MinioClient:
                 minio_filepath=minio_filepath, 
                 local_filepath=tmp_local_filepath
             )
+            
             if not tmp_local_filepath or not os.path.exists(tmp_local_filepath):
                 warn_msg = f"update_metadata(), Failed to download file '{minio_filepath}' for metadata updating."
                 self.logger.warning(warn_msg)
                 return False
 
-            # Step 4: Delete original file from MinIO
-            try:
-                self.minio_connection.remove_object(
-                    bucket_name=self.bucket_name, 
-                    object_name=minio_filepath
-                )
-            except Exception as e:
-                warn_msg = f"update_metadata(), Failed to delete original file '{minio_filepath}': '{str(e)}'."
-                self.logger.warning(warn_msg)
-                return False
 
+            # Step 4: Delete original file from MinIO
+            self.delete_file(
+                minio_filepath=minio_filepath
+            )
+            
             # Step 5: Re-upload with updated metadata
             self.upload_file(
                 local_filepath=tmp_local_filepath, 
@@ -352,11 +349,12 @@ class MinioClient:
 
             for obj in objects:
                 file_name = obj.object_name
-                if filename_substr in file_name:
+                if filename_substr.lower() in file_name.lower():
                     matched_files.append(file_name)
             
             if matched_files:
-                debug_msg = f"search_by_filename(), Found {len(matched_files)} matched files as following: "
+                debug_msg = f"search_by_filename(), Found {len(matched_files)} matched files \n"
+                debug_msg += f"\t for filename_substr '{filename_substr}': \n"
                 matched_files_str = json.dumps(matched_files, ensure_ascii=False, indent=2)
                 debug_msg += f"{matched_files_str}\n"
                 self.logger.debug(debug_msg)
@@ -413,12 +411,7 @@ class MinioClient:
                     for k, v in metadata_filter.items()
                 }
 
-                print(f"\n[debug] obj_stat.metadata={obj_stat.metadata}\n")
-                print(f"[debug] obj_metadata={obj_metadata}\n")
-                print(f"[debug] normalized_filter={normalized_filter}\n")
-                
-                
-                match = any(obj_metadata.get(k) == v for k, v in normalized_filter.items())   
+                match = any(v.lower() in obj_metadata.get(k).lower() for k, v in normalized_filter.items())   
                 if match:
                     matched_files.append({
                         "file_name": file_name,
@@ -426,7 +419,8 @@ class MinioClient:
                     })
 
             if matched_files:
-                debug_msg = f"search_by_metadata(), Found {len(matched_files)} matched files as following: "
+                debug_msg = f"search_by_metadata(), Found {len(matched_files)} matched files \n"
+                debug_msg += f"\t for metadata_filter '{metadata_filter}': \n"
                 matched_files_str = json.dumps(matched_files, ensure_ascii=False, indent=2)
                 debug_msg += f"{matched_files_str}\n"
                 self.logger.debug(debug_msg)
@@ -454,7 +448,7 @@ class MinioClient:
             bucket_name="minio-bucket-demo"
         ) 
         
-        # Test upload with metadata
+        print(f"\n\n # Test upload with metadata \n")
         local_filepath = "/home/robot/aiBlender/aiBlender_20251218/server/public/image/Bay.jpeg"  
         minio_filepath = "asset/image/Bay_demo.jpeg"
         minio_client.upload_file(
@@ -463,27 +457,32 @@ class MinioClient:
             metadata={"author": "Alice", "category": "test", "version": "1.0"}
         )
         
-        # Test metadata update
+        print(f"\n\n # Test update metadata \n")
         minio_client.update_metadata(
             minio_filepath=minio_filepath,
             new_metadata={"author": "Bob", "version": "2.0", "status": "updated"}
         )
+
+        print(f"\n\n # Test filename search \n")
+        minio_client.search_by_filename(
+            filename_substr="bay"
+        )
         
-        # Test metadata search
+        print(f"\n\n # Test metadata search \n")
         minio_client.search_by_metadata(
             metadata_filter={"author": "Bob", "version": "2.0"}
         )
         minio_client.search_by_metadata(
-            metadata_filter={"category": "test"}
+            metadata_filter={"category": "TEST"}
         )
         
-        # Test download
+        print(f"\n\n # Test download \n")
         minio_client.download_file(
             minio_filepath=minio_filepath, 
             local_filepath="/home/robot/Downloads/downloaded_bay.jpg"
         )
         
-        # Cleanup
+        print(f"\n\n # Cleanup \n")
         minio_client.delete_file(
             minio_filepath=minio_filepath
         )
