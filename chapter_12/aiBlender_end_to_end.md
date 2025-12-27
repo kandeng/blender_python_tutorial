@@ -255,3 +255,131 @@ $ minio --version
   License: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html
   Copyright: 2015-2025 MinIO, Inc.
 ~~~
+
+
+&nbsp;
+### 4.2 Configure min_io service
+
+**Step 1. Prepare the min_io data storage directory**
+~~~
+$ echo $USER
+  robot
+
+# Create data directory
+$ sudo mkdir -p /mnt/minio/data
+
+# Set appropriate permissions (use current user to run MinIO to avoid permission issues)
+$ sudo chown -R $USER:$USER /mnt/minio/data
+
+$ tree /mnt
+  /mnt
+  └── minio
+     └── data
+~~~
+
+**Step 2. Create min_io service configuration file**
+~~~
+$ echo $USER
+  robot
+
+$ sudo vim /etc/systemd/system/minio.service
+~~~
+
+The `robot` in the file is your user name in Ubuntu, `R***t@1**` is your password.
+~~~
+[Unit]
+Description=MinIO Object Storage
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=robot
+Group=robot
+ExecStart=/usr/local/bin/minio server /mnt/minio/data --console-address ":9001"
+Restart=always
+RestartSec=5
+Environment="MINIO_ROOT_USER=robot"
+Environment="MINIO_ROOT_PASSWORD=R***t@1**"  
+
+[Install]
+WantedBy=multi-user.target
+~~~
+
+
+
+&nbsp;
+### 4.3 Status, starup, shutdown, and reload/restart
+~~~
+# 1. Check min_io status, the current status is 'inactive (dead)'
+$ sudo systemctl status minio
+○ minio.service - MinIO Object Storage
+     Loaded: loaded (/etc/systemd/system/minio.service; disabled; vendor preset: enabled)
+     Active: inactive (dead)
+       Docs: https://docs.min.io
+
+Dec 27 15:36:23 robot-test minio[59157]: License: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html
+Dec 27 15:36:23 robot-test minio[59157]: Version: RELEASE.2025-09-07T16-13-09Z (go1.24.6 linux/amd64)
+Dec 27 15:36:23 robot-test minio[59157]: API: http://192.168.0.129:9000  http://172.17.0.1:9000  http://127.0.0.1:9000
+Dec 27 15:36:23 robot-test minio[59157]: WebUI: http://192.168.0.129:9001 http://172.17.0.1:9001 http://127.0.0.1:9001
+Dec 27 15:36:23 robot-test minio[59157]: Docs: https://docs.min.io
+Dec 27 16:37:58 robot-test systemd[1]: Stopping MinIO Object Storage...
+Dec 27 16:37:58 robot-test minio[59157]: INFO: Exiting on signal: TERMINATED
+Dec 27 16:37:58 robot-test systemd[1]: minio.service: Deactivated successfully.
+Dec 27 16:37:58 robot-test systemd[1]: Stopped MinIO Object Storage.
+Dec 27 16:37:58 robot-test systemd[1]: minio.service: Consumed 4.214s CPU time.
+
+
+# 2. Start min_io service
+$ sudo systemctl start minio
+$
+
+# The current status is 'active (running)'
+$ sudo systemctl status minio
+● minio.service - MinIO Object Storage
+     Loaded: loaded (/etc/systemd/system/minio.service; disabled; vendor preset: enabled)
+     Active: active (running) since Sat 2025-12-27 16:38:59 CST; 1min 6s ago
+       Docs: https://docs.min.io
+   Main PID: 123159 (minio)
+      Tasks: 25 (limit: 38031)
+     Memory: 70.7M
+        CPU: 396ms
+     CGroup: /system.slice/minio.service
+             └─123159 /usr/local/bin/minio server /mnt/minio/data --console-address :9001
+
+Dec 27 16:38:59 robot-test systemd[1]: Started MinIO Object Storage.
+Dec 27 16:39:00 robot-test minio[123159]: MinIO Object Storage Server
+Dec 27 16:39:00 robot-test minio[123159]: Copyright: 2015-2025 MinIO, Inc.
+Dec 27 16:39:00 robot-test minio[123159]: License: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html
+Dec 27 16:39:00 robot-test minio[123159]: Version: RELEASE.2025-09-07T16-13-09Z (go1.24.6 linux/amd64)
+Dec 27 16:39:00 robot-test minio[123159]: API: http://192.168.0.129:9000  http://172.17.0.1:9000  http://127.0.0.1:9000
+Dec 27 16:39:00 robot-test minio[123159]: WebUI: http://192.168.0.129:9001 http://172.17.0.1:9001 http://127.0.0.1:9001
+Dec 27 16:39:00 robot-test minio[123159]: Docs: https://docs.min.io
+
+
+# 3. Shutdown min_io service
+$ sudo systemctl stop minio
+$ 
+
+
+# 4. Restart min_io service Service, or Reload it without downtime
+$ sudo systemctl restart min_io
+$ 
+
+# The systemctl reload command is designed for services that support hot reloading (e.g., Nginx, Apache, SSHD)
+# min_io doesn't support hot reloading.
+$ sudo systemctl reload minio
+  Failed to reload minio.service: Job type reload is not applicable for unit minio.service.
+~~~
+
+
+
+&nbsp;
+### 4.4 Admin webpage
+
+Open a browser, and visit `http://localhost:9001`.
+
+The login name and password is the same as you login to the ubuntu OS.  
+![The admin webpage of MinIO file storage service](./asset/minio_webpage.png)
+
