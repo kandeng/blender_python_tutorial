@@ -200,3 +200,58 @@ $ pwd
 
 $ python3 postgre_sql/postgre_client.py 
 ~~~
+
+
+
+&nbsp;
+## 4. Install min_io file system
+
+[MioIO's github repo](https://github.com/minio/minio) 
+provides the link to min_io's document, including installation and administration guide.
+
+To do it quickly, you can follow our steps to install min_io, and start it up as a ubuntu system service. 
+
+
+### 4.1 Install min_io
+
+**Step 1. Download min_io binary file**
+~~~
+$ sudo apt update
+$ sudo apt upgrade -y
+
+# Download min_io binary
+$ wget https://dl.min.io/server/minio/release/linux-amd64/minio -O /tmp/minio
+
+# Grant executable permission
+$ echo $USER
+  robot
+
+$ chmod +x /tmp/minio
+$ ls -l /tmp/minio
+  -rwxrwxr-x 1 robot robot 110989496 Sep  8 01:54 minio
+~~~
+
+**Step 2. Install min_io**
+
+Before installation, the system cannot find the executable file, 
+~~~
+$ which minio     
+$  
+~~~
+
+After installation, that is simply moving the executable binary file to /usr/local/bin,
+the system can find the executable file now.
+~~~
+# The installation is simply moving the executable binary file to /usr/local/bin.
+$ sudo mv /tmp/minio /usr/local/bin/
+
+$ which minio    
+  /usr/local/bin/minio
+
+# Verify the installation (check the version to confirm success)
+$ minio --version
+  minio version RELEASE.2025-09-07T16-13-09Z (commit-id=07c3a429bfed433e49018cb0f78a52145d4bedeb)
+  Runtime: go1.24.6 linux/amd64
+  License: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html
+  Copyright: 2015-2025 MinIO, Inc.
+~~~
