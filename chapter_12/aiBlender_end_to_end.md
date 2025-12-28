@@ -308,7 +308,6 @@ WantedBy=multi-user.target
 ~~~
 
 
-
 &nbsp;
 ### 4.3 Status, starup, shutdown, and reload/restart
 ~~~
@@ -374,7 +373,6 @@ $ sudo systemctl reload minio
 ~~~
 
 
-
 &nbsp;
 ### 4.4 Admin webpage
 
@@ -382,4 +380,180 @@ Open a browser, and visit `http://localhost:9001`.
 
 The login name and password is the same as you login to the ubuntu OS.  
 ![The admin webpage of MinIO file storage service](./asset/minio_webpage.png)
+
+
+
+
+&nbsp;
+## 5. Convert Fastapi web server into a system service
+
+Previously, we started up the fastapi web server and shut it down in the following ways. 
+
+1. Start up fastapi web server, referring to [`startup.sh`](../chapter_11/src/server/startup.sh),
+   ~~~
+   PYTHONPATH="${PYTHONPATH}:${PWD}"
+   export PYTHONPATH 
+   mkdir -p logs
+   nohup python3 fastapi_server/fastapi_engine.py > logs/fastapi_engine_log.txt 2>&1 &
+   ~~~
+
+2. Shut down fasapi web server, referring to [`shutdown.sh`](../chapter_11/src/server/shutdown.sh),
+   ~~~
+   PYTHONPATH="${PYTHONPATH}:${PWD}"
+   export PYTHONPATH 
+
+   # Reference: Is there a way to kill uvicorn cleanly?
+   # https://stackoverflow.com/questions/60424390/is-there-a-way-to-kill-uvicorn-cleanly
+   SERVER_PID="$(pgrep -f 'fastapi_engine')"
+
+   echo
+   echo "[INFO] Terminate fastapi_engine: " 
+   echo $(ps -p $SERVER_PID -f -o pid -o command | tail -n +2)
+
+   if [[ -n "$SERVER_PID" ]]
+   then
+       # PGID="$(ps --no-headers -p $PID -o pgid)"
+       PGID="$(ps -p $SERVER_PID -o pgid | tail -n +2)"
+       echo "    PGID: $PGID, PID: $SERVER_PID"
+       echo 
+       # kill -SIGINT -- -${PGID// /}
+       kill -SIGKILL -- ${SERVER_PID// /}
+   fi
+   ~~~
+
+To be convenient, we convert the fast web server into a system service. 
+
+
+&nbsp;
+### 5.1 Configure fastapi service
+
+1. Create a file name `fastapi-webserver.service`,
+   ~~~
+   $ mkdir -p /home/robot/aiBlender/aiBlender_20251218/server/config/fastapi
+   $ cd /home/robot/aiBlender/aiBlender_20251218/server/config/fastapi
+
+   $ touch fastapi-webserver.service
+   $ sudo chmod 755 fastapi-webserver.service
+   ~~~
+
+2. Store the following content into `fastapi-webserver.service`,
+   ~~~
+   [Unit]
+   Description=FastAPI Service 
+   After=network.target
+   Requires=network.target
+   Documentation=man:python3(1)
+
+   [Service]
+   User=robot
+   Group=robot
+   WorkingDirectory=/home/robot/aiBlender/aiBlender_20251218/server  
+   ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3 fastapi_server/fastapi_engine.py
+
+   # Keep ONLY critical logging env var  
+   Environment="PYTHONPATH=/home/robot/aiBlender/aiBlender_20251218/server"
+   Environment="PYTHONUNBUFFERED=1"
+
+   # Reliability settings
+   Restart=always
+   RestartSec=5
+   TimeoutStartSec=30
+   TimeoutStopSec=10
+
+   # Logging
+   StandardOutput=journal+console
+   StandardError=journal+console
+
+   [Install]
+   WantedBy=multi-user.target
+   ~~~
+
+   Notice that,
+   * `Environment="PYTHONPATH=...`:
+     This enables to run `python3 fastapi_server/fastapi_engine.py` in the working directory.
+     
+   * `Environment="PYTHONUNBUFFERED=1"`:
+     This stores the log immediately to the journal log file, instead of in the buffer.
+     
+   * `ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3`:
+     This makes the python3 run in the `tripoSG` conda virtual environment.
+
+3. Copy the service file to system daemon directory,
+   ~~~
+   $ sudo cp fastapi-webserver.service /etc/systemd/system/.
+   
+   $ sudo chmod 755 /etc/systemd/system/fastapi-webserver.service
+   ~~~
+
+4. Reload systemd to detect the updated service file,
+   ~~~
+   $ sudo systemctl daemon-reload
+   ~~~
+
+
+&nbsp;
+### 5.2 Status, starup, and shutdown
+
+~~~
+# 1. Check fastapi web server's status, the current status is 'inactive (dead)'
+$ $ sudo systemctl status fastapi-webserver
+○ fastapi-webserver.service - FastAPI Service
+     Loaded: loaded (/etc/systemd/system/fastapi-webserver.service; disabled; vendor preset: enabled)
+     Active: inactive (dead)
+       Docs: man:python3(1)
+
+Dec 28 20:51:35 robot-test python3[1216279]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Dec 28 20:51:53 robot-test python3[1216279]: INFO:     127.0.0.1:51854 - "GET / HTTP/1.1" 200 OK
+Dec 28 21:29:02 robot-test systemd[1]: Stopping FastAPI Service...
+Dec 28 21:29:02 robot-test python3[1216279]: INFO:     Shutting down
+Dec 28 21:29:02 robot-test python3[1216279]: INFO:     Waiting for application shutdown.
+Dec 28 21:29:02 robot-test python3[1216279]: INFO:     Application shutdown complete.
+Dec 28 21:29:02 robot-test python3[1216279]: INFO:     Finished server process [1216279]
+Dec 28 21:29:02 robot-test systemd[1]: fastapi-webserver.service: Deactivated successfully.
+Dec 28 21:29:02 robot-test systemd[1]: Stopped FastAPI Service.
+Dec 28 21:29:02 robot-test systemd[1]: fastapi-webserver.service: Consumed 2.944s CPU time.
+
+
+# 2. Start fastapi web serve's service
+$ sudo systemctl start fastapi-webserver
+$
+
+# The current status is 'active (running)'
+$ sudo systemctl status fastapi-webserver
+● fastapi-webserver.service - FastAPI Service
+     Loaded: loaded (/etc/systemd/system/fastapi-webserver.service; disabled; vendor preset: enabled)
+     Active: active (running) since Sun 2025-12-28 21:30:08 CST; 20s ago
+       Docs: man:python3(1)
+   Main PID: 1255136 (python3)
+      Tasks: 6 (limit: 38031)
+     Memory: 39.7M
+        CPU: 327ms
+     CGroup: /system.slice/fastapi-webserver.service
+             └─1255136 /home/robot/miniconda3/envs/tripoSG/bin/python3 fastapi_server/fastapi_engine.py
+
+Dec 28 21:30:08 robot-test python3[1255136]: 2025-12-28 21:30:08 - rabbit_mq [DEBUG] RabbitMQConnection(), RabbitMQConnection initialized successfully. (rabbitmq_service.py:38)
+Dec 28 21:30:08 robot-test python3[1255136]: 2025-12-28 21:30:08 - rabbit_mq [DEBUG] RabbitMQService(), RabbitMQService 'fastapi_server' initialized successfully. (rabbitmq_serv>
+Dec 28 21:30:08 robot-test python3[1255136]: 2025-12-28 21:30:08 - rabbit_mq [DEBUG] RabbitMQService(), RabbitMQService 'fastapi_server' initialized successfully. (rabbitmq_serv>
+Dec 28 21:30:08 robot-test python3[1255136]: 2025-12-28 21:30:08 - fastapi_server [WARNING] BlenderAgentServer(), cannot load the configuration file, the error message is: 'expe>
+Dec 28 21:30:08 robot-test python3[1255136]: 2025-12-28 21:30:08 - fastapi_server [INFO] startup(), Fastapi server is starting up (PID=1255136) ...
+Dec 28 21:30:08 robot-test python3[1255136]:  (fastapi_engine.py:110)
+Dec 28 21:30:08 robot-test python3[1255136]: INFO:     Started server process [1255136]
+Dec 28 21:30:08 robot-test python3[1255136]: INFO:     Waiting for application startup.
+Dec 28 21:30:08 robot-test python3[1255136]: INFO:     Application startup complete.
+Dec 28 21:30:08 robot-test python3[1255136]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
+
+# 3. Shutdown fastapi web serve's service
+$ sudo systemctl stop fastapi-webserver
+$ 
+~~~
+
+
+&nbsp;
+### 5.3 Fastapi webpage
+
+Open a browser, and visit `http://localhost:8000/`.
+
+![The webpage of FastAPI web server](./asset/fastapi_webpage.png)
+
 
