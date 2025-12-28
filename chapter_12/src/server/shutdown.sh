@@ -6,32 +6,30 @@ echo
 PYTHONPATH="${PYTHONPATH}:${PWD}"
 export PYTHONPATH 
 
-
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [1] Shut down chroma vector database, then wait for 5 seconds."
+echo "    [1] Shut down min_io file storage, then wait for 5 seconds."
 echo 
 
-cd /home/robot/aiBlender/aiBlender_20251218/server
-CHROMA_PID=$(cat ./logs/chroma.pid)
-kill $CHROMA_PID
+sudo systemctl stop minio
 sleep 5
 
-# Verify shutdown (curl will fail)
-curl http://localhost:5566/api/v2/heartbeat 2>&1
-echo "[INFO] Expect to see the error message: 'Failed to connect to ...'"
+
+echo 
+echo 
+echo "=========================================================================================="
+echo "    [2] Shut down postgre database, then wait for 5 seconds."
 echo 
 
-# Clean up pid file (optional)
-rm ./logs/chroma.pid 
-
+sudo systemctl stop postgresql
+sleep 5
 
 
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [2] Shut down fastapi web server, then wait for 5 seconds."
+echo "    [3] Shut down fastapi web server, then wait for 5 seconds."
 echo 
 
 # Reference: Is there a way to kill uvicorn cleanly?
@@ -54,7 +52,7 @@ sleep 5
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [3] Shut down rabbitmq message queue service, then wait for 5 seconds."
+echo "    [4] Shut down rabbitmq message queue service, then wait for 5 seconds."
 echo 
 
 sudo systemctl stop rabbitmq-server
@@ -64,7 +62,7 @@ sleep 5
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [4] Shut down langchain agents"
+echo "    [5] Shut down langchain agents"
 echo 
 
 AGENT_PID="$(pgrep -f 'orchestrator_agent')"
