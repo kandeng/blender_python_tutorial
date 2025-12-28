@@ -33,9 +33,8 @@ echo
 echo "=========================================================================================="
 echo "    [3] Start up fastapi web server, then wait for 5 seconds."
 echo
-echo " nohup python3 fastapi_server/fastapi_engine.py > logs/fastapi_engine_log.txt"
-cd /home/robot/aiBlender/aiBlender_20251218/server
-nohup python3 fastapi_server/fastapi_engine.py > logs/fastapi_engine_log.txt 2>&1 &
+
+sudo systemctl start fastapi-webserver
 sleep 5
 
 echo 

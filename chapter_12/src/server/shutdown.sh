@@ -32,21 +32,7 @@ echo "==========================================================================
 echo "    [3] Shut down fastapi web server, then wait for 5 seconds."
 echo 
 
-# Reference: Is there a way to kill uvicorn cleanly?
-# https://stackoverflow.com/questions/60424390/is-there-a-way-to-kill-uvicorn-cleanly
-SERVER_PID="$(pgrep -f 'fastapi_engine')"
-echo $(ps -p $SERVER_PID -f -o pid -o command | tail -n +2)
-
-if [[ -n "$SERVER_PID" ]]
-then
-    # PGID="$(ps --no-headers -p $PID -o pgid)"
-    PGID="$(ps -p $SERVER_PID -o pgid | tail -n +2)"
-    echo "    PGID: $PGID, PID: $SERVER_PID"
-    
-    # kill -SIGINT -- -${PGID// /}
-    kill -SIGKILL -- ${SERVER_PID// /}
-fi
-
+sudo systemctl stop fastapi-webserver
 sleep 5
 
 echo 
