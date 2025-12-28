@@ -18,7 +18,7 @@ class OrchestratorAgent(RabbitMQService):
             input_queue=input_queue
         )
         self.fastapi_queue = os.getenv("RABBITMQ_QUEUE_ORCH_TO_FASTAPI")
-        self.logger = Logger("langchain").getLogger()
+        self.logger = Logger("langchain_agent").getLogger()
 
 
     async def handle_message(
