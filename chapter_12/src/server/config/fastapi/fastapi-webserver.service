@@ -1,0 +1,28 @@
+[Unit]
+Description=FastAPI Service 
+After=network.target
+Requires=network.target
+Documentation=man:python3(1)
+
+[Service]
+User=robot
+Group=robot
+WorkingDirectory=/home/robot/aiBlender/aiBlender_20251218/server  
+ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3 fastapi_server/fastapi_engine.py
+
+# Keep ONLY critical logging env var 
+Environment="PYTHONPATH=/home/robot/aiBlender/aiBlender_20251218/server"
+Environment="PYTHONUNBUFFERED=1"
+
+# Reliability settings (unchanged)
+Restart=always
+RestartSec=5
+TimeoutStartSec=30
+TimeoutStopSec=10
+
+# Logging (unchanged)
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
