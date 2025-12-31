@@ -52,18 +52,9 @@ echo "==========================================================================
 echo "    [5] Shut down langchain agents"
 echo 
 
-AGENT_PID="$(pgrep -f 'orchestrator_agent')"
-echo $(ps -p $AGENT_PID -f -o pid -o command | tail -n +2)
+sudo systemctl stop langchain-agent
+sleep 5
 
-if [[ -n "$AGENT_PID" ]]
-then
-    # PGID="$(ps --no-headers -p $PID -o pgid)"
-    PGID="$(ps -p $AGENT_PID -o pgid | tail -n +2)"
-    echo "    PGID: $PGID, PID: $AGENT_PID"
-    echo 
-    # kill -SIGINT -- -${PGID// /}
-    kill -SIGKILL -- ${AGENT_PID// /}
-fi
 
 echo 
 echo 

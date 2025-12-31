@@ -54,9 +54,8 @@ echo "==========================================================================
 echo "    [5] Start up langchain agents"
 echo
 
-echo " nohup python3 langchain_agent/orchestrator_agent.py > logs/orchestrator_agent_log.txt"
-cd /home/robot/aiBlender/aiBlender_20251218/server
-nohup python3 langchain_agent/orchestrator_agent.py > logs/orchestrator_agent_log.txt 2>&1 &
+sudo systemctl start langchain-agent
+sleep 5
 
 
 echo 
