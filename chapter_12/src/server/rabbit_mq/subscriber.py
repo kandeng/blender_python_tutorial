@@ -1,15 +1,15 @@
-import asyncio
-import json
 import os
+import json
+import asyncio
 from aio_pika import IncomingMessage
-from rabbitmq_service import RabbitMQService
+
+from rabbit_mq.rabbitmq_client import RabbitmqClient
 
 # Load environment variables
 from dotenv import load_dotenv
 server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
 config_env = f"{server_home_dir}/config/config.env"
 load_dotenv(config_env)
-
 
 
 
@@ -29,17 +29,17 @@ async def message_handler(message: IncomingMessage):
         print(f"Error processing message: {str(e)}")
 
 
+
 async def main():
-    # target_queue = os.getenv("RABBITMQ_QUEUE_FASTAPI_TO_ORCH", "fastapi_to_orch")
-    target_queue = os.getenv("RABBITMQ_QUEUE_TEST_SUBSCRIBER", "test_subscriber")
-    
-    if not target_queue:
+    demo_queue = os.getenv("RABBITMQ_QUEUE_DEMO", "demo_queue")
+
+    if not demo_queue:
         print("Error: RABBITMQ_QUEUE_FASTAPI_TO_ORCH not set in .env")
         return
 
-    subscriber = RabbitMQService(
-        service_name="subscriber",
-        input_queue=target_queue
+    subscriber = RabbitmqClient(
+        client_name="subscriber",
+        input_queue=demo_queue
     )
     
     try:

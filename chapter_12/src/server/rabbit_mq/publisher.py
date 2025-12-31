@@ -1,7 +1,8 @@
+import os
 import asyncio
 import json
-import os
-from rabbitmq_service import RabbitMQService
+
+from rabbit_mq.rabbitmq_client import RabbitmqClient
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -12,16 +13,16 @@ load_dotenv(config_env)
 
 async def main():
     # Configure the queue to publish to (use one of your existing queues)
-    target_queue = os.getenv("RABBITMQ_QUEUE_FASTAPI_TO_ORCH")
+    demo_queue = os.getenv("RABBITMQ_QUEUE_DEMO", "demo_queue")
     
-    if not target_queue:
+    if not demo_queue:
         print("Error: RABBITMQ_QUEUE_FASTAPI_TO_ORCH not set in .env")
         return
 
     # Initialize publisher service
-    publisher = RabbitMQService(
-        service_name="publisher",
-        input_queue=target_queue
+    publisher = RabbitmqClient(
+        client_name="publisher",
+        input_queue=demo_queue
     )
     
     try:
@@ -39,7 +40,7 @@ async def main():
 
         # Publish the message
         await publisher.publish_message(
-            routing_key=target_queue,
+            routing_key=demo_queue,
             data=message_data,
             correlation_id="test-12345"  # Optional: for tracking messages
         )
