@@ -1,3 +1,5 @@
+# /lib/systemd/system/postgresql.service
+
 # systemd service for managing all PostgreSQL clusters on the system. This
 # service is actually a systemd target, but we are using a service since
 # targets cannot be reloaded.
