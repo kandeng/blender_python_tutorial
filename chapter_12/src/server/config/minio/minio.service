@@ -1,4 +1,8 @@
+# The location of this file is:
 # /etc/systemd/system/minio.service
+
+# To view the log, execute the following command
+# $ sudo journalctl -u minio -n 500
 
 [Unit]
 Description=MinIO Object Storage
