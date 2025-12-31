@@ -18,7 +18,7 @@ class FastapiRabbitmq(RabbitmqClient):  # Inherit from RabbitMQService
 
     def __init__(self):
         # Load environment variables
-        server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
+        server_home_dir = os.getcwd()    # Equal to 'os.getenv("PWD")'
         config_env = f"{server_home_dir}/config/config.env"
         load_dotenv(config_env)
 
@@ -30,7 +30,7 @@ class FastapiRabbitmq(RabbitmqClient):  # Inherit from RabbitMQService
         )
         
         # Queue for sending to Orchestrator
-        self.queue_to_langchain = os.getenv("RABBITMQ_QUEUE_LANGCHAIN_TO_FASTAPI", "langchain_to_fastapi")
+        self.queue_to_langchain = os.getenv("RABBITMQ_QUEUE_FASTAPI_TO_LANGCHAIN", "fastapi_to_langchain")
 
         self.logger = Logger("fastapi_server").getLogger()
         self.server_config = {}
