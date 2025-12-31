@@ -285,7 +285,8 @@ $ echo $USER
 $ sudo vim /etc/systemd/system/minio.service
 ~~~
 
-The `robot` in the file is your user name in Ubuntu, `R***t@1**` is your password.
+Here is the full content of [`minio.service`](./src/server/config/minio/minio.service),
+
 ~~~
 [Unit]
 Description=MinIO Object Storage
@@ -307,6 +308,8 @@ Environment="MINIO_ROOT_PASSWORD=R***t@1**"
 WantedBy=multi-user.target
 ~~~
 
+Notice that, 
+* The `robot` in the file is your user name in Ubuntu, `R***t@1**` is your password.
 
 &nbsp;
 ### 4.3 Status, starup, shutdown, and reload/restart
@@ -556,4 +559,12 @@ Open a browser, and visit `http://localhost:8000/`.
 
 ![The webpage of FastAPI web server](./asset/fastapi_webpage.png)
 
+
+
+&nbsp;
+## 6. Convert Langchain agent system into a system service
+
+The method is similar to ["5. Convert Fastapi web server into a system service"](./aiBlender_end_to_end.md#5-convert-fastapi-web-server-into-a-system-service)
+
+Here is the full content of [`langchain-agent.service`](./src/server/config/langchain/langchain-agent.service).
 
