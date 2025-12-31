@@ -1,3 +1,5 @@
+# /etc/systemd/system/minio.service
+
 [Unit]
 Description=MinIO Object Storage
 Documentation=https://docs.min.io
