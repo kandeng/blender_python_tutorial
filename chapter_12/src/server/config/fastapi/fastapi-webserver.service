@@ -1,4 +1,10 @@
+# The location of this file is:
 # /etc/systemd/system/fastapi-webserver.service
+
+# To view the log, execute the following command
+# $ sudo journalctl -u fastapi-webserver -n 500
+
+
 
 [Unit]
 Description=FastAPI Service 
