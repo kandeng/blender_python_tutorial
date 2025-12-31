@@ -37,9 +37,10 @@ class FreecadOrchestrator:
         try:
             self.logger = Logger("langchain_agent").getLogger() 
 
-            # Load environment variables
-            server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
-            config_env = f"{server_home_dir}/config/config.env"
+            # Get the WorkingDirectory from systemd (runtime CWD)
+            working_directory = os.getcwd()   # Equal to 'os.getenv("PWD")'
+
+            config_env = f"{working_directory}/config/config.env"
             load_dotenv(config_env)
             model_key = os.getenv("MODEL_KEY")
             model_name = os.getenv("MODEL_NAME")
