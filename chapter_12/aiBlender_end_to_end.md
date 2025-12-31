@@ -553,7 +553,43 @@ $
 
 
 &nbsp;
-### 5.3 Fastapi webpage
+### 5.3 Clean up the journal log
+
+~~~
+# Step 1: Stop the Service (Prevent Log Writing During Cleanup)
+$ sudo systemctl stop fastapi-webserver
+
+
+# Step 2: Rotate the Journal (Isolate Old Logs)
+# Create a new journal file to separate old logs from new ones (critical for targeted cleanup):
+$ sudo journalctl --rotate
+
+
+# Step 3: Invalidate Old Logs for the Service
+# Mark old logs for deletion (this tells journald to ignore logs for fastapi-webserver before the rotation):
+$ sudo journalctl --vacuum-time=1s -u fastapi-webserver
+
+
+# Step 4: Restart Services (Refresh Logs)
+# Restart journald to apply changes
+$ sudo systemctl restart systemd-journald
+
+# Restart your FastAPI service (starts writing fresh logs)
+$ sudo systemctl start fastapi-webserver
+~~~
+
+Notice that, if you want to quickly delete the previous journal log, you can simply do step 3. 
+~~~
+# Step 3: Invalidate Old Logs for the Service
+# Mark old logs for deletion (this tells journald to ignore logs for fastapi-webserver before the rotation):
+$ sudo journalctl --vacuum-time=1s -u fastapi-webserver
+~~~
+* --vacuum-time=1s: Keep only logs from the last 1 second (effectively deletes all old logs for the service).
+* -u fastapi-webserver: Restrict cleanup to only this service (key to avoiding accidental deletion of other logs).
+
+
+&nbsp;
+### 5.4 Fastapi webpage
 
 Open a browser, and visit `http://localhost:8000/`.
 
