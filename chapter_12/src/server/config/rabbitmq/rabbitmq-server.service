@@ -1,4 +1,9 @@
+# The location of this file is:
 # /lib/systemd/system/rabbitmq-server.service
+
+# To view the log, execute the following command
+# $ sudo journalctl -u rabbitmq-server -n 500
+
 
 [Unit]
 Description=RabbitMQ Messaging Server
