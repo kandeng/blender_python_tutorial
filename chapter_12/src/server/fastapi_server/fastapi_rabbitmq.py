@@ -4,34 +4,33 @@ import json
 import time
 import datetime
 import aio_pika 
+from dotenv import load_dotenv
 
 from fastapi import WebSocket
 from typing import Dict, List, Optional, Callable, Awaitable
 
 from logger.logger import Logger
-from rabbit_mq.rabbitmq_service import RabbitMQService  
-
-
-# Load environment variables
-from dotenv import load_dotenv
-server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
-config_env = f"{server_home_dir}/config/config.env"
-load_dotenv(config_env)
+from rabbit_mq.rabbitmq_client import RabbitmqClient  
 
 
 
-class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
+class FastapiRabbitmq(RabbitmqClient):  # Inherit from RabbitMQService
 
     def __init__(self):
+        # Load environment variables
+        server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
+        config_env = f"{server_home_dir}/config/config.env"
+        load_dotenv(config_env)
+
         # Initialize with queue for receiving from Orchestrator
-        input_queue = os.getenv("RABBITMQ_QUEUE_ORCH_TO_FASTAPI")
+        queue_from_langchain = os.getenv("RABBITMQ_QUEUE_LANGCHAIN_TO_FASTAPI", "langchain_to_fastapi")
         super().__init__(
-            service_name="fastapi_server",
-            input_queue=input_queue
+            client_name="fastapi_server",
+            input_queue=queue_from_langchain
         )
         
         # Queue for sending to Orchestrator
-        self.orchestrator_queue = os.getenv("RABBITMQ_QUEUE_FASTAPI_TO_ORCH")
+        self.queue_to_langchain = os.getenv("RABBITMQ_QUEUE_LANGCHAIN_TO_FASTAPI", "langchain_to_fastapi")
 
         self.logger = Logger("fastapi_server").getLogger()
         self.server_config = {}
@@ -54,18 +53,18 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
             self.ssl_dir = f"{server_home_dir}/{self.server_config['SSL_DIR']}"
 
         except Exception as e:
-            warn_msg = f"BlenderAgentServer(), cannot load the configuration file, "
+            warn_msg = f"FastapiRabbitmq(), cannot load the configuration file, "
             warn_msg += f"the error message is: '{str(e)}'."
             self.logger.warning(warn_msg)
 
 
 
-    async def receive_from_orchestrator(
+    async def receive_from_langchain(
             self, 
             message: aio_pika.IncomingMessage
         ):
         """
-        Handle messages received from OrchestratorAgent
+        Handle messages received from the Langchain agents
         """
         async with message.process():  # Auto-ack after processing
             try:
@@ -75,7 +74,7 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
                     self.logger.warning("Received message without job_id")
                     return
 
-                debug_msg = f"receive_from_orchestrator(), Received response for job '{job_id}' from OrchestratorAgent. \n"
+                debug_msg = f"receive_from_langchain(), Received response for job '{job_id}' from OrchestratorAgent. \n"
                 job_data_str = json.dumps(job_data, ensure_ascii=False, indent=2)
                 debug_msg += f"The message is: \n{job_data_str}\n"
                 self.logger.debug(debug_msg)
@@ -101,12 +100,12 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
                     if user_id in self.active_connections:
                         await self.active_connections[user_id].send_json(response_msg)
                         
-                        debug_msg = f"receive_from_orchestrator(), job '{job_id}' response "
+                        debug_msg = f"receive_from_langchain(), job '{job_id}' response "
                         debug_msg += f"has been sent to user '{user_id}'. "
                         self.logger.debug(debug_msg)
 
                     else:
-                        warn_msg = f"receive_from_orchestrator(), User '{user_id}' is not connected, "
+                        warn_msg = f"receive_from_langchain(), User '{user_id}' is not connected, "
                         warn_msg += f"job '{job_id}' response has been stored in 'chat_history'. "
                         self.logger.warning(warn_msg)
 
@@ -115,13 +114,13 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
                     del self.job_id_to_user[job_id]
 
             except Exception as e:
-                warn_msg = f"receive_from_orchestrator(), Failed to process the response of job '{job_id}' "
+                warn_msg = f"receive_from_langchain(), Failed to process the response of job '{job_id}' "
                 warn_msg += f"from the OrchestratorAgent. \n The error message: '{str(e)}'."
                 self.logger.warning(warn_msg)
 
 
 
-    async def send_to_orchestrator(
+    async def send_to_langchain(
             self, 
             user_id: str, 
             content: str, 
@@ -134,7 +133,7 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
             if not self.connection.channel:
                 await self.connect()  # Force reconnection if channel is missing
                 if not self.connection.channel:
-                    warn_msg = f"send_to_orchestrator(), Failed to establish RabbitMQ channel."
+                    warn_msg = f"send_to_langchain(), Failed to establish RabbitMQ channel."
                     self.logger.warning(warn_msg)
                     return ""
                 
@@ -153,12 +152,12 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
 
             # Publish to Orchestrator queue
             await self.publish_message(
-                routing_key=self.orchestrator_queue,
+                routing_key=self.queue_to_langchain,
                 data=job_data,
                 correlation_id=job_id
             )
 
-            debug_msg = f"send_to_orchestrator(), send the following message to OrchestratorAgent, "
+            debug_msg = f"send_to_langchain(), send the following message to OrchestratorAgent, "
             job_data_str = json.dumps(job_data, ensure_ascii=False, indent=2)
             debug_msg += f"\n{job_data_str}\n"
             self.logger.debug(debug_msg)
@@ -166,6 +165,6 @@ class FastapiRabbitmq(RabbitMQService):  # Inherit from RabbitMQService
             return job_id
 
         except Exception as e:
-            warn_msg = f"send_to_orchestrator(), Failed to send message to Orchestrator. "
+            warn_msg = f"send_to_langchain(), Failed to send message to Orchestrator. "
             warn_msg += f"The error message is: '{str(e)}'."
             self.logger.warning(warn_msg)
