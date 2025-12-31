@@ -31,19 +31,20 @@ sleep 5
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [3] Start up fastapi web server, then wait for 5 seconds."
-echo
+echo "    [3] Start up rabbitmq message queue service, then wait for 5 seconds."
+echo 
 
-sudo systemctl start fastapi-webserver
+sudo systemctl start rabbitmq-server
 sleep 5
+
 
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [4] Start up rabbitmq message queue service, then wait for 5 seconds."
-echo 
+echo "    [4] Start up fastapi web server, then wait for 5 seconds."
+echo
 
-sudo systemctl start rabbitmq-server
+sudo systemctl start fastapi-webserver
 sleep 5
 
 

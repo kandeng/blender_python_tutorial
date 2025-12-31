@@ -29,19 +29,20 @@ sleep 5
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [3] Shut down fastapi web server, then wait for 5 seconds."
+echo "    [3] Shut down rabbitmq message queue service, then wait for 5 seconds."
 echo 
 
-sudo systemctl stop fastapi-webserver
+sudo systemctl stop rabbitmq-server
 sleep 5
+
 
 echo 
 echo 
 echo "=========================================================================================="
-echo "    [4] Shut down rabbitmq message queue service, then wait for 5 seconds."
+echo "    [4] Shut down fastapi web server, then wait for 5 seconds."
 echo 
 
-sudo systemctl stop rabbitmq-server
+sudo systemctl stop fastapi-webserver
 sleep 5
 
 
