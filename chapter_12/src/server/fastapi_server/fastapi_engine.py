@@ -26,7 +26,8 @@ from fastapi_server.fastapi_rabbitmq import FastapiRabbitmq
 
 # Load environment variables
 from dotenv import load_dotenv
-server_home_dir = os.getenv("PWD")    # Equal to 'os.getcwd()'
+# os.getcwd() is to get the working_directory from the systemd.service file.
+server_home_dir = os.getcwd()     # Equal to 'os.getenv("PWD")'
 config_env = f"{server_home_dir}/config/config.env"
 load_dotenv(config_env)
 
@@ -83,7 +84,7 @@ async def start_rabbitmq_consumer():
         try:
             await fastapi_rabbitmq.connect()
             await fastapi_rabbitmq.start_consuming(
-                message_handler=fastapi_rabbitmq.receive_from_orchestrator
+                message_handler=fastapi_rabbitmq.receive_from_langchain
             )
             
             debug_msg = f"start_rabbitmq_consumer(), RabbitMQ consumer started successfully."
@@ -97,6 +98,7 @@ async def start_rabbitmq_consumer():
             await asyncio.sleep(5)  # Wait before retrying
 
 
+
 def startup():
     global fastapi_rabbitmq
     fastapi_rabbitmq = FastapiRabbitmq()
@@ -106,15 +108,15 @@ def startup():
     fastapi_rabbitmq.chat_history = {}
     fastapi_rabbitmq.active_connections = {}
 
-    startup_message = f"startup(), Fastapi server is starting up (PID={fastapi_rabbitmq.root_pid}) ... \n\n"
-    fastapi_rabbitmq.logger.info(startup_message)
-
     # Start RabbitMQ consumer in a background task
     loop = asyncio.get_event_loop()
     loop.create_task(start_rabbitmq_consumer())
 
-    ssl_key_filepath = f"{fastapi_rabbitmq.ssl_dir}/xm.e-inv.cn_server.key"
-    ssl_cert_filepath = f"{fastapi_rabbitmq.ssl_dir}/xm.e-inv.cn_server.crt"
+    startup_message = f"startup(), Fastapi server is starting up (PID={os.getpid()}) ... \n\n"
+    fastapi_rabbitmq.logger.info(startup_message)
+
+    ssl_key_filepath = f"{server_home_dir}/ssl/xm.e-inv.cn_server.key"
+    ssl_cert_filepath = f"{server_home_dir}/ssl/xm.e-inv.cn_server.crt"
 
     uvicorn.run(
         engine,
@@ -185,11 +187,11 @@ async def get_chat_history(
 
 @engine.get("/")
 async def greet():
-    greeting_msg = f"Given a sketch of a 3D object or a scene, Blender AI Agent uses AI model "
-    greeting_msg += f"to operate Blender 3D app to create the 3D model and scene. "
-    greeting_msg += f"After downloading the .blend or .fbx or .gltf file, "
+    greeting_msg = f"Given a sketch of a 3D object or a scene, AI3D Agent uses AI models "
+    greeting_msg += f"to operate Blender/FreeCAD 3D app to create the 3D object and scene. "
+    greeting_msg += f"After downloading the .blend or .fbx or .gltf or .stp file, "
     greeting_msg += f"you can fine tune the 3D model and scene if necessary. "
-    return {"Introduction to Blender AI Agent": greeting_msg}
+    return {"Introduction to AI3D Agent": greeting_msg}
 
 
 @engine.get("/api/", response_class=RedirectResponse)
@@ -226,7 +228,7 @@ async def receive_message(
     
     # Generate AI response
     content = content.strip()
-    job_id = await rabbitmq.send_to_orchestrator(
+    job_id = await rabbitmq.send_to_langchain(
         user_id=user_id,
         content=user_msg,
         file_paths=[]
@@ -395,7 +397,7 @@ async def websocket_chat(
                 rabbitmq.chat_history[user_id].append(user_msg)
             
             # 2.1 Publish message to RabbitMQ via Orchestrator queue
-            job_id = await rabbitmq.send_to_orchestrator(
+            job_id = await rabbitmq.send_to_langchain(
                 user_id=user_id,
                 content=user_message,
                 file_paths=file_paths
