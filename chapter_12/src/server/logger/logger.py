@@ -5,6 +5,7 @@ import datetime
 import logging
 from logging import Logger
 import pprint
+from dotenv import load_dotenv
 
 
 """
@@ -54,6 +55,10 @@ class Logger():
             self.root_logger.addHandler(self.stdout_handler)
 
             # Create the file sub-logger.
+            working_directory = os.getcwd()   # Equal to 'os.getenv("PWD")'
+            config_env = f"{working_directory}/config/config.env"
+            load_dotenv(config_env)
+
             log_dir= os.getenv("LOG_DIR")
             self.bot_log_dir = f'{log_dir}/{bot_name}'
             if not os.path.exists(self.bot_log_dir):
