@@ -5,6 +5,7 @@ import datetime
 import logging
 from logging import Logger
 import pprint
+from dotenv import load_dotenv
 
 
 """
@@ -47,25 +48,30 @@ class Logger():
         self.root_logger.propagate = 0
         self.root_logger.setLevel(logging.DEBUG)
 
-        # Create the stdout sub-logger.
-        self.stdout_handler = logging.StreamHandler(sys.stdout)
-        self.stdout_handler.setFormatter(CustomFormatter())  
-        self.root_logger.addHandler(self.stdout_handler)
+        if not self.root_logger.handlers:
+            # Create the stdout sub-logger.
+            self.stdout_handler = logging.StreamHandler(sys.stdout)
+            self.stdout_handler.setFormatter(CustomFormatter())  
+            self.root_logger.addHandler(self.stdout_handler)
 
-        # Create the file sub-logger.
-        log_dir= os.getenv("LOG_DIR")
-        self.bot_log_dir = f'{log_dir}/{bot_name}'
-        if not os.path.exists(self.bot_log_dir):
-            os.makedirs(self.bot_log_dir)
+            # Create the file sub-logger.
+            working_directory = os.getcwd()   # Equal to 'os.getenv("PWD")'
+            config_env = f"{working_directory}/config/config.env"
+            load_dotenv(config_env)
 
-        curr_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        self.bot_log_filename = f"{self.bot_log_dir}/log_{curr_timestamp}.txt"
+            log_dir= os.getenv("LOG_DIR")
+            self.bot_log_dir = f'{log_dir}/{bot_name}'
+            if not os.path.exists(self.bot_log_dir):
+                os.makedirs(self.bot_log_dir)
 
-        self.file_handler = logging.FileHandler(self.bot_log_filename)
-        file_log_format = f'%(asctime)s - %(name)s [%(levelname)s] %(message)s (%(filename)s:%(lineno)d) '
-        file_log_formatter = logging.Formatter(file_log_format, datefmt='%Y-%m-%d %H:%M:%S')
-        self.file_handler.setFormatter(file_log_formatter)
-        self.root_logger.addHandler(self.file_handler)
+            curr_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            self.bot_log_filename = f"{self.bot_log_dir}/log_{curr_timestamp}.txt"
+
+            self.file_handler = logging.FileHandler(self.bot_log_filename)
+            file_log_format = f'%(asctime)s - %(name)s [%(levelname)s] %(message)s (%(filename)s:%(lineno)d) '
+            file_log_formatter = logging.Formatter(file_log_format, datefmt='%Y-%m-%d %H:%M:%S')
+            self.file_handler.setFormatter(file_log_formatter)
+            self.root_logger.addHandler(self.file_handler)
 
 
     def getLogger(self):
