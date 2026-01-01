@@ -113,7 +113,7 @@ def startup():
     loop.create_task(start_rabbitmq_consumer())
 
     startup_message = f"startup(), Fastapi server is starting up (PID={os.getpid()}) ... \n\n"
-    fastapi_rabbitmq.logger.info(startup_message)
+    fastapi_rabbitmq.logger.debug(startup_message)
 
     ssl_key_filepath = f"{server_home_dir}/ssl/xm.e-inv.cn_server.key"
     ssl_cert_filepath = f"{server_home_dir}/ssl/xm.e-inv.cn_server.crt"
