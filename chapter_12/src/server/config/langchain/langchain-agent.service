@@ -16,7 +16,7 @@ Documentation=man:python3(1)
 User=robot
 Group=robot
 WorkingDirectory=/home/robot/aiBlender/aiBlender_20251218/server  
-ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3 langchain_agent/orchestrator_agent.py
+ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3 langchain_agent/freecad_orchestrator.py
 
 # Keep ONLY critical logging env var 
 Environment="PYTHONPATH=/home/robot/aiBlender/aiBlender_20251218/server"
