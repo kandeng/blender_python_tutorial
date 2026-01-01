@@ -95,21 +95,47 @@ $ tree .
 &nbsp;
 ## 4. Running the App
 
+### 4.1 Update the versions of `nvm` and `npm`  
+~~~
+# 1. Install Node.js 20.x LTS version（compatible with npm 10.9.0）
+$ nvm install 20
+
+# 2. Switch to Node.js 20 version
+$ nvm use 20
+  Now using node v20.19.6 (npm v10.8.2)
+
+# 3. Verify their versions
+$ node --version 
+  v20.19.6
+
+$ npm --version   
+  10.8.2
+~~~
+
+
+### 4.2 Run the vue3 server 
 ~~~
 $ pwd
   /home/robot/langchain_20251209/client/gemini_clone_20251210
 $ npm --version
   11.6.2
 
+# Different projects may have different versions, that is okay.
+$ pwd
+  /home/robot/aiBlender/aiBlender_20251218/client
+$ npm --version
+  10.8.2
+
 $ npm run dev
   VITE v7.2.7  ready in 127 ms
-
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
   ➜  press h + enter to show help
 ~~~
 
-Open the chrome browser and visit http://localhost:5173/
+### 4.3 Visit the webpage
+
+Open the chrome browser and visit `http://localhost:5173/`
 
 You will see the webpage as the following screenshot, 
 
