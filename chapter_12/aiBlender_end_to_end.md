@@ -553,8 +553,14 @@ $
 
 
 &nbsp;
-### 5.3 Clean up the journal log
+### 5.3 View and delete the journal log
 
+1. View the journal log
+~~~
+$ sudo journalctl -u fastapi-webserver -n 100
+~~~
+
+2. Delete the journal log
 ~~~
 # Step 1: Stop the Service (Prevent Log Writing During Cleanup)
 $ sudo systemctl stop fastapi-webserver
