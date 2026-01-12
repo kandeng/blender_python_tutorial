@@ -96,7 +96,10 @@ const {
 } = useChatStore()
 
 // Get the REAL sendMessage from useWebSocket (connects to server)
-const { sendMessage: sendToServer } = useWebSocket(chatMessages, uploadFiles)
+const { sendMessage: sendToServer } = useWebSocket({ 
+  chatMessages, 
+  uploadFiles 
+})
 
 // Update the sendMessage handler to use the server function
 const sendMessage = (message) => {
