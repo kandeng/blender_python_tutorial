@@ -5,30 +5,41 @@
 # $ sudo journalctl -u langchain-agent -n 500
 
 
-
 [Unit]
-Description=langchain Agent Service 
-After=network.target
-Requires=network.target
-Documentation=man:python3(1)
+Description=Langchain Agent Service with Celery
+After=network.target rabbitmq-server.service 
+Requires=rabbitmq-server.service
 
 [Service]
 User=robot
 Group=robot
-WorkingDirectory=/home/robot/aiBlender/aiBlender_20251218/server  
-ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/python3 langchain_agent/freecad_orchestrator.py
 
 # Keep ONLY critical logging env var 
 Environment="PYTHONPATH=/home/robot/aiBlender/aiBlender_20251218/server"
 Environment="PYTHONUNBUFFERED=1"
 
-# Reliability settings (unchanged)
+# --pool=solo for async tasks + explicit queue
+WorkingDirectory=/home/robot/aiBlender/aiBlender_20251218/server  
+ExecStart=/home/robot/miniconda3/envs/tripoSG/bin/celery -A langchain_agent.freecad_celery worker \
+  --queues=freecad_tasks \
+  --concurrency=1 \
+  --pool=solo \
+  --loglevel=info \
+  --hostname=freecad_executor@%h 
+
+
+# Critical: Auto-restart on failure (production-grade)
 Restart=always
 RestartSec=5
 TimeoutStartSec=30
 TimeoutStopSec=10
 
-# Logging (unchanged)
+# Resource limits (adjust based on your server)
+CPUQuota=80%
+MemoryLimit=2G
+Nice=10
+
+# Logging (view with journalctl)
 StandardOutput=journal+console
 StandardError=journal+console
 
