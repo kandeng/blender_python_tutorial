@@ -3,7 +3,7 @@ import { ref, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 
-export const useWebSocket = (chatMessages, uploadFiles) => {
+export const useWebSocket = ({ chatMessages, uploadFiles }) => {  
   const SERVER_URL = 'http://localhost:8000'
   const WS_URL = `ws://localhost:8000/ws/`
   const userId = ref('user_' + Math.random().toString(36).slice(2, 11))
@@ -18,12 +18,18 @@ export const useWebSocket = (chatMessages, uploadFiles) => {
       console.log('WebSocket connected to FastAPI server')
       ElMessage.success('Connected to chat server!')
       // Fetch chat history from server
+      
       try {
         const res = await axios.get(`${SERVER_URL}/history/${userId.value}`)
-        chatMessages.value = res.data.history
+        const chatHistory = res.data.history || []
+
+        if (chatHistory.length > 0) {
+          chatMessages.value = chatHistory 
+        }
       } catch (e) {
         console.error('Failed to fetch history:', e)
       }
+      
     }
 
     ws.onmessage = (event) => {
@@ -36,6 +42,12 @@ export const useWebSocket = (chatMessages, uploadFiles) => {
       if (msg.sender === 'ai' && !msg.avatar) {
         msg.avatar = '/src/assets/icons/robot.svg';
       }
+
+      // Add defensive check for chatMessages
+      if (!chatMessages?.value) {
+        console.log('chatMessages is missing/invalid - cannot process incoming message', msg);
+        return; // Exit to avoid TypeError
+      }      
 
       // Deduplicate and add to chat
       const isDuplicate = chatMessages.value.some(
@@ -57,30 +69,46 @@ export const useWebSocket = (chatMessages, uploadFiles) => {
     }
   }
 
+
   // Send message via WebSocket (fallback to HTTP)
   const sendMessage = (content) => {
-    if (!content.trim() && uploadFiles.value.length === 0) return
+    // Defensive checks: ensure chatMessages exists and is an array
+    if (!chatMessages?.value) {
+      console.error('chatMessages is missing/invalid')
+      chatMessages.value = []
+      // return
+    }
+
+    // Safe fallback: if uploadFiles is undefined/null, use empty array (avoids "cannot access 'value' of undefined")
+    const files = uploadFiles?.value || []
+
+    // Only return if BOTH text content is empty AND no files are uploaded (safe check using the "files" variable)
+    if (!content.trim() && files.length === 0) return
 
     const userMsg = {
-      sender: 'user',  // Explicitly set sender
+      sender: 'user',
       content: content.trim(),
-      files: [...uploadFiles.value],
+      files: [...files], // Use the safe "files" variable instead of uploadFiles.value (avoids exceptions)
       timestamp: new Date().toISOString(),
-      avatar: '/src/assets/icons/user.svg' 
+      avatar: '/src/assets/icons/user.svg'
     }
-    chatMessages.value.push(userMsg)    
+    chatMessages.value.push(userMsg)
 
-    // Send to server
+    // Send to server (safe to pass "files" since it's guaranteed to be an array)
     if (ws && ws.readyState === WebSocket.OPEN) {
-      sendMessageViaWS(content, uploadFiles.value)
+      sendMessageViaWS(content, files)
     } else {
-      sendMessageViaHTTP(content, uploadFiles.value)
+      sendMessageViaHTTP(content, files)
     }
 
-    // Clear input/files
-    uploadFiles.value = []
+    // Clear files (only if uploadFiles exists - avoid "cannot set 'value' of undefined")
+    if (uploadFiles?.value) {
+      uploadFiles.value = []
+    }
+    
     return '' // Reset input
   }
+
 
   // Send via WebSocket
   const sendMessageViaWS = (content, files) => {
