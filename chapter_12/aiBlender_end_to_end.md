@@ -36,15 +36,50 @@ We implemented an end-to-end agent infrastructure, including the following compo
 ## 2. Usage 
 
 1. In a ubuntu terminal, starts up the system daemon service,
-
    ~~~
    $ pwd
      /home/robot/aiBlender/aiBlender_20251218/server
 
+   $ bash startup.sh
+
+   # To shutdown,
+   $ bash shutdown.sh
+
+   # To view the log
+   # view the log files in `/home/robot/aiBlender/aiBlender_20251218/server/logs`
+
+   # To view the system daemon service journal
+   $ sudo journalctl -u fastapi-webserver -n 500
+   $ sudo journalctl -u rabbitmq-server -n 500
+   $ sudo journalctl -u langchain-agent -n 500
+   $ sudo journalctl -u postgresql -n 500
+   $ sudo journalctl -u minio -n 500
    ~~~
 
+2. In another ubuntu terminal, starts up the VUE3 engine,
+   ~~~
+   $ pwd
+     /home/robot/aiBlender/aiBlender_20251218/client
+
+   $ nvm use 20
+     Now using node v20.19.6 (npm v10.8.2)
    
-![Chatbot webpage](./asset/agent_websocket.png)
+   $ node --version 
+     v20.19.6
+
+   $ npm --version   
+     10.8.2
+
+   $ npm run dev
+     VITE v7.2.7  ready in 127 ms
+     ➜  Local:   http://localhost:5173/
+
+   ~~~
+   
+3. Open a chrome browser, visit `http://localhost:5173/`
+   
+   ![Chatbot webpage](./asset/agent_websocket.png)
+
 
 
 &nbsp;
