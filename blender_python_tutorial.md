@@ -43,3 +43,5 @@ Here is the content table of the Blender python tutorials.
 10. [Proposal: A game for scene building and video making](./chapter_10/video_making_game.md)
 
 11. [A barebone agent micro-service system](./chapter_11/blender_ai_agent.md)
+
+12. [End-to-end agent instructure](./chapter_12/aiBlender_end_to_end.md)
