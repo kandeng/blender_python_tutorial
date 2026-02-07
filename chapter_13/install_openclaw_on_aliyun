@@ -2,14 +2,24 @@
 
 ## 1. Object
 
-OpenClaw is more than just a personal AI assistant application, 
-it’s a hub for powerful tools that have been integrated seamlessly.
+[Openclaw](https://github.com/openclaw/openclaw) is more than just a personal AI assistant, 
+it’s a robust hub that seamlessly integrates powerful tools into a single ecosystem.
 
-In case we want to develop a custom AI agent service, we can use Openclaw as the AI agent framework, 
-and deploy it to the cloud, like AWS or Alibaba cloud. 
+If you're looking to build a custom AI agent service, 
+Openclaw serves as a versatile framework that can be deployed to any major cloud provider, 
+such as AWS or Alibaba Cloud.
 
-The easiest way to install Openclaw in an Alibaba ECS instance 
-is to use Alibaba's simple application server (轻量应用服务器). 
+The most straightforward way to get Openclaw running on an Alibaba ECS instance 
+is via their Simple Application Server (轻量应用服务器).
 
-However, since alibaba's simple application server is tightly coupled, 
-it is not convenient for custom development. 
+However, because the Simple Application Server is a tightly coupled environment, 
+it may lack the flexibility required for extensive custom development.
+
+The most robust solution to install Openclaw on an Alibaba ECS instance from scratch. 
+
+Additionally, we plan to integrate Chinese LLMs with Openclaw, 
+including `Qwen-turbo` and `Kimi Coding`,
+via `DashScope` AI model provider. 
+
+This allows us to leverage localized model providers, 
+and simplify the billing process by paying in RMB.
