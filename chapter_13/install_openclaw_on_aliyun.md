@@ -61,3 +61,43 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    To ensure a smooth installation of Openclaw and its dependencies, it is better to install [`brew`](https://brew.sh/).
 
    Again, we need to use a Chinia mirror to download the `brew` package.
+
+5. Install Openclaw
+
+   Install Openclaw as a skeleton, without configuring the AI models that it uses,
+   without configuring the Instant Messaging apps that it uses.
+
+6. Configure the AI models that Openclaw uses
+
+   We will configure `Qwen-turbo` and `Kimi Coding`, via `DashScope` AI model provider.
+   
+   The challenge is that `DashScope` AI model provider is not supported yet
+   in the option list of the Openclaw installation script.
+
+7. Configure the Instant Messaging apps that Openclaw uses
+
+   We will configure `Dingding` (钉钉) and `Feishu`（飞书),
+   that are not in channel list supported by the Openclaw installation script.
+
+8. Configure the network security group
+
+   We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
+  
+9. Set up the reverse SSH tunnel
+  
+   We set up the reverse SSH tunnel from the Alibaba cloud ECS instance to our local computer,
+   so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
+
+   Notice that even though we have openned the port `18789` of the Openclaw's gateway,
+   we cannot visit the Openclaw's webpage directly via `http://<alibaba_ecs_public_ip>:18789/`.
+
+10. Start and stop Openclaw gateway
+
+
+&nbsp;
+## 3. Preparation
+
+
+
+&nbsp;
+## 4. Install and configure Openclaw
