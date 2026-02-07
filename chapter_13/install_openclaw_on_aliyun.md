@@ -97,7 +97,159 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 &nbsp;
 ## 3. Preparation
 
+### 3.1 Create a non-root user
 
+Suppose we create a non-root user `clawer` with password `clawer_password`. 
 
+~~~
+root# useradd -m -s /usr/bin/bash clawer
+root# passwd clawer    # clawer_password
+root# usermod -aG sudo clawer
+~~~
+
+After creating the new user `clawer`, we switch from user `root` to user `clawer`. 
+
+~~~
+root# su - clawer
+      To run a command as administrator (user "root"), use "sudo <command>".
+      See "man sudo_root" for details.
+
+clawer$
+~~~
+
+### 3.2 Setup github proxy
+
+The github proxy may not always be functional. However, it doesn't hurt to set it up.
+
+~~~
+# Install nscd, and refresh DNS buffer.
+clawer$ sudo apt install -y nscd
+
+# Download the latest hosts of github520, and add them to the system's hosts.
+clawer$ sudo curl -sSL https://raw.hellogithub.com/hosts >> /etc/hosts
+
+# Refresh DNS buffer.
+clawer$ sudo systemctl restart nscd
+~~~
+
+### 3.3 Install Nodejs, NPM and NVM
+
+1. Update and install the tools:
+   
+   ~~~
+   clawer$ sudo apt update && sudo apt install -y curl wget
+   ~~~
+
+2. Install the latest version of nodejs, plus npm and nvm:
+
+   Follow the instruction in `https://nodejs.org/en/download`,
+   to download and install the latest version of nodejs.
+
+   In case you cannot access the official website of nodejs, 
+   try the China's mirror site `https://nodejs.cn/`.
+
+3. To verify if the installation is successful:
+
+   ~~~
+   clawer$ node -v 
+           v24.13.0
+   clawer$ npm -v 
+           11.6.2
+   ~~~
+
+### 3.4 Install brew
+
+1. Download brew install.sh
+
+   1.1 Manually download the brew install.sh from github to our local computer.
+       https://github.com/Homebrew/install/blob/main/install.sh
+
+   1.2 Manually Upload brew install.sh to `brew-install.sh` to alibaba ECS instance.
+
+   1.3 Copy the uploaded `brew-install.sh` to `/home/clawer` directory.
+   
+   ~~~
+   clawer$ sudo cp /root/robot/brew-install.sh .
+   clawer$ ls -l brew-install.sh 
+           -rw-rw-r-- 1 clawer clawer 32814 Feb  5 22:14 brew-install.sh
+   ~~~
+
+2. Setup the environmental variables
+
+   ~~~
+   clawer$ export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"
+   
+   clawer$ export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.aliyun.com/homebrew-bottles"
+   ~~~
+
+3. Install brew
+
+   ~~~
+   clawer$ bash brew-install.sh
+           ==> Checking for `sudo` access (which may request your password)...
+           ==> This script will install:
+               /home/linuxbrew/.linuxbrew/bin/brew
+               ...
+               /home/linuxbrew/.linuxbrew/Frameworks
+           ==> HOMEBREW_CORE_GIT_REMOTE is set to a non-default URL:
+           https://mirrors.aliyun.com/homebrew/homebrew-core.git will be used as the Homebrew/homebrew-core Git remote.
+
+           Press RETURN/ENTER to continue or any other key to abort:
+           ==> /usr/bin/sudo /usr/bin/install -d -o clawer -g clawer -m 0755 /home/linuxbrew/.linuxbrew
+   ~~~
+
+4. Add `brew` to system `PATH`
+
+   ~~~
+   clawer$ which brew   # So far, brew is not yet in PATH
+   
+   clawer$ echo >> /home/clawer/.bashrc
+   
+   clawer$ echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' >> /home/clawer/.bashrc
+   
+   clawer$ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
+
+   clawer$ which brew
+           /home/linuxbrew/.linuxbrew/bin/brew
+   ~~~
+
+5. Add the non-default git remote for Homebrew/homebrew-core
+
+   ~~~
+   clawer$ echo '# Set non-default Git remote for Homebrew/homebrew-core.' >> /home/clawer/.bashrc
+
+   clawer$ echo 'export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"' >> /home/clawer/.bashrc
+
+   clawer$ export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"
+   ~~~
+
+6. Install Homebrew's dependencies
+
+   ~~~
+   clawer$ sudo apt-get install build-essential
+           [sudo] password for clawer:  # W0rkT0gether
+           Reading package lists... Done
+           Building dependency tree... Done
+           Reading state information... Done
+           build-essential is already the newest version (12.9ubuntu3).
+           The following package was automatically installed and is no longer required:
+             libllvm14
+           Use 'sudo apt autoremove' to remove it.
+             0 upgraded, 0 newly installed, 0 to remove and 26 not upgraded.
+   ~~~
+
+7. Optionally, install `gcc`
+
+   ~~~
+   clawer$ brew install gcc
+           ==> Fetching downloads for: gcc
+           Warning: Bottle missing, falling back to the default domain...
+           ==> Downloading https://ghcr.io/v2/homebrew/core/xz/manifests/5.8.2
+           ...
+           ==> Running `brew cleanup gcc`...
+           Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+           Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+   ~~~
+   
 &nbsp;
 ## 4. Install and configure Openclaw
