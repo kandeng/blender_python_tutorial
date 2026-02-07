@@ -20,6 +20,8 @@ The most robust solution to install Openclaw on an Alibaba ECS instance from scr
 Additionally, we plan to integrate Chinese LLMs with Openclaw, 
 including `Qwen-turbo` and `Kimi Coding`,
 via `DashScope` AI model provider. 
+This allows us to simplify the billing process by paying in RMB.
 
-This allows us to leverage localized model providers, 
-and simplify the billing process by paying in RMB.
+
+&nbsp;
+## 2. Outline
