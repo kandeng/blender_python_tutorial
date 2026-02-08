@@ -45,3 +45,5 @@ Here is the content table of the Blender python tutorials.
 11. [A barebone agent micro-service system](./chapter_11/blender_ai_agent.md)
 
 12. [End-to-end agent instructure](./chapter_12/aiBlender_end_to_end.md)
+
+13. [Install Openclaw on Alibaba Cloud](./chapter_13/install_openclaw_on_aliyun.md)
