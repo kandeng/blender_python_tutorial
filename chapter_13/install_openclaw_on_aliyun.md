@@ -72,7 +72,11 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 
    In order to remotely use the AI model via `DashScope`, we need to get our dashscope's api-key.
 
-7. Set the authentication token for Openclaw gateway.
+7. Configure the AI models that Openclaw uses
+
+   We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
+   
+   Additionally, we will set the authentication token for Openclaw gateway, e.g. `clawer_gateway_auth_token`.
 
    OpenClaw Gateway enables token-based authentication by default
    to restrict unauthorized access to your AI agent/gateway service running on `127.0.0.1:18789`.
@@ -92,24 +96,18 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
      ~~~
      Authorization: Bearer clawer_gateway_auth_token
      ~~~
-
-8. Configure the AI models that Openclaw uses
-
-   We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
    
-   The challenge is that `DashScope` AI model provider is not supported yet
-   in the option list of the Openclaw installation script.
 
-9. Configure the Instant Messaging apps that Openclaw uses
+8. Configure the Instant Messaging apps that Openclaw uses
 
    We will configure `Dingding` (钉钉) and `Feishu`（飞书),
    that are not in channel list supported by the Openclaw installation script.
 
-10. Configure the network security group
+9. Configure the network security group
 
-    We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
+   We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
   
-11. Set up the SSH tunnel
+10. Set up the SSH tunnel
   
     We set up the SSH tunnel from the Alibaba cloud ECS instance to our local computer,
     so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
@@ -117,7 +115,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
     Notice that even though we have openned the port `18789` of the Openclaw's gateway,
     we cannot visit the Openclaw's webpage directly via `http://<alibaba_ecs_public_ip>:18789/`.
 
-12. Start and stop Openclaw gateway
+11. Start and stop Openclaw gateway
 
 
 &nbsp;
@@ -339,6 +337,106 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
   <p align="center" vertical-align="top">
     <img alt="Create apiKey" src="./asset/bailian05.png" width="48%">
   </p>  
+
+
+&nbsp;
+### 4.3 Set the authentication token for Openclaw gateway
+
+1. Create `openclaw.json` configuration file
+
+   Copy [`openclaw.json`](./src/openclaw.json) and upload it to the Alibaba cloud ECS instance.
+
+   Move it to directory `~/.openclaw/openclaw.json`.
+
+   Change its mode to 600.
+
+   ~~~
+   clawer$ pwd
+           /home/clawer/.openclaw
+   clawer$ chmod 600 openclaw.json
+   clawer$ ls -l
+           total 40
+           drwxrwxr-x 3 clawer clawer 4096 Feb  7 00:03 agents
+           drwxrwxr-x 2 clawer clawer 4096 Feb  7 00:07 canvas
+           drwxrwxr-x 2 clawer clawer 4096 Feb  7 01:40 cron
+           drwxrwxr-x 2 clawer clawer 4096 Feb  7 01:43 devices
+           drwxrwxr-x 2 clawer clawer 4096 Feb  7 01:43 identity
+           -rw------- 1 clawer clawer 1067 Feb  7 01:28 openclaw.json
+           -rw-rw-r-- 1 clawer clawer   49 Feb  7 00:07 update-check.json
+           drwxrwxr-x 3 clawer clawer 4096 Feb  7 00:03 workspace
+   ~~~
+
+&nbsp;
+2. Set `Qwen-turbo` as our AI model, via `DashScope` AI model provider
+
+   ~~~
+   {
+     "agents": {
+        "defaults": {
+           "model": {
+              "primary": "dashscope/qwen-turbo"
+           },
+           "models": {
+              "dashscope/qwen-turbo": {
+                 "alias": "Qwen Turbo"
+              }
+           },
+           ...
+        }
+     },
+     "models": {
+        "providers": {
+           "dashscope": {
+              "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+              "apiKey": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "api": "openai-completions",
+              "models": [
+                 {
+                    "id": "qwen-turbo",
+                    "name": "Qwen Turbo"
+                 }
+              ]
+           }
+        }
+     },  
+   }
+   ~~~
+
+
+&nbsp;
+3. Set the authentication token for Openclaw gateway
+
+   ~~~
+   {
+     "gateway": {
+        "mode": "local",
+        "auth": {
+           "mode": "token",
+           "token": "clawer_gateway_auth_token"
+        }
+     },
+     ...
+   }
+   ~~~
+
+   OpenClaw Gateway enables token-based authentication by default
+   to restrict unauthorized access to your AI agent/gateway service running on `127.0.0.1:18789`.
+
+   Once the token of the Openclaw's gateway has been configured,
+   e.g. `clawer_gateway_auth_token`,
+   we can use the token either in the URL or in the HTTP header.
+
+   * URL example:
+
+     ~~~
+     http://127.0.0.1:18789/chat?session=main&token=clawer_gateway_auth_token
+     ~~~
+
+   * HTTP header example:
+  
+     ~~~
+     Authorization: Bearer clawer_gateway_auth_token
+     ~~~
 
 
 &nbsp;
