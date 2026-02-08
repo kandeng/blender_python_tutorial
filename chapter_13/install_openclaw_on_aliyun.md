@@ -491,11 +491,131 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
      <img alt="Create a new private key and download it" src="./asset/private_key_02.png" width="48%">
    </p>    
 
-&nbsp;
-### 5.3 Set up SSH tunnel
 
 &nbsp;
-### 5.4 Start and stop Openclaw
+### 5.3 Start and stop Openclaw
+
+* Start Openclaw gateway
+
+  Following the instruction of the official ["Gateway Runbook"](https://docs.openclaw.ai/gateway),
+we can start the Openclaw gateway using `openclaw gateway` command. 
+
+~~~
+$ pwd
+  /home/clawer/.openclaw
+clawer$ openclaw gateway
+
+🦞 OpenClaw 2026.2.3-1 (d84eb46) — OpenAI-compatible, not OpenAI-dependent.
+
+07:06:41 [canvas] host mounted at http://127.0.0.1:18789/__openclaw__/canvas/ (root /home/clawer/.openclaw/canvas)
+07:06:41 [heartbeat] started
+07:06:41 [gateway] agent model: dashscope/qwen-turbo
+07:06:41 [gateway] listening on ws://127.0.0.1:18789 (PID 416290)
+07:06:41 [gateway] listening on ws://[::1]:18789
+07:06:41 [gateway] log file: /tmp/openclaw/openclaw-2026-02-08.log
+07:06:41 [browser/service] Browser control service ready (profiles=2)
+07:06:42 [gateway] update available (latest): v2026.2.6-3 (current v2026.2.3-1). Run: openclaw update
+~~~
+
+* Verify the network traffic
+
+  To look into the incoming traffic of port `18789`, we can open another terminal, and run `netstat` command,
+
+~~~
+clawer$ sudo netstat -tulpn | grep 18789
+        [sudo] password for clawer: 
+        tcp    0   0 127.0.0.1:18789    0.0.0.0:*     LISTEN      416290/openclaw-gat 
+        tcp6   0   0 ::1:18789          :::*          LISTEN      416290/openclaw-gat
+~~~
+
+   <p align="center" vertical-align="top">
+     <img alt="Start the openclaw gateway" src="./asset/openclaw_aliyun01.png" width="48%">
+     &nbsp;
+     <img alt="Display the status the openclaw" src="./asset/openclaw_aliyun02.png" width="48%">
+   </p>
+
+&nbsp;
+* A simple HTTP request
+
+  Additionally, to take a test, we can use `curl` command, with HTTP authentication token, e.g. `clawer_gateway_auth_token`,
+
+~~~
+clawer$ curl -X GET http://127.0.0.1:18789/chat?session=main   -H "Authorization: Bearer clawer_gateway_auth_token"   -H "Content-Type: application/json"   -d '{"content":"What AI model are you? Please answer in English."}'
+
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>OpenClaw Control</title>
+            <meta name="color-scheme" content="dark light" />
+            <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+            <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+            <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+            <script type="module" crossorigin src="./assets/index-BJMYln02.js"></script>
+            <link rel="stylesheet" crossorigin href="./assets/index-B_pAAEiP.css">
+            <script>window.__OPENCLAW_CONTROL_UI_BASE_PATH__="";window.__OPENCLAW_ASSISTANT_NAME__="Assistant";window.__OPENCLAW_ASSISTANT_AVATAR__="A";</script>
+          </head>
+          <body>
+             <openclaw-app></openclaw-app>
+          </body>
+        </html>
+~~~
+
+   <p align="center" vertical-align="top">
+     <img alt="A simple HTTP request and netstat" src="./asset/openclaw_aliyun04.png" width="48%">
+     &nbsp;
+     <img alt="Stop the openclaw gateway" src="./asset/openclaw_aliyun03.png" width="48%">
+   </p>    
+
+
+&nbsp;
+### 5.4 Remote access
+
+To view the admin webpage of the Openclaw gateway, 
+we need to setup a remote access from our local computer to the remote Alibaba cloud ECS instance. 
+
+Then visit the webpage `http://127.0.0.1:18789/` from the browser running on our local computer. 
+
+* Verify that the private key is functional
+
+~~~
+dengkan$ ssh -i openclaw_pem.pem clawer@47.98.204.30
+         clawer@47.98.204.30's password:
+         Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
+         ...
+         System information as of Sun Feb  8 03:36:50 PM CST 2026
+         System load:  0.33               Processes:             199
+         Usage of /:   2.5% of 983.95GB   Users logged in:       1
+         Memory usage: 21%                IPv4 address for eth0: 172.16.6.222
+         Swap usage:   0%
+         ...
+         Last login: Fri Feb  6 23:55:12 2026 from 114.249.134.127
+         -bash: /home/clawer/.openclaw/completions/openclaw.bash: No such file or directory
+   ~~~
+
+* Set up the SSH forwarding tunnel from our local computer to the remote Alibaba ECS instance
+
+~~~
+dengkan$ ssh -i openclaw_pem.pem -N -L 18789:127.0.0.1:18789 clawer@47.98.204.30
+         clawer@47.98.204.30's password:
+         (Wait here ...)
+~~~
    
+* In our local computer, open chrome browser, and visit `http://127.0.0.1:18789/`
 
+   We need to set the HTTP authentication token of the gateway in the "Overview" page.
 
+   <p align="center" vertical-align="top">
+     <img alt="Remote access openclaw gateway" src="./asset/openclaw_local.png" width="48%">
+     &nbsp;
+     <img alt="Set the http authentication token" src="./asset/openclaw_gateway.png" width="48%">
+   </p>    
+
+* Chat with Openclaw to verify if the Openclaw can call the remote AI model
+
+   <p align="center" vertical-align="top">
+     <img alt="A simple chat" src="./asset/openclaw_chat01.png" width="48%">
+     &nbsp;
+     <img alt="A request needs external resources" src="./asset/openclaw_chat02.png" width="48%">
+   </p>    
