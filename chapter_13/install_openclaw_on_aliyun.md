@@ -102,7 +102,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    We will configure `Dingding` (钉钉) and `Feishu`（飞书),
    that are not in channel list supported by the Openclaw installation script.
 
-9. Configure the network security group
+9. Open port 18789 for the Openclaw gateway
 
    We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
   
@@ -453,7 +453,6 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
      <img alt="ECS main page" src="./asset/security_group_02.png" width="48%">
    </p>  
 
-
 &nbsp;
 * Click "Instances" on the left bar -> ECS instance list page, 
 
@@ -465,23 +464,38 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
      <img alt="ECS instance detail page" src="./asset/security_group_04.png" width="48%">
    </p>  
 
-
 &nbsp;
 * Click the link of the security group on the left side, or, click the link of "manage rules" on the right side,
 
   Edit the inbound rules of the security group to open the port `18789` for Openclaw gateway. 
   
    <p align="center" vertical-align="top">
-     <img alt="ECS instance list page" src="./asset/security_group_05.png" width="48%">
+     <img alt="Security group main page" src="./asset/security_group_05.png" width="48%">
      &nbsp;
-     <img alt="ECS instance detail page" src="./asset/security_group_06.png" width="48%">
+     <img alt="Security group inbound rules" src="./asset/security_group_06.png" width="48%">
    </p>  
 
-&nbsp;
-### 5.2 Set up SSH tunnel
 
 &nbsp;
-### 5.3 Start and stop Openclaw
+### 5.2 Create and download private key
+
+* Following the similar steps to navigate to the ECS instance detail page,
+
+  Click the "Private key pair" on the left panel -> Private key pair management page,
+
+  Create a new private key and download it to our local computer. 
+
+   <p align="center" vertical-align="top">
+     <img alt="ECS instance detail page" src="./asset/private_key_01.png" width="48%">
+     &nbsp;
+     <img alt="Create a new private key and download it" src="./asset/private_key_02.png" width="48%">
+   </p>    
+
+&nbsp;
+### 5.3 Set up SSH tunnel
+
+&nbsp;
+### 5.4 Start and stop Openclaw
    
 
 
