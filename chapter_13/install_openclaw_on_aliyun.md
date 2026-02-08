@@ -107,15 +107,15 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 
 10. Configure the network security group
 
-   We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
+    We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
   
 11. Set up the SSH tunnel
   
-   We set up the SSH tunnel from the Alibaba cloud ECS instance to our local computer,
-   so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
+    We set up the SSH tunnel from the Alibaba cloud ECS instance to our local computer,
+    so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
 
-   Notice that even though we have openned the port `18789` of the Openclaw's gateway,
-   we cannot visit the Openclaw's webpage directly via `http://<alibaba_ecs_public_ip>:18789/`.
+    Notice that even though we have openned the port `18789` of the Openclaw's gateway,
+    we cannot visit the Openclaw's webpage directly via `http://<alibaba_ecs_public_ip>:18789/`.
 
 12. Start and stop Openclaw gateway
 
