@@ -77,13 +77,6 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    OpenClaw Gateway enables token-based authentication by default
    to restrict unauthorized access to your AI agent/gateway service running on `127.0.0.1:18789`.
 
-8. Configure the AI models that Openclaw uses
-
-   We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
-   
-   The challenge is that `DashScope` AI model provider is not supported yet
-   in the option list of the Openclaw installation script.
-
    Once the token of the Openclaw's gateway has been configured,
    e.g. `clawer_gateway_auth_token`,
    we can use the token either in the URL or in the HTTP header.
@@ -99,6 +92,13 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
      ~~~
      Authorization: Bearer clawer_gateway_auth_token
      ~~~
+
+8. Configure the AI models that Openclaw uses
+
+   We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
+   
+   The challenge is that `DashScope` AI model provider is not supported yet
+   in the option list of the Openclaw installation script.
 
 9. Configure the Instant Messaging apps that Openclaw uses
 
@@ -339,7 +339,6 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
   <p align="center" vertical-align="top">
     <img alt="Create apiKey" src="./asset/bailian05.png" width="48%">
   </p>  
-
 
 
 &nbsp;
