@@ -34,7 +34,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
   
    This restriction prevents direct SSH access from a local machine.
 
-   Furthermore, managing OpenClaw requires establishing a reverse SSH tunnel
+   Furthermore, managing OpenClaw requires establishing a SSH tunnel
    to access the web interface at "http://127.0.0.1:18789/" locally. 
   
    Since root-level restrictions interfere with setting up this tunnel, we recommend creating a standard user (e.g., clawer) with password. 
@@ -66,9 +66,9 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    Install Openclaw as a skeleton, without configuring the AI models that it uses,
    without configuring the Instant Messaging apps that it uses.
 
-6. Get AI model's apiKey
+6. Get AI provider's apiKey
 
-   We use Alibaba's `DashScope` that has been renamed to `bailian` recently as the AI model provider.
+   We use Alibaba's `DashScope` that has been renamed to `BaiLian` recently as the AI model provider.
 
    In order to remotely use the AI model via `DashScope`, we need to get our dashscope's api-key.
 
@@ -109,9 +109,9 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 
    We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
   
-11. Set up the reverse SSH tunnel
+11. Set up the SSH tunnel
   
-   We set up the reverse SSH tunnel from the Alibaba cloud ECS instance to our local computer,
+   We set up the SSH tunnel from the Alibaba cloud ECS instance to our local computer,
    so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
 
    Notice that even though we have openned the port `18789` of the Openclaw's gateway,
@@ -288,15 +288,58 @@ Follow the instruction on [Openclaw's official website](https://docs.openclaw.ai
 clawer$ curl -fsSL https://openclaw.ai/install.sh | bash
 ~~~
 
-Or, if `https://openclaw.ai/`, you can download `install.sh` first, rename it to `openclaw_install.sh`, 
+Or, if `https://openclaw.ai/`, you can download `install.sh` first, 
+rename it to `openclaw_install.sh`, and then run,
 
-and then run `$ bash openclaw_install.sh`. 
+~~~
+clawer$ bash openclaw_install.sh
+~~~
 
 When asked to choose AI model and its provider, you can choose "skip", or whatever model and provider, 
 because we will change them later. 
 
 When asked to choose channel, you can choose "skip", or whatever, e.g. "telegram", 
 because we will change it later. 
+
+
+### 4.2 Get AI provider's apiKey
+
+We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as our AI provider.
+
+1. Login to [Alibaba cloud platform](https://www.aliyun.com/),
+  
+   Use your master account to login, instead of RAM acccount. 
+
+2. Creat `apiKey`,
+
+* In "Alibaba cloud main page", click the left bar, and open the navigation panel,
+
+  Click "AI model provider Bailian" -> Bailian main page,
+  
+  <p align="center" vertical-align="top">
+    <img alt="Alibaba Cloud main page" src="./asset/bailian01.png" width="48%">
+    &nbsp;
+    <img alt="Entrance to Bailian page" src="./asset/bailian02.png" width="48%">
+  </p>  
+
+&nbsp;
+* Click "Model service" on the top bar -> Model square page,
+  
+  Click "Private key management" on the left panel -> Private key management main page,
+
+  <p align="center" vertical-align="top">
+    <img alt="Bailian main page" src="./asset/bailian03.png" width="48%">
+    &nbsp;
+    <img alt="Bailian's model square page" src="./asset/bailian04.png" width="48%">
+  </p>  
+
+&nbsp;
+* Click "Create API key" button.
+  
+  <p align="center" vertical-align="top">
+    <img alt="Create apiKey" src="./asset/bailian05.png" width="48%">
+  </p>  
+
 
 
 &nbsp;
