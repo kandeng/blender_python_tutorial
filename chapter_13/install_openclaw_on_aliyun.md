@@ -118,7 +118,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 
 
 &nbsp;
-## 3. Preparation
+## 3. Prerequisites
 
 ### 3.1 Create a non-root user
 
@@ -619,3 +619,17 @@ dengkan$ ssh -i openclaw_pem.pem -N -L 18789:127.0.0.1:18789 clawer@47.98.204.30
      &nbsp;
      <img alt="A request needs external resources" src="./asset/openclaw_chat02.png" width="48%">
    </p>    
+
+
+&nbsp;
+## 6. References
+
+1. [Install OpenClaw on AWS for Free (Clawdbot → Moltbot → OpenClaw)](https://www.youtube.com/watch?v=9iotTtgS0Ws)
+
+2. [How to Set Up OpenClaw AI on AWS](https://dev.to/brayanarrieta/how-to-set-up-openclaw-ai-on-aws-3a0j)
+
+3. [OpenClaw Full Tutorial for Beginners – How to Set Up and Use OpenClaw (ClawdBot / MoltBot)](https://www.youtube.com/watch?v=n1sfrc-RjyM)
+
+4. [OpenClaw / Moltbot / Clawdbot Keynote](https://www.youtube.com/playlist?list=PLyhA7e5e7NsP-1F3csA9lPb15l3GE8VCe)
+
+5. [部署OpenClaw镜像并构建钉钉AI员工](https://help.aliyun.com/zh/simple-application-server/use-cases/quickly-deploy-and-use-openclaw)
