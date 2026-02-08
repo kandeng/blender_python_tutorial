@@ -72,7 +72,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
 
    In order to remotely use the AI model via `DashScope`, we need to get our dashscope's api-key.
 
-7. Configure the AI models that Openclaw uses
+7. Configure Openclaw 
 
    We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
    
@@ -97,8 +97,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
      Authorization: Bearer clawer_gateway_auth_token
      ~~~
    
-
-8. Configure the Instant Messaging apps that Openclaw uses
+8. Connect to the Instant Messaging apps
 
    We will configure `Dingding` (钉钉) and `Feishu`（飞书),
    that are not in channel list supported by the Openclaw installation script.
@@ -340,7 +339,7 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
 
 
 &nbsp;
-### 4.3 Set the authentication token for Openclaw gateway
+### 4.3 Create and modify openclaw.json
 
 1. Create `openclaw.json` configuration file
 
@@ -441,5 +440,48 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
 
 &nbsp;
 ## 5. Run Openclaw
+
+### 5.1 Configure the network security group
+
+* In "Alibaba cloud main page", click the left bar, and open the navigation panel,
+
+    Click "Cloud server ECS" -> Cloud server ECS main page,
+  
+   <p align="center" vertical-align="top">
+     <img alt="Alibaba Cloud main page" src="./asset/security_group_01.png" width="48%">
+     &nbsp;
+     <img alt="ECS main page" src="./asset/security_group_02.png" width="48%">
+   </p>  
+
+
+&nbsp;
+* Click "Instances" on the left bar -> ECS instance list page, 
+
+    Click the ECS instance that we are using -> ECS instance detail page -> click "Security group" on the top menu,
+
+   <p align="center" vertical-align="top">
+     <img alt="ECS instance list page" src="./asset/security_group_03.png" width="48%">
+     &nbsp;
+     <img alt="ECS instance detail page" src="./asset/security_group_04.png" width="48%">
+   </p>  
+
+
+&nbsp;
+* Click the link of the security group on the left side, or, click the link of "manage rules" on the right side,
+
+  Edit the inbound rules of the security group to open the port `18789` for Openclaw gateway. 
+  
+   <p align="center" vertical-align="top">
+     <img alt="ECS instance list page" src="./asset/security_group_05.png" width="48%">
+     &nbsp;
+     <img alt="ECS instance detail page" src="./asset/security_group_06.png" width="48%">
+   </p>  
+
+&nbsp;
+### 5.2 Set up SSH tunnel
+
+&nbsp;
+### 5.3 Start and stop Openclaw
+   
 
 
