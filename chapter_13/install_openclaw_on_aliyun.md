@@ -441,7 +441,7 @@ We use Alibaba's `DashScope`, that has been renamed to `BaiLian` recently, as ou
 &nbsp;
 ## 5. Run Openclaw
 
-### 5.1 Configure the network security group
+### 5.1 Open port 18789
 
 * In "Alibaba cloud main page", click the left bar, and open the navigation panel,
 
