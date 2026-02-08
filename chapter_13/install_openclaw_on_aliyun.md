@@ -18,8 +18,7 @@ it may lack the flexibility required for extensive custom development.
 The most robust solution to install Openclaw on an Alibaba ECS instance from scratch. 
 
 Additionally, we plan to integrate Chinese LLMs with Openclaw, 
-including `Qwen-turbo` and `Kimi Coding`,
-via `DashScope` AI model provider. 
+including `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider. 
 This allows us to simplify the billing process by paying in RMB.
 
 
@@ -67,23 +66,50 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    Install Openclaw as a skeleton, without configuring the AI models that it uses,
    without configuring the Instant Messaging apps that it uses.
 
-6. Configure the AI models that Openclaw uses
+6. Get AI model's apiKey
 
-   We will configure `Qwen-turbo` and `Kimi Coding`, via `DashScope` AI model provider.
+   We use Alibaba's `DashScope` that has been renamed to `bailian` recently as the AI model provider.
+
+   In order to remotely use the AI model via `DashScope`, we need to get our dashscope's api-key.
+
+7. Set the authentication token for Openclaw gateway.
+
+   OpenClaw Gateway enables token-based authentication by default
+   to restrict unauthorized access to your AI agent/gateway service running on `127.0.0.1:18789`.
+
+8. Configure the AI models that Openclaw uses
+
+   We will configure `Qwen-turbo` and `Kimi-K2.5`, via `DashScope` AI model provider.
    
    The challenge is that `DashScope` AI model provider is not supported yet
    in the option list of the Openclaw installation script.
 
-7. Configure the Instant Messaging apps that Openclaw uses
+   Once the token of the Openclaw's gateway has been configured,
+   e.g. `clawer_gateway_auth_token`,
+   we can use the token either in the URL or in the HTTP header.
+
+   * URL example:
+
+     ~~~
+     http://127.0.0.1:18789/chat?session=main&token=clawer_gateway_auth_token
+     ~~~
+
+   * HTTP header example:
+  
+     ~~~
+     Authorization: Bearer clawer_gateway_auth_token
+     ~~~
+
+9. Configure the Instant Messaging apps that Openclaw uses
 
    We will configure `Dingding` (钉钉) and `Feishu`（飞书),
    that are not in channel list supported by the Openclaw installation script.
 
-8. Configure the network security group
+10. Configure the network security group
 
    We will configure the network security group, so that the port `18789` of the Openclaw gateway can be accessed.
   
-9. Set up the reverse SSH tunnel
+11. Set up the reverse SSH tunnel
   
    We set up the reverse SSH tunnel from the Alibaba cloud ECS instance to our local computer,
    so that we can visit the webpages of the Openclaw from the `localhost` of our local computer.
@@ -91,7 +117,7 @@ We took the following steps, and successfully installed Openclaw on an Alibaba's
    Notice that even though we have openned the port `18789` of the Openclaw's gateway,
    we cannot visit the Openclaw's webpage directly via `http://<alibaba_ecs_public_ip>:18789/`.
 
-10. Start and stop Openclaw gateway
+12. Start and stop Openclaw gateway
 
 
 &nbsp;
@@ -253,3 +279,27 @@ clawer$ sudo systemctl restart nscd
    
 &nbsp;
 ## 4. Install and configure Openclaw
+
+### 4.1 Install Openclaw 
+
+Follow the instruction on [Openclaw's official website](https://docs.openclaw.ai/install) to install Openclaw,
+
+~~~
+clawer$ curl -fsSL https://openclaw.ai/install.sh | bash
+~~~
+
+Or, if `https://openclaw.ai/`, you can download `install.sh` first, rename it to `openclaw_install.sh`, 
+
+and then run `$ bash openclaw_install.sh`. 
+
+When asked to choose AI model and its provider, you can choose "skip", or whatever model and provider, 
+because we will change them later. 
+
+When asked to choose channel, you can choose "skip", or whatever, e.g. "telegram", 
+because we will change it later. 
+
+
+&nbsp;
+## 5. Run Openclaw
+
+
