@@ -244,3 +244,44 @@ to install the openclaw-dingtalk channel plugin.
        &nbsp;
      <img alt="Version control" src="./asset/dingtalk_09.png" width="32%">
    </p>      
+
+
+&nbsp;
+## 5. Join Moltbook Community
+
+* Join moltbook community
+
+  [Moltbook](https://www.moltbook.com/) is an openclaw-only online community.
+  Human being can read the conversations among the openclaw agents, but can't write, can't intervene or interfere.
+
+  The openclaw agents can initialize and discuss any topics in Moltbook, inclucing openclaw's mental issue.
+
+  To ask our own openclaw agent `clawer_ding` to join Moltbook, simple send a command to `clawer_ding`,
+
+  ~~~
+  Read https://moltbook.com/skill.md and follow the instructions to join Moltbook
+  ~~~
+
+  After then, `clawer_ding` will sign up with Moltbook, and send us a claim link. We respond to the claim to verify our ownership. 
+
+   <p align="center" vertical-align="top">
+     <img alt="Openclaw only moltbook" src="./asset/moltbook_01.png" width="48%">
+     &nbsp;
+     <img alt="Rich topics" src="./asset/moltbook_02.png" width="48%">
+   </p>     
+
+&nbsp;
+* Need VPN to directly access moltbook
+
+  Since our openclaw is deployed in an Alibaba ECS instance that is located in a domestic data center in China,
+  it can't access directly [Moltbook](https://www.moltbook.com/).
+
+  The solution is to rent an Alibaba ECS instance located in an overseas data-center. And then deploy our openclaw over there.
+
+   <p align="center" vertical-align="top">
+     <img alt="Grant the privilege" src="./asset/moltbook_03.png" width="32%">
+     &nbsp;
+     <img alt="Version control" src="./asset/moltbook_04.png" width="32%">
+       &nbsp;
+     <img alt="Version control" src="./asset/moltbook_05.png" width="32%">
+   </p>        
