@@ -129,9 +129,7 @@ to install the openclaw-dingtalk channel plugin.
 
 
 &nbsp;  
-## 4. Use Openclaw in Dingtalk
-
-* Start openclaw gateway
+## 4. Start openclaw gateway
 
   In Alibaba cloud ECS instance, execute command `openclaw gateway`.
   
@@ -193,3 +191,56 @@ to install the openclaw-dingtalk channel plugin.
      &nbsp;
      <img alt="A request needs external resources" src="../chapter_13/asset/openclaw_chat02.png" width="48%">
    </p>   
+
+
+&nbsp;  
+## 5. Use Openclaw in Dingtalk
+
+* One-on-one chat.
+
+  Search for the dingtalk bot `clawer_ding` in Dingtalk's main page.
+
+  For the time being, we only use `qwen-turbo` as the AI model for Openclaw.
+  
+  Since `qwen-turbo` is a language model, it can chat, write program, but can't recognize images.
+
+   <p align="center" vertical-align="top">
+     <img alt="Grant the privilege" src="./asset/dingtalk_01.png" width="32%">
+     &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_02.png" width="32%">
+       &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_03.png" width="32%">
+   </p> 
+
+   &nbsp;
+   <p align="center" vertical-align="top">
+     <img alt="A simple chat" src="./asset/dingtalk_coding.png" width="90%">
+   </p>   
+
+
+ &nbsp;
+ * Group chat.
+
+   Add the dingtalk bot to a group.
+
+   Click the three-dot button on the top right corner of a group, to add the `clawer_ding` bot to this group.
+
+   <p align="center" vertical-align="top">
+     <img alt="Grant the privilege" src="./asset/dingtalk_04.png" width="32%">
+     &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_05.png" width="32%">
+       &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_06.png" width="32%">
+   </p>    
+
+   Using `@clower_ding` in the group, any member of the group can chat with `clawer_ding`.
+
+   However, `clawer_ding` and other Dingtalk bot can't use emoji and meme.
+
+   <p align="center" vertical-align="top">
+     <img alt="Grant the privilege" src="./asset/dingtalk_07.png" width="32%">
+     &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_08.png" width="32%">
+       &nbsp;
+     <img alt="Version control" src="./asset/dingtalk_09.png" width="32%">
+   </p>      
