@@ -70,11 +70,126 @@ Notice that you may prepare a company's license beforehand.
      &nbsp;
      <img alt="Version control" src="./asset/dingbot_10.png" width="48%">
    </p> 
-  
-   
 
-&nbsp;
+  
+&nbsp;     
 ## 3. Install Openclaw-Dingtalk Plugin
 
-&nbsp;
+Follow the instruction of ["钉钉渠道配置指南"](https://github.com/BytePioneer-AI/openclaw-china/blob/main/doc/guides/dingtalk/configuration.md)，
+to install the openclaw-dingtalk channel plugin. 
+
+* Install the openclaw-dingtalk channel plugin
+
+  ~~~
+  clawer$ pwd
+          /home/clawer
+  clawer$ openclaw plugins install @openclaw-china/dingtalk
+  ~~~
+
+* Add dingtalk as one of the channel in `openclaw.json`
+
+  Here, we need the `Client ID` and `Client Secret`
+  that we took record in last section when creating Dingtalk bot.
+
+  Each command is to add some content to `~/.openclaw/openclaw.json`,
+  and the result of the execution is similar. 
+
+  ~~~
+  clawer$ openclaw config set channels.dingtalk.enabled true
+  
+  clawer$ openclaw config set channels.dingtalk.clientId dingxxxx
+
+  clawer$ openclaw config set channels.dingtalk.clientSecret YM_L3xxxx
+  
+  clawer$ openclaw config set channels.dingtalk.enableAICard false
+  
+  clawer$ openclaw config set gateway.http.endpoints.chatCompletions.enabled true
+          🦞 OpenClaw 2026.2.3-1 (d84eb46) — I don't judge, but your missing API keys are absolutely judging you.
+          Updated gateway.http.endpoints.chatCompletions.enabled. Restart the gateway to apply.
+  ~~~
+
+* Add more controls to `openclaw.json`
+
+  Use `vim` or other editing tool to modify `~/.openclaw/openclaw.json`.
+
+  Here is the [`openclaw.json`](./src/openclaw.json) after modification. 
+  
+  ~~~
+  "channels": {
+    "dingtalk": {
+      "dmPolicy": "open",          // open | pairing | allowlist
+      "groupPolicy": "open",       // open | allowlist | disabled
+      "requireMention": true,
+      "allowFrom": [],
+      "groupAllowFrom": []
+    }
+  },
+  ...
+  ~~~
+
+
+&nbsp;  
 ## 4. Use Openclaw in Dingtalk
+
+* Start openclaw gateway
+
+  In Alibaba cloud ECS instance, execute command `openclaw gateway`.
+  
+  ~~~
+  clawer$ pwd
+          /home/clawer
+  clawer$ openclaw gateway
+          🦞 OpenClaw 2026.2.3-1 (d84eb46) — Your messages, your servers, your control.
+          09:31:58 [canvas] host mounted at http://127.0.0.1:18789/__openclaw__/canvas/ (root /home/clawer/.openclaw/canvas)
+          09:31:58 [heartbeat] started          
+          09:31:58 [gateway] agent model: dashscope/qwen-turbo
+          09:31:58 [gateway] listening on ws://127.0.0.1:18789 (PID 648636)
+          09:31:58 [gateway] listening on ws://[::1]:18789
+          09:31:58 [gateway] log file: /tmp/openclaw/openclaw-2026-02-09.log
+          09:31:58 [browser/service] Browser control service ready (profiles=2)
+          09:31:58 [dingtalk] starting provider for account default
+          09:31:58 [dingtalk] [dingtalk] [gateway] state idle -> connecting
+          09:31:58 [dingtalk] [dingtalk] Stream client connect invoked
+          09:31:58 [2026-02-09T09:31:58.736Z] connect success
+          09:32:03 [dingtalk] [dingtalk] [gateway] state connecting -> connected
+          09:32:03 [dingtalk] [dingtalk] [gateway] socket connected
+          09:32:27 [ws] webchat connected conn=508cce47-bf49-4041-a80d-d6003eb80e6e remote=127.0.0.1 client=openclaw-control-ui webchat vdev
+          ...
+  ~~~
+
+* Setup SSH tunnel from a local computer to Alibaba ECS
+
+  In a local computer, e.g. a macbook, execute the following command to setup a `SSH` tunneo to the Alibaba ECS instance.
+
+  Notice, we need the private key of the Alibaba ECS beforehand,
+  following to instruction of last chapter's ["4.2 Get AI provider's apiKey"](../chapter_13/install_openclaw_on_aliyun.md#42-get-ai-providers-apikey).
+
+  ~~~
+  dengkan$ ssh -i openclaw_pem.pem clawer@47.98.204.30
+           clawer@47.98.204.30's password:
+           Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-164-generic x86_64)
+
+           * Documentation:  https://help.ubuntu.com
+           * Management:     https://landscape.canonical.com
+           * Support:        https://ubuntu.com/pro
+
+           System information as of Sun Feb  8 10:53:41 PM CST 2026
+           System load:  0.48               Processes:             204
+           Usage of /:   2.5% of 983.95GB   Users logged in:       2
+           Memory usage: 21%                IPv4 address for eth0: 172.16.6.222
+           Swap usage:   0%
+
+           Expanded Security Maintenance for Applications is not enabled.
+           ...
+  ~~~
+  
+* Verify the status of Openclaw gateway
+ 
+  Follow the same instruction of last chapter's ["5.4 Remote access"](../chapter_13/install_openclaw_on_aliyun.md#54-remote-access),
+  open a browser, e.g. chrome, and visit the local webpage `http://127.0.0.1:18789/`
+ 
+   <p align="center" vertical-align="top">
+     <img alt="A simple chat" src="../chapter_13/asset/openclaw_chat01.png" width="48%">
+     &nbsp;
+     <img alt="A request needs external resources" src="../chapter_13/asset/openclaw_chat02.png" width="48%">
+   </p>   
