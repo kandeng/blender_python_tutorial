@@ -47,3 +47,5 @@ Here is the content table of the Blender python tutorials.
 12. [End-to-end agent instructure](./chapter_12/aiBlender_end_to_end.md)
 
 13. [Install Openclaw on Alibaba Cloud](./chapter_13/install_openclaw_on_aliyun.md)
+
+14. [Integrate Openclaw with Dingtalk](./chapter_14/Openclaw_to_dingtalk.md)
