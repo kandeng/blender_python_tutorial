@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.3-1",
+    "lastTouchedAt": "2026-02-09T09:19:27.752Z"
+  },
+  "models": {
+    "providers": {
+      "dashscope": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "sk-80f765b700fb461291067dcadb78bd43",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen-turbo",
+            "name": "Qwen Turbo",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "dashscope/qwen-turbo"
+      },
+      "models": {
+        "dashscope/qwen-turbo": {
+          "alias": "Qwen Turbo"
+        }
+      },
+      "workspace": "/home/clawer/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "channels": {
+    "dingtalk": {
+      "enabled": true,
+      "clientId": "dinghxhyedsmv3rselrt",
+      "clientSecret": "YM_L3bgm3TuzeuTiX2qcaGNaicRyHT1Hp6AD5-i-Ac_bXK-gnem97B5W2gYjfN5p",
+      "enableAICard": false,
+      "dmPolicy": "open",  
+      "groupPolicy": "open",
+      "requireMention": true,
+      "allowFrom": [],
+      "groupAllowFrom": []
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "clawer_gateway_auth_token"
+    },
+    "http": {
+      "endpoints": {
+        "chatCompletions": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "dingtalk": {
+        "enabled": true
+      }
+    },
+    "installs": {
+      "dingtalk": {
+        "source": "npm",
+        "spec": "@openclaw-china/dingtalk",
+        "installPath": "/home/clawer/.openclaw/extensions/dingtalk",
+        "version": "0.1.30",
+        "installedAt": "2026-02-09T09:05:27.792Z"
+      }
+    }
+  }
+}
