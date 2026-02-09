@@ -7,7 +7,7 @@
     "providers": {
       "dashscope": {
         "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "apiKey": "sk-80f765b700fb461291067dcadb78bd43",
+        "apiKey": "sk-80xxxx",
         "api": "openai-completions",
         "models": [
           {
@@ -61,7 +61,7 @@
     "dingtalk": {
       "enabled": true,
       "clientId": "dinghxhyedsmv3rselrt",
-      "clientSecret": "YM_L3bgm3TuzeuTiX2qcaGNaicRyHT1Hp6AD5-i-Ac_bXK-gnem97B5W2gYjfN5p",
+      "clientSecret": "YM_L3xxxx",
       "enableAICard": false,
       "dmPolicy": "open",  
       "groupPolicy": "open",
