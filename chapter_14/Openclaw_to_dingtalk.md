@@ -155,12 +155,13 @@ to install the openclaw-dingtalk channel plugin.
           ...
   ~~~
 
-* Setup SSH tunnel from a local computer to Alibaba ECS
+* Get the private key from Alibaba ECS instance
 
-  In a local computer, e.g. a macbook, execute the following command to setup a `SSH` tunneo to the Alibaba ECS instance.
+  In a local computer, e.g. a macbook, execute the following command to setup a `SSH` forwarding tunnel
+  from a local computer, e.g. a macbook, to the Alibaba ECS instance.
 
   Notice, we need the private key of the Alibaba ECS beforehand,
-  following to instruction of last chapter's ["4.2 Get AI provider's apiKey"](../chapter_13/install_openclaw_on_aliyun.md#42-get-ai-providers-apikey).
+  following to instruction of last chapter's ["5.2 Create and download private key"](../chapter_13/install_openclaw_on_aliyun.md#52-create-and-download-private-key).
 
   ~~~
   dengkan$ ssh -i openclaw_pem.pem clawer@47.98.204.30
@@ -179,6 +180,14 @@ to install the openclaw-dingtalk channel plugin.
 
            Expanded Security Maintenance for Applications is not enabled.
            ...
+  ~~~
+
+* Setup SSH forwarding tunnel from a local computer (macbook) to Alibaba ECS
+
+  ~~~
+  dengkan$ ssh -i openclaw_pem.pem -N -L 18789:127.0.0.1:18789 clawer@47.98.204.30
+           clawer@47.98.204.30's password:
+           (Wait here ...)
   ~~~
   
 * Verify the status of Openclaw gateway
