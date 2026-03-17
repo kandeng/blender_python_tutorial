@@ -300,6 +300,17 @@ claw_team$ qmd context add /home/claw_team/.openclaw/workspace "Agent workspace 
 Context: Agent workspace - memory files, daily logs, projects, skills
 
 
+# Generate embeddings for semantic search
+#
+claw_team$ qmd embed
+✓ All content hashes already have embeddings.
+
+# Update the QMD index
+#
+claw_team$ qmd update
+Updating 1 collection(s)...
+
+
 claw_team$ qmd query "Boundaries"
 Warning: 7 documents (100%) need embeddings. Run 'qmd embed' for better results.
 Expanding query...QMD Warning: no GPU acceleration, running on CPU (slow). Run 'qmd status' for details.
@@ -333,7 +344,7 @@ Score:  53%
 &nbsp;
 ## 3.4 Modify openclaw.json
 
-Add `memory` section to `/home/claw_team/.openclaw/openclaw.json`
+Add `memory` section to ["/home/claw_team/.openclaw/openclaw.json"](./src/openclaw.json#L139-L151)
 ~~~
   "agents": {
     ...
@@ -352,3 +363,30 @@ Add `memory` section to `/home/claw_team/.openclaw/openclaw.json`
     }
   }
 ~~~
+
+
+&nbsp;
+## 3.5 Test QMD
+
+In the Openclaw chat channel, type in a query, 
+~~~
+请使用 QMD 工具，帮我查找之前笔记中关于 "Boundaries" 的记录
+~~~
+Or, without mentioning QMD,
+~~~
+请帮我查找之前笔记中关于 "Boundaries" 的记录
+~~~
+
+
+The Openclaw will use QMD to do both keyword search and semantic search in the `/workspace` collection, 
+and merge the two result lists using the CPU-based reranking LLM.
+
+Following is the hybrid search results, 
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw chat UI" src="./asset/openclaw_chat01.png" width="80%">
+  </p>  
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw chat UI" src="./asset/openclaw_chat02.png" width="80%">
+  </p>  
