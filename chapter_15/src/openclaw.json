@@ -1,0 +1,232 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.8",
+    "lastTouchedAt": "2026-03-11T14:52:01.493Z"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "custom-dashscope-aliyuncs-com": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "sk-80f765b700fb461291067dcadb78bd43",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen-turbo",
+            "name": "qwen-turbo (Custom Provider)",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16000,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "custom-dashscope-aliyuncs-com/qwen-turbo"
+      },
+      "models": {
+        "custom-dashscope-aliyuncs-com/qwen-turbo": {
+          "alias": "qwen-turbo"
+        }
+      },
+      "workspace": "/home/claw_team/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "main"
+      },
+      {
+        "id": "planner",
+        "name": "planner",
+        "workspace": "/home/claw_team/.openclaw/workspace-planner",
+        "agentDir": "/home/claw_team/.openclaw/agents/planner/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "🧠 Planner"
+        }
+      },
+      {
+        "id": "ideator",
+        "name": "ideator",
+        "workspace": "/home/claw_team/.openclaw/workspace-ideator",
+        "agentDir": "/home/claw_team/.openclaw/agents/ideator/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "💡 Ideator"
+        }
+      },
+      {
+        "id": "critic",
+        "name": "critic",
+        "workspace": "/home/claw_team/.openclaw/workspace-critic",
+        "agentDir": "/home/claw_team/.openclaw/agents/critic/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "🎯 Critic"
+        }
+      },
+      {
+        "id": "surveyor",
+        "name": "surveyor",
+        "workspace": "/home/claw_team/.openclaw/workspace-surveyor",
+        "agentDir": "/home/claw_team/.openclaw/agents/surveyor/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "📚 Surveyor"
+        }
+      },
+      {
+        "id": "coder",
+        "name": "coder",
+        "workspace": "/home/claw_team/.openclaw/workspace-coder",
+        "agentDir": "/home/claw_team/.openclaw/agents/coder/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "💻 Coder"
+        }
+      },
+      {
+        "id": "writer",
+        "name": "writer",
+        "workspace": "/home/claw_team/.openclaw/workspace-writer",
+        "agentDir": "/home/claw_team/.openclaw/agents/writer/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "✍️ Writer"
+        }
+      },
+      {
+        "id": "reviewer",
+        "name": "reviewer",
+        "workspace": "/home/claw_team/.openclaw/workspace-reviewer",
+        "agentDir": "/home/claw_team/.openclaw/agents/reviewer/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "🔍 Reviewer"
+        }
+      },
+      {
+        "id": "scout",
+        "name": "scout",
+        "workspace": "/home/claw_team/.openclaw/workspace-scout",
+        "agentDir": "/home/claw_team/.openclaw/agents/scout/agent",
+        "model": "zai/glm-5",
+        "identity": {
+          "name": "📰 Scout"
+        }
+      }
+    ]
+  },
+  "memory": {
+    "backend": "qmd",
+    "qmd": { 
+      "searchMode": "search",
+      "includeDefaultMemory": true,
+      "sessions": {
+        "enabled": true
+      },
+      "paths": [
+        { "name": "workspace", "path": "/home/claw_team/.openclaw/workspace", "pattern": "**/*.md" }
+      ]
+    }
+  },
+  "tools": {
+    "profile": "coding"
+  },
+  "bindings": [
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "feishu",
+        "accountId": "default"
+      }
+    }
+  ],
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "cli_a93b8473f3381bb6",
+      "appSecret": "sFrCVniPLPpLDaN2Bjq8lbyMsUubDiOx",
+      "connectionMode": "websocket",
+      "domain": "feishu",
+      "groupPolicy": "open"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "claw_team_token"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "contacts.add",
+        "calendar.add",
+        "reminders.add",
+        "sms.send"
+      ]
+    }
+  },
+  "plugins": {
+    "entries": {
+      "feishu": {
+        "enabled": true
+      }
+    },
+    "installs": {
+      "feishu": {
+        "source": "npm",
+        "spec": "@openclaw/feishu",
+        "installPath": "/home/claw_team/.openclaw/extensions/feishu",
+        "version": "2026.3.7",
+        "resolvedName": "@openclaw/feishu",
+        "resolvedVersion": "2026.3.7",
+        "resolvedSpec": "@openclaw/feishu@2026.3.7",
+        "integrity": "sha512-CHPcL+WHYKYR2HJKRYsRtlXx/wbQRy5axltjjH9qXkR8ghxygDmOHZREjxyFEbjFJ3wnIuvgjLE7JYTg3nPpDA==",
+        "shasum": "c4b31dbe2ff0bc7034334873482ad18ac60a0767",
+        "resolvedAt": "2026-03-11T13:09:54.367Z",
+        "installedAt": "2026-03-11T13:09:56.801Z"
+      }
+    }
+  }
+}
