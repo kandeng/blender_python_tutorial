@@ -1,14 +1,10 @@
-# Openclaw Essential Tools
+# Openclaw Essential Tools: QMD
 
 ## 1. Objective
 
-This chapter is a step-by-step tutorial on the installation and usage of some essential tools of Openclaw, including
+This chapter is a step-by-step tutorial on the installation and usage of an essential tools of Openclaw, 
+[QMD](https://github.com/tobi/qmd).
 
-* [QMD](https://github.com/tobi/qmd)
-
-* Live Chrome session attach
-
-* Search
 
 &nbsp;
 ## 2. Environment
@@ -366,7 +362,7 @@ Add `memory` section to ["/home/claw_team/.openclaw/openclaw.json"](./src/opencl
 
 
 &nbsp;
-## 3.5 Test QMD
+# 4. Test QMD
 
 In the Openclaw chat channel, type in a query, 
 ~~~
