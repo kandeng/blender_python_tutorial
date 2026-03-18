@@ -49,3 +49,5 @@ Here is the content table of the Blender python tutorials.
 13. [Install Openclaw on Alibaba Cloud](./chapter_13/install_openclaw_on_aliyun.md)
 
 14. [Integrate Openclaw with Dingtalk](./chapter_14/Openclaw_to_dingtalk.md)
+
+15. [Openclaw Essential Tools: QMD](./chapter_15/Openclaw_qmd.md)
