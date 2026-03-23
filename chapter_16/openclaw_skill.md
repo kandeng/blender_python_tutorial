@@ -1,4 +1,4 @@
-# Openclaw Skill and Plugin
+# Openclaw Skill without or with Docker
 
 ## 1. Objective
 
