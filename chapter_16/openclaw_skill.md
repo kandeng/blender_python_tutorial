@@ -172,7 +172,7 @@ skills/
 2 directories, 2 files
 ~~~
 
-Look into the content of [`SKILL.md`](./src/skills/hello-python/SKILL.md), there are several points worth noting.
+Look into the content of [`hello-python/SKILL.md`](./src/skills/hello-python/SKILL.md), there are several points worth noting.
 
 * Following [Openclaw's official guide](https://docs.openclaw.ai/tools/skills#format-agentskills-+-pi-compatible),
    the [`metadata`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/skills/hello-python/SKILL.md#:~:text=metadata%3A%20%7B%22openclaw%22%3A%20%7B%22requires%22%3A%20%7B%22bins%22%3A%20%5B%22python3%22%5D%7D%7D%7D)
@@ -368,17 +368,7 @@ available at [the docker hub](https://hub.docker.com/layers/library/python/3.12-
    => [internal] load .dockerignore                                                                                                                                            0.1s
    => => transferring context: 2B                                                                                                                                              0.0s
    => [1/3] FROM docker.io/library/python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4                                                   17.6s
-   => => resolve docker.io/library/python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4                                                    0.1s
-   => => sha256:0bbd3d5f3abb2024c1b92ce69e8bdfefa17c248999827c34e2ed52ba0772da1b 1.75kB / 1.75kB                                                                               0.0s
-   => => sha256:fb1118f126b507965df3c46fdfc52312dfd5262e7b6652ef510bd9298f69a6bc 5.66kB / 5.66kB                                                                               0.0s
-   => => sha256:b1a20e2fae4cdafe596f3275baf250182347549a39d648abbad68a25f2e151fd 1.29MB / 1.29MB                                                                              14.8s
-   => => sha256:a6d1911b36ac5b384a54e9197335acdf0ebb0a06910b25b67b9afd054cdc2eb7 12.11MB / 12.11MB                                                                            14.3s
-   => => sha256:e3c59d77c03efd793b736fb93c9b3c578eb84a62458c148b6974323225d030c2 249B / 249B                                                                                  17.3s
-   => => sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 10.37kB / 10.37kB                                                                             0.0s
-   => => extracting sha256:b1a20e2fae4cdafe596f3275baf250182347549a39d648abbad68a25f2e151fd                                                                                    0.1s
-   => => extracting sha256:a6d1911b36ac5b384a54e9197335acdf0ebb0a06910b25b67b9afd054cdc2eb7                                                                                    0.2s
-   => => extracting sha256:e3c59d77c03efd793b736fb93c9b3c578eb84a62458c148b6974323225d030c2                                                                                    0.0s
-   => [internal] load build context                                                                                                                                            0.1s
+   ...
    => => transferring context: 412B                                                                                                                                            0.0s
    => [2/3] WORKDIR /app                                                                                                                                                       0.1s
    => [3/3] COPY scripts/hello.py .                                                                                                                                            0.1s
@@ -448,3 +438,89 @@ available at [the docker hub](https://hub.docker.com/layers/library/python/3.12-
   IMAGE                         ID             DISK USAGE   CONTENT SIZE   EXTRA
   openclaw-skill-hello:latest   60e665ebb854        119MB             0B        
   ~~~
+
+&nbsp;
+### 4.2 SKILL.md
+
+Look into the content of [`hello-docker/SKILL.md`](./src/skills/hello-docker/SKILL.md), notice that,
+
+* the content of `### Implementation Command` is, 
+  ~~~
+  docker run --rm openclaw-skill-hello:latest "{{name}}"
+  ~~~
+
+* `openclaw-skill-hello:latest` is the name of the docker image that we built just now.
+  
+~~~
+---
+name: hello-docker
+description: "Invokes a Python 'Hello World' script inside a Docker container."
+metadata: {"openclaw": {"requires": {"bins": ["docker"]}}}
+user-invocable: true
+---
+
+# Hello Docker Skill
+
+When the user asks for a containerized greeting:
+1. Ensure the docker image `openclaw-skill-hello:latest` is built.
+2. Run the container using the following command.
+3. Pass the user's name as an argument.
+
+### Implementation Command:
+`docker run --rm openclaw-skill-hello:latest "{{name}}"`
+
+### Security Note:
+The `--rm` flag ensures the container is deleted immediately after printing the message to keep the robot's system clean.
+~~~
+
+To verify if the command is executable, we can run it in CLI terminal,
+
+~~~
+robot@robot-test:~/.openclaw/skills/hello-docker$ docker run --rm openclaw-skill-hello:latest 无锡
+Hello, 无锡! I am running inside a Docker container.
+Container ID: eef00bba1c2c
+~~~
+
+&nbsp;
+### 4.3 openclaw.json
+
+Look into the content of [`openclaw.json`](./src/openclaw.json), there are several points worth noting. 
+
+* We add [`hello-docker` to `skills.entries`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22hello%2Ddocker,%7D),
+  ~~~
+  {
+    ...
+    "skills": {
+      "load": {
+        "watch": true,
+        "watchDebounceMs": 250      
+      },
+      "entries": {
+        "hello-python": {
+          "enabled": true
+        },
+        "hello-docker": {
+          "enabled": true
+        }
+      }
+    },
+    ...
+  }
+  ~~~
+
+* Keep [`agents.defaults.sandbox.mode`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22sandbox%22,%7D) unchanged, still be `"mode": "off"`,
+  ~~~
+  {
+    ...
+    "agents": {
+      "defaults": {
+        ...
+        "sandbox": {
+          "mode": "off",
+          "scope": "agent"
+        }
+      }
+    },
+    ...
+  }
+  ~~~`
