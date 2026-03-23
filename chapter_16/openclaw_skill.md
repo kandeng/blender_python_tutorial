@@ -5,9 +5,9 @@
 This chapter is a step-by-step tutorial on how to install openclaw in a local Ubuntu laptop, 
 and how to build custom skills, executing a python script directly, and indirectly in a docker sandbox.  
 
+
 &nbsp;
 ## 2. Install Openclaw in local Ubuntu
-
 
 ### 2.1 Install nvm, node, npm and pnpm 
 
@@ -141,5 +141,159 @@ Open a chrome browser in the local ubuntu laptop, and visit `http://127.0.0.1:18
 Following is a snapshot of the webchat, illustrating the successful outlook of the openclaw.
 
   <p align="center" vertical-align="top">
-    <img alt="Openclaw has been successfully installed" src="./asset/openclaw_webchat.png" width="80%">
+    <img alt="Openclaw has been successfully installed" src="./asset/openclaw_webchat.png" width="95%">
+  </p>  
+
+
+&nbsp;
+## 3. Build managed local skill
+
+In this section, we built a shared skills that runs a python script. 
+
+This shared skill is named as *managed/local skill* in [Openclaw official document](https://docs.openclaw.ai/tools/skills#locations-and-precedence). 
+It lives in a fixed directory, `~/.openclaw/skills`, and serves all agents on the same machine.
+
+
+### 3.1 SKILL.md
+
+In directory `~/.openclaw/skills`, we created a sub-directory [`hello-python`](./src/skills/hello-python) as following,
+
+~~~
+robot@robot-test:~/.openclaw$ pwd
+/home/robot/.openclaw
+
+robot@robot-test:~/.openclaw$ tree skills/
+skills/
+└── hello-python
+    ├── scripts
+    │   └── hello.py
+    └── SKILL.md
+
+2 directories, 2 files
+~~~
+
+Look into the content of [`SKILL.md`](./src/skills/hello-python/SKILL.md), there are several points worth noting.
+
+* Following [Openclaw's official guide](https://docs.openclaw.ai/tools/skills#format-agentskills-+-pi-compatible),
+   the [`metadata`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/skills/hello-python/SKILL.md#:~:text=metadata%3A%20%7B%22openclaw%22%3A%20%7B%22requires%22%3A%20%7B%22bins%22%3A%20%5B%22python3%22%5D%7D%7D%7D)
+   should be a single-line JSON object.
+
+* To support slash command, `user-invocable` must be set to `true`.
+
+* To make sure that openclaw can find the `scripts/hello.py`, we must add the [`### Notes`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/skills/hello-python/SKILL.md#:~:text=%23%23%23%20Notes%3A%0A%2D%20Ensure%20that%20%60%7B%7BskillDir%7D%7D%60%20is%20correctly%20resolved%20to%20the%20absolute%20path%20of%20the%20skill%20directory.%0A%2D%20The%20script%20%60hello.py%60%20should%20be%20placed%20in%20the%20%60scripts%60%20sub%2Ddirectory%20within%20the%20skill%20directory.) in the `SKILL.md`.
+
+* `skillDir` is a reserved word in Openclaw, referring to `/home/robot/.openclaw/skills/hello-python` in this case. 
+
+  
+~~~
+---
+name: hello-python
+description: "Prints hello world using a Python script in a sub-directory."
+metadata: {"openclaw": {"requires": {"bins": ["python3"]}}}
+user-invocable: true
+---
+
+# Hello Python
+
+When the user wants to run the hello world test:
+1. Use `python3` to execute the script.
+2. The script is located at: `{{skillDir}}/scripts/hello.py`
+3. Pass the user's name as an argument.
+
+### Usage Example:
+
+- "Run the hello python skill"
+- "Greet Kanbo using the python script"
+
+### Command:
+`python3 {{skillDir}}/scripts/hello.py "{{name}}"`
+
+### Notes:
+- Ensure that `{{skillDir}}` is correctly resolved to the absolute path of the skill directory.
+- The script `hello.py` should be placed in the `scripts` sub-directory within the skill directory.
+~~~
+
+
+&nbsp;
+### 3.2 openclaw.json
+
+Look into the content of [`openclaw.json`](./src/openclaw.json), there are several points worth noting.
+
+* For a single agent, use [`agents.defaults`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22agents%22,%22%3A%C2%A0%7B), instead of `agents.list[0].defaults`.  
+
+* Since we don't use docker sandbox, [`agents.sandbox.mode` is set to `off`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22sandbox%22,%7D).
+
+  Notice that `sandbox` is configured inside `agents`.
+
+* Refer to [the official documentation of Openclaw](https://docs.openclaw.ai/tools/skills#locations-and-precedence),
+  ~~~
+  <workspace>/skills (highest) → ~/.openclaw/skills → bundled skills (lowest)
+  ~~~
+  the `workspace/skills` and `~/.openclaw/skills` directories are pre-defined, so that we don't need to configure them in [`skills.load`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22load%22,%7D%2C) again. 
+
+* When [`skills.entries.hello-python.enabled`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22hello%2Dpython,%7D) is set to `true`,
+  `hello-python` skill will be registered by openclaw to be `ready` to use, referring to [the screenshot](./asset/openclaw_skill_list.png) of the result of running command `openclaw skills list`.
+  ~~~
+   ✓ ready    │ 📦 hello-python    │ Prints hello world using a Python script in a sub-directory.  │ openclaw-managed 
+  ~~~
+
+  
+~~~
+{
+  ...
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "custom-dashscope-aliyuncs-com/qwen-max"
+      },
+      "models": {
+        "custom-dashscope-aliyuncs-com/qwen-max": {
+          "alias": "qwen-max"
+        }
+      },
+      "workspace": "/home/robot/.openclaw/workspace",
+      "sandbox": {
+        "mode": "off",
+        "scope": "agent"
+      }
+    }
+  },
+  "skills": {
+    "load": {
+      "watch": true,
+      "watchDebounceMs": 250      
+    },
+    "entries": {
+      "hello-python": {
+        "enabled": true
+      }
+    }
+  },
+  ...
+}
+~~~
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw skills list" src="./asset/openclaw_skill_list.png" width="95%">
+  </p>  
+
+
+&nbsp;
+### 3.3 Test
+
+To test the slash command, we can input "/hello-python 邓侃_2026.03.23.11:06" in the input box of the Openclaw's webchat. 
+
+Interestingly, Openclaw automatically deleted the timestamp "2026.03.23.11:06" from the input argument. 
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw skills list" src="./asset/openclaw_slash_skill.png" width="95%">
+  </p>  
+
+
+To test the intent usage of a skill, we can send a message "请用 hello-python skill，向邓侃问个好" in the Openclaw's webchat. 
+
+Notice that if missing "请用 hello-python skill", simply say "向邓侃问个好", the `hello-python` skill will not be invoked. 
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw skills list" src="./asset/openclaw_intent_skill.png" width="95%">
   </p>  
