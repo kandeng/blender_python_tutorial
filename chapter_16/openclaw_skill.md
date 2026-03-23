@@ -281,6 +281,33 @@ Look into the content of [`openclaw.json`](./src/openclaw.json), there are sever
 &nbsp;
 ### 3.3 Test
 
+Before we test the newly built `hello-python` skill, we need to restart the openclaw systemd service. 
+
+~~~
+robot@robot-test:~/.openclaw$ systemctl --user stop openclaw-gateway.service
+
+robot@robot-test:~/.openclaw$ pkill -f node
+robot@robot-test:~/.openclaw$ pkill -f openclaw
+
+robot@robot-test:~/.openclaw$ systemctl --user start openclaw-gateway.service
+
+robot@robot-test:~/.openclaw$ systemctl --user status openclaw-gateway.service
+● openclaw-gateway.service - OpenClaw Gateway (v2026.3.13)
+     Loaded: loaded (/home/robot/.config/systemd/user/openclaw-gateway.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2026-03-23 10:59:01 CST; 2h 28min ago
+   Main PID: 576267 (openclaw-gatewa)
+      Tasks: 31 (limit: 38029)
+     Memory: 553.4M
+        CPU: 32.759s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/openclaw-gateway.service
+             └─576267 openclaw-gateway "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" >
+
+Mar 23 11:02:34 robot-test node[576267]: 2026-03-23T11:02:34.257+08:00 [compaction-safeguard] Compaction safeguard: cancelling compaction with no real conversation messages to s>
+Mar 23 11:02:43 robot-test node[576267]: 2026-03-23T11:02:43.991+08:00 [compaction-safeguard] Compaction safeguard: cancelling compaction with no real conversation messages to s>
+...
+~~~
+
+
 To test the slash command, we can input "/hello-python 邓侃_2026.03.23.11:06" in the input box of the Openclaw's webchat. 
 
 Interestingly, Openclaw automatically deleted the timestamp "2026.03.23.11:06" from the input argument. 
@@ -307,7 +334,7 @@ then runs a python script in the docker container, returns the result, finally, 
 
 ### 4.1 Build the docker image
 
-In directory `~/.openclaw/skills`, we created a sub-directory [`hello-docker`](./src/hello-docker) as following,
+In directory `~/.openclaw/skills`, we created a sub-directory [`hello-docker`](./src/skills/hello-docker) as following,
 
 ~~~
 robot@robot-test:~/.openclaw$ pwd
@@ -509,6 +536,7 @@ Look into the content of [`openclaw.json`](./src/openclaw.json), there are sever
   ~~~
 
 * Keep [`agents.defaults.sandbox.mode`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22sandbox%22,%7D) unchanged, still be `"mode": "off"`,
+
   ~~~
   {
     ...
@@ -523,4 +551,73 @@ Look into the content of [`openclaw.json`](./src/openclaw.json), there are sever
     },
     ...
   }
-  ~~~`
+  ~~~
+
+  
+&nbsp;
+### 4.4 Test
+
+* Restart the systemd service
+
+  Before we test the newly built `hello-docker` skill, we need to restart the openclaw systemd service. 
+
+  ~~~
+  robot@robot-test:~/.openclaw$ systemctl --user stop openclaw-gateway.service
+  
+  robot@robot-test:~/.openclaw$ pkill -f openclaw
+  robot@robot-test:~/.openclaw$ pkill -f node
+  
+  robot@robot-test:~/.openclaw$ systemctl --user start openclaw-gateway.service
+  
+  robot@robot-test:~/.openclaw$ systemctl --user status openclaw-gateway.service
+  ● openclaw-gateway.service - OpenClaw Gateway (v2026.3.13)
+       Loaded: loaded (/home/robot/.config/systemd/user/openclaw-gateway.service; enabled; vendor preset: enabled)
+       Active: active (running) since Mon 2026-03-23 23:15:17 CST; 7s ago
+     Main PID: 1199978 (openclaw-gatewa)
+        Tasks: 31 (limit: 38029)
+       Memory: 1.3G
+          CPU: 10.730s
+       CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/openclaw-gateway.service
+               └─1199978 openclaw-gateway ...>
+  Mar 23 23:15:17 robot-test systemd[979]: Started OpenClaw Gateway (v2026.3.13).
+  ~~~
+
+
+* Refresh
+
+  When we added a new skill `hello-docker` to `~/.openclaw/skills` directory,
+  the Openclaw gateway saw the new sub-directory almost immediately due to the setting of [`skills.load.watch`](https://raw.githubusercontent.com/kandeng/blender_python_tutorial/refs/heads/main/chapter_16/src/openclaw.json#:~:text=%22load%22,%7D%2C).
+  This is the reason that `hello-docker` skill appear in the result of `openclaw skills list` command.
+
+  However, the agent loads a *snapshot* of the available skills at the exact moment a session starts.
+
+  Because we created the `hello-docker` skill after we opened our current webchat UI,
+  that specific session didn't have the skill in its "known tools" list *snapshot*.
+
+  To refresh the *snapshot* of the available skills, we can
+
+  (1) run a slash command `/new` in the input box of the webchat,
+     
+  (2) ask the openclaw agent to run the command `openclaw skills list`, to trigger a forced refresh of the skill discovery service.
+ 
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw skills list" src="./asset/openclaw_skill_new.png" width="90%">
+  </p>  
+
+
+* Test
+
+  We can use both slash command `/hello-docker 南京` and message to use the new skill. The internal process is that
+
+  (1) the openclaw agent sends a command to our host's docker engine to spin up a temporary docker container,
+     
+  (2) run our `hello.py` script inside the docker container,
+    
+  (3) return the result to the channel, in this case, the channel is the webchat webpage,
+ 
+  (4) remove the temporary instance of the image container.
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw docker skill" src="./asset/openclaw_docker_skill.png" width="90%">
+  </p>  
+  
