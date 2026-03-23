@@ -8,7 +8,7 @@
     "providers": {
       "custom-dashscope-aliyuncs-com": {
         "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "apiKey": "sk-80f765b700fb461291067dcadb78bd43",
+        "apiKey": "sk-80f7...",
         "api": "openai-completions",
         "models": [
           {
