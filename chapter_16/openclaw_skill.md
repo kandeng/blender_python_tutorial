@@ -135,3 +135,11 @@ robot@robot-test:~/.openclaw$ sudo systemctl --user status openclaw-gateway.serv
 Failed to connect to bus: $DBUS_SESSION_BUS_ADDRESS and $XDG_RUNTIME_DIR not defined (consider using --machine=<user>@.host --user to connect to bus of other user)
 
 ~~~
+
+Open a chrome browser in the local ubuntu laptop, and visit `http://127.0.0.1:18789/`.
+
+Following is a snapshot of the webchat, illustrating the successful outlook of the openclaw.
+
+  <p align="center" vertical-align="top">
+    <img alt="Openclaw has been successfully installed" src="./asset/openclaw_webchat.png" width="80%">
+  </p>  
