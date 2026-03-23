@@ -58,6 +58,9 @@
     "entries": {
       "hello-python": {
         "enabled": true
+      },
+      "hello-docker": {
+        "enabled": true
       }
     }
   },
