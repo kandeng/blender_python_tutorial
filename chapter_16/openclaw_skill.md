@@ -148,7 +148,7 @@ Following is a snapshot of the webchat, illustrating the successful outlook of t
 &nbsp;
 ## 3. Build managed local skill
 
-In this section, we built a shared skills that runs a python script. 
+In this section, we built a shared skill that runs a python script. 
 
 This shared skill is named as *managed/local skill* in [Openclaw official document](https://docs.openclaw.ai/tools/skills#locations-and-precedence). 
 It lives in a fixed directory, `~/.openclaw/skills`, and serves all agents on the same machine.
@@ -297,3 +297,154 @@ Notice that if missing "请用 hello-python skill", simply say "向邓侃问个�
   <p align="center" vertical-align="top">
     <img alt="Openclaw skills list" src="./asset/openclaw_intent_skill.png" width="95%">
   </p>  
+
+
+&nbsp;
+## 4. Build docker containerized skill
+
+In this section, we built a shared managed/local skill that sends a command to our host's docker engine to spin up a temporary container, 
+then runs a python script in the docker container, returns the result, finally, remove the temporary container. 
+
+### 4.1 Build the docker image
+
+In directory `~/.openclaw/skills`, we created a sub-directory [`hello-docker`](./src/hello-docker) as following,
+
+~~~
+robot@robot-test:~/.openclaw$ pwd
+/home/robot/.openclaw
+
+robot@robot-test:~/.openclaw$ tree skills
+skills
+├── hello-docker
+│   ├── Dockerfile
+│   ├── scripts
+│   │   └── hello.py
+│   └── SKILL.md
+└── hello-python
+    ├── scripts
+    │   └── hello.py
+    └── SKILL.md
+
+4 directories, 5 files
+~~~
+
+* We created the `Dockerfile` file with the following content. 
+
+  Notice that to build the docker image, it relies on `python:3.12-slim` that is a docker image for python 3.12 runtime, 
+available at [the docker hub](https://hub.docker.com/layers/library/python/3.12-slim/images/sha256-f0c6bc1ab7b1ab270bbb612a31a67a7938d6171183ddce9121f04984ab3df44e). 
+
+  ~~~
+  # Use a slim Python 3.12 image
+  FROM python:3.12-slim
+
+  # Set the working directory inside the container
+  WORKDIR /app
+
+  # Copy the script into the container
+  COPY scripts/hello.py .
+
+  # Set the command to run the script
+  ENTRYPOINT ["python", "hello.py"]
+  ~~~
+
+* After we have made the `Dockerfile` file, we used it to build the docker image, 
+  ~~~
+  $ sudo docker build -t openclaw-skill-hello:latest .
+  ~~~
+
+  ~~~
+  robot@robot-test:~/.openclaw/skills/hello-docker$ which docker
+  /usr/local/bin/docker
+  robot@robot-test:~/.openclaw/skills/hello-docker$ docker --version
+  Docker version 29.1.3, build f52814d
+
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo docker build -t openclaw-skill-hello:latest .
+  [sudo] password for robot: 
+  [+] Building 87.5s (8/8) FINISHED                                                                                                                                  docker:default
+   => [internal] load build definition from Dockerfile                                                                                                                         0.0s
+   => => transferring dockerfile: 287B                                                                                                                                         0.0s
+   => [internal] load metadata for docker.io/library/python:3.12-slim                                                                                                         69.3s
+   => [internal] load .dockerignore                                                                                                                                            0.1s
+   => => transferring context: 2B                                                                                                                                              0.0s
+   => [1/3] FROM docker.io/library/python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4                                                   17.6s
+   => => resolve docker.io/library/python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4                                                    0.1s
+   => => sha256:0bbd3d5f3abb2024c1b92ce69e8bdfefa17c248999827c34e2ed52ba0772da1b 1.75kB / 1.75kB                                                                               0.0s
+   => => sha256:fb1118f126b507965df3c46fdfc52312dfd5262e7b6652ef510bd9298f69a6bc 5.66kB / 5.66kB                                                                               0.0s
+   => => sha256:b1a20e2fae4cdafe596f3275baf250182347549a39d648abbad68a25f2e151fd 1.29MB / 1.29MB                                                                              14.8s
+   => => sha256:a6d1911b36ac5b384a54e9197335acdf0ebb0a06910b25b67b9afd054cdc2eb7 12.11MB / 12.11MB                                                                            14.3s
+   => => sha256:e3c59d77c03efd793b736fb93c9b3c578eb84a62458c148b6974323225d030c2 249B / 249B                                                                                  17.3s
+   => => sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 10.37kB / 10.37kB                                                                             0.0s
+   => => extracting sha256:b1a20e2fae4cdafe596f3275baf250182347549a39d648abbad68a25f2e151fd                                                                                    0.1s
+   => => extracting sha256:a6d1911b36ac5b384a54e9197335acdf0ebb0a06910b25b67b9afd054cdc2eb7                                                                                    0.2s
+   => => extracting sha256:e3c59d77c03efd793b736fb93c9b3c578eb84a62458c148b6974323225d030c2                                                                                    0.0s
+   => [internal] load build context                                                                                                                                            0.1s
+   => => transferring context: 412B                                                                                                                                            0.0s
+   => [2/3] WORKDIR /app                                                                                                                                                       0.1s
+   => [3/3] COPY scripts/hello.py .                                                                                                                                            0.1s
+   => exporting to image                                                                                                                                                       0.2s
+   => => exporting layers                                                                                                                                                      0.1s
+   => => writing image sha256:60e665ebb854da803114cb7c1a7974aac16de402cdeb5d84ca5d5b048f913633                                                                                 0.0s
+   => => naming to docker.io/library/openclaw-skill-hello:latest                                                                                                               0.0s
+
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo ls -l /var/lib/docker/
+  total 52
+  drwx--x--x  4 root root  4096 Apr 10  2024 buildkit
+  drwx--x--- 10 root root  4096 Mar 22 21:41 containers
+  -rw-------  1 root root    36 Apr 10  2024 engine-id
+  drwx------  3 root root  4096 Apr 10  2024 image
+  drwxr-x---  3 root root  4096 Apr 10  2024 network
+  drwx--x--- 85 root root 12288 Mar 23 18:14 overlay2
+  drwx------  4 root root  4096 Apr 10  2024 plugins
+  drwx------  2 root root  4096 Mar 22 17:09 runtimes
+  drwx------  2 root root  4096 Apr 10  2024 swarm
+  drwx------  3 root root  4096 Mar 23 18:14 tmp
+  drwx-----x  2 root root  4096 Mar 22 17:09 volumes
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo ls -l /var/lib/docker/overlay2
+  total 332
+  ...
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo ls -l /var/lib/docker/image
+  total 4
+  drwx------ 5 root root 4096 Mar 23 18:14 overlay2
+  
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo ls -l /var/lib/docker/image/overlay2
+  total 16
+  drwx------ 4 root root 4096 Apr 10  2024 distribution
+  drwx------ 4 root root 4096 Apr 10  2024 imagedb
+  drwx------ 5 root root 4096 Apr 10  2024 layerdb
+  -rw------- 1 root root 2742 Mar 23 18:14 repositories.json
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ sudo more /var/lib/docker/image/overlay2/repositories.json
+  {"Repositories":{"debian":{"debian:bookworm-slim":"sha256:d6b3...","debian@sha256:f065..."}}...}}
+  ~~~
+
+* After we have built the docker image, we can double check if `openclaw-skill-hello:latest` does exist in the image list. 
+  ~~~
+  $ docker images
+  ~~~
+
+  ~~~
+  robot@robot-test:~/.openclaw/skills/hello-docker$ docker images
+                                                  i Info →   U  In Use
+  IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+  debian:bookworm-slim                            d6b3fe87704b       74.8MB             0B    U   
+  hello-world:latest                              d2c94e258dcb       13.3kB             0B    U   
+  hello_docker_image:latest                       d483c6ff84b5        124MB             0B        
+  my-local-hello:v1                               d483c6ff84b5        124MB             0B        
+  nvidia/cuda:11.6.2-base-ubuntu20.04             2098e65daccd        154MB             0B    U   
+  openclaw-sandbox:bookworm-slim                  d6b3fe87704b       74.8MB             0B    U   
+  openclaw-skill-hello:latest                     60e665ebb854        119MB             0B        
+  registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5   5a4b3440626f        156MB             0B        
+  registry.cn-hangzhou.aliyuncs.com/ossrs/srs:6   298b47d809f9        158MB             0B        
+  ros:latest                                      47cf82a0a3b2        752MB             0B        
+  ros:noetic-robot                                c09cd3d5f497        985MB             0B    U   
+
+
+  robot@robot-test:~/.openclaw/skills/hello-docker$ docker images openclaw-skill-hello:latest
+                                i Info →   U  In Use
+  IMAGE                         ID             DISK USAGE   CONTENT SIZE   EXTRA
+  openclaw-skill-hello:latest   60e665ebb854        119MB             0B        
+  ~~~
