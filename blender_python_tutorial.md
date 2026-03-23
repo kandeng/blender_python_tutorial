@@ -51,3 +51,5 @@ Here is the content table of the Blender python tutorials.
 14. [Integrate Openclaw with Dingtalk](./chapter_14/Openclaw_to_dingtalk.md)
 
 15. [Openclaw Essential Tools: QMD](./chapter_15/Openclaw_qmd.md)
+
+16. [Openclaw Skill without or with Docker](./chapter_16/openclaw_skill.md)
