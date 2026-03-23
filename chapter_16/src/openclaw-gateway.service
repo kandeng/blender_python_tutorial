@@ -1,0 +1,33 @@
+[Unit]
+Description=OpenClaw Gateway (v2026.3.13)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/home/linuxbrew/.linuxbrew/opt/node/bin/node /home/linuxbrew/.linuxbrew/lib/node_modules/openclaw/dist/index.js gateway --port 18789
+# Restart=always
+# RestartSec=5
+TimeoutStopSec=30
+TimeoutStartSec=30
+SuccessExitStatus=0 143
+KillMode=control-group
+Environment=HOME=/home/robot
+Environment=TMPDIR=/tmp
+Environment=HTTP_PROXY=http://127.0.0.1:7897/
+Environment=HTTPS_PROXY=http://127.0.0.1:7897/
+Environment=NO_PROXY=localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,172.29.0.0/16,::1
+Environment=ALL_PROXY=socks://127.0.0.1:7897/
+Environment=http_proxy=http://127.0.0.1:7897/
+Environment=https_proxy=http://127.0.0.1:7897/
+Environment=no_proxy=localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,172.29.0.0/16,::1
+Environment=all_proxy=socks://127.0.0.1:7897/
+Environment=PATH=/home/robot/.nvm/current/bin:/home/robot/.local/bin:/home/robot/.npm-global/bin:/home/robot/bin:/home/robot/.volta/bin:/home/robot/.asdf/shims:/home/robot/.bun/bin:/home/robot/.fnm/current/bin:/home/robot/.local/share/pnpm:/usr/local/bin:/usr/bin:/bin
+Environment=OPENCLAW_GATEWAY_PORT=18789
+Environment=OPENCLAW_SYSTEMD_UNIT=openclaw-gateway.service
+Environment="OPENCLAW_WINDOWS_TASK_NAME=OpenClaw Gateway"
+Environment=OPENCLAW_SERVICE_MARKER=openclaw
+Environment=OPENCLAW_SERVICE_KIND=gateway
+Environment=OPENCLAW_SERVICE_VERSION=2026.3.13
+
+[Install]
+WantedBy=default.target
