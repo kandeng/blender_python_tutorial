@@ -53,3 +53,7 @@ Here is the content table of the Blender python tutorials.
 15. [Openclaw Essential Tools: QMD](./chapter_15/Openclaw_qmd.md)
 
 16. [Openclaw Skill without or with Docker](./chapter_16/openclaw_skill.md)
+
+17. [Openclaw Plugin](./chapter_17/openclaw_plugin.md)
+
+    
