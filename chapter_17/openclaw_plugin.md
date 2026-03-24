@@ -240,4 +240,65 @@ Here, `~` refers to the home directory of the user, i.e. `/home/robot`.
 &nbsp;
 ### 2.5 Test
 
-./asset/openclaw_hello_plugin_follow.png
+1. Restart
+  
+   After implementing `src/index.js`, configuring `package.json`, `openclaw.plugin.json`, and `openclaw.json`,
+   we can restart the openclaw gateway system daemon service.
+
+   No need any extra action to build the plugin package,
+   because the plugin package is implemented in plain javascript, instead of typescript.
+
+    ~~~
+    robot@robot-test:~/.openclaw$ systemctl --user stop openclaw-gateway.service
+    
+    robot@robot-test:~/.openclaw$ systemctl --user start openclaw-gateway.service
+    
+    robot@robot-test:~/.openclaw$ systemctl --user status openclaw-gateway.service
+    ● openclaw-gateway.service - OpenClaw Gateway (v2026.3.13)
+         Loaded: loaded (/home/robot/.config/systemd/user/openclaw-gateway.service; enabled; vendor preset: enabled)
+         Active: active (running) since Wed 2026-03-25 01:08:57 CST; 3s ago
+       Main PID: 1679108 (openclaw-gatewa)
+          Tasks: 31 (limit: 38029)
+         Memory: 511.7M
+            CPU: 2.904s
+         CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/openclaw-gateway.service
+                 └─1679108 openclaw-gateway >
+    
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.796+08:00 [hooks:loader] Registered hook: boot-md -> gateway:startup
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.843+08:00 [plugins] **************************************************
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.846+08:00 [plugins] 🤖 邓侃: `hello-plugin` is now ACTIVE! 成功上线！
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.849+08:00 [plugins] Successfully bypassed SDK with named export.
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.852+08:00 [plugins] **************************************************
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.867+08:00 [hooks:loader] Registered hook: bootstrap-extra-files -> agent:bootstrap
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.869+08:00 [hooks:loader] Registered hook: command-logger -> command
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.874+08:00 [hooks:loader] Registered hook: session-memory -> command:new, command:reset
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.875+08:00 [hooks] loaded 4 internal hook handlers
+    Mar 25 01:08:59 robot-test node[1679108]: 2026-03-25T01:08:59.880+08:00 [ws] webchat connected conn=85106084-cfd5-41c3-821a-fa0231b7258c remote=127.0.0.1 client=openclaw-control>
+    ~~~
+
+2. Plugin list
+
+   Run the following commmand, 
+   ~~~
+   robot@robot-test:~/.openclaw$ openclaw plugins list
+   ~~~
+
+   Following is the screenshot.
+
+<p align="center" vertical-align="top">
+ <img alt="Openclaw plugin list" src="./asset/openclaw_hello_plugin_list.png" width="90%">
+</p>  
+
+
+3. Openclaw log
+
+   Run the following commmand to view the openclaw log, 
+   ~~~
+   robot@robot-test:~/.openclaw$ openclaw logs --follow
+   ~~~
+
+   Following is the screenshot.
+   
+<p align="center" vertical-align="top">
+ <img alt="Openclaw plugin follow" src="./asset/openclaw_hello_plugin_follow.png" width="90%">
+</p>  
