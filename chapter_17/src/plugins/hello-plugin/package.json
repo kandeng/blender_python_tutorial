@@ -1,0 +1,17 @@
+{
+  "name": "@robot-test/hello-plugin",
+  "version": "1.0.0",
+  "description": "A demo openclaw plugin",
+  "license": "MIT",
+  "author": "Kan Deng",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "openclaw": {
+    "extensions": [
+      "./src/index.js"
+    ]
+  }
+}

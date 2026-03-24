@@ -1,0 +1,8 @@
+{
+  "id": "hello-plugin",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
