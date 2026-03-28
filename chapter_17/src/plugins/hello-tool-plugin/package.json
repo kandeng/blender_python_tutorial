@@ -1,0 +1,27 @@
+{
+    "name": "@robot-test/hello-tool-plugin",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "src/index.ts",
+    "openclaw": {
+        "extensions": [
+            "./src/index.ts"
+        ]
+    },
+    "scripts": {
+        "build": "tsup"
+    },
+    "dependencies": {
+        "@sinclair/typebox": "^0.34.0",
+        "ws": "^8.18.0",
+        "zod": "^3.24.0",
+        "openclaw": "file:/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "@types/ws": "^8.5.13",
+        "fast-check": "^3.22.0",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.2"
+    }
+}

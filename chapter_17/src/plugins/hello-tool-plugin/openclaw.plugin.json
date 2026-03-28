@@ -1,0 +1,9 @@
+{
+    "id": "hello-tool-plugin",
+    "name": "Hello Tool Plugin",
+    "description": "A demo custom tool plugin of openclaw, to be called on intention.",
+    "configSchema": {
+        "type": "object",
+        "additionalProperties": false
+    }
+}
