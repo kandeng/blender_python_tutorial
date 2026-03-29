@@ -64,7 +64,7 @@ The fundamental difference between a regular skill and a tool inside a plugin pa
 the tool plugin runs *inside* the openclaw gateway, so that it has access to the session context of the openclaw gateway. 
 However, the regular skill runs *outside*, it cannot get any internal information of the session. 
 
-[The appendix at the end of this article]() gives the detailed proof our statement that 
+[The appendix at the end of this article](./openclaw_plugin_node.md#appendix-the-proof-that-a-tool-plugin-has-access-to-the-session-context) gives the detailed proof our statement that 
 "the tool plugin runs *inside* the openclaw gateway, so that it has access to the session context". 
   
 
@@ -72,23 +72,25 @@ However, the regular skill runs *outside*, it cannot get any internal informatio
 ## Appendix. The proof that a tool plugin has access to the session context
 
 1. The tool inside a plugin package has access to
-   [`api`](https://docs.openclaw.ai/plugins/building-plugins),
+   [`api`](https://docs.openclaw.ai/plugins/building-plugins#quick-start-tool-plugin),
    <p align="center" vertical-align="top">
-     <img alt="Openclaw plugin follow" src="./asset/openclaw_hello_plugin_follow.png" width="90%">
+     <img alt="A tool plugin has access to api" src="./asset/openclaw_api_01.png" width="90%">
    </p>  
 
 2. `api` is an instance of
    [`OpenClawPluginApi`](https://github.com/openclaw/openclaw/blob/main/src/plugin-sdk/core.ts#L292),
    <p align="center" vertical-align="top">
-     <img alt="Openclaw plugin follow" src="./asset/openclaw_hello_plugin_follow.png" width="90%">
+     <img alt="api is an instance of OpenClawPluginApi" src="./asset/openclaw_api_02.png" width="90%">
    </p>  
 
-3. The mostimportant content that `OpenClawPluginApi` contains is
-   [`runtime:PluginRuntime`](https://github.com/openclaw/openclaw/blob/main/src/plugins/types.ts#L1672)
+3. The most important content that `OpenClawPluginApi` contains is
+   [`runtime:PluginRuntime`](https://github.com/openclaw/openclaw/blob/main/src/plugins/types.ts#L1688)
    <p align="center" vertical-align="top">
-     <img alt="Openclaw plugin follow" src="./asset/openclaw_hello_plugin_follow.png" width="90%">
+     <img alt="OpenClawPluginApi contains runtime" src="./asset/openclaw_api_03.png" width="90%">
    </p> 
 
 4. [`PluginRuntime`](https://github.com/openclaw/openclaw/blob/main/src/plugins/runtime/types.ts#L54)
    is an entrance to the session context of the openclaw gateway. 
-
+   <p align="center" vertical-align="top">
+     <img alt="Runtime is an entrance to the session context" src="./asset/openclaw_api_04.png" width="90%">
+   </p> 
