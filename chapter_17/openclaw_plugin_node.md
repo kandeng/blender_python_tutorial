@@ -102,6 +102,19 @@ If needed, uninstall openclaw completely, and reinstall it from scratch, cleanly
   otherwise, it will create another directory for the openclaw package, 
   `/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw`.
 
+&nbsp;
+## 4. code, config, and skill
+
+
+&nbsp;
+## 5. pnpm install and build
+
+~~~
+$ pnpm install
+$ pnpm build
+$ openclaw plugins inspect "hello-tool-plugin"
+~~~
+
 
 &nbsp;
 ## Appendix. The proof that a tool plugin has access to the session context
