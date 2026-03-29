@@ -66,7 +66,42 @@ However, the regular skill runs *outside*, it cannot get any internal informatio
 
 [The appendix at the end of this article](./openclaw_plugin_node.md#appendix-the-proof-that-a-tool-plugin-has-access-to-the-session-context) gives the detailed proof our statement that 
 "the tool plugin runs *inside* the openclaw gateway, so that it has access to the session context". 
+
+
+&nbsp;
+## 3. Install openclaw cleanly
+
+If you have already installed openclaw, double check its package in the directory like  
+`/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/`.
+
+Especially, that directory is the only directory for openclaw, and does NOT exist another one simultaneously, like 
+`/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw`.
+
+If needed, uninstall openclaw completely, and reinstall it from scratch, cleanly. 
+
+1. Use the `curl` way to install openclaw,
+   
+  ~~~
+  robot@robot-test:~$ curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+  ~~~
+
+  Here is [the log of running this command](./src/openclaw_curl_install.md). 
   
+  Notice that it will install the openclaw package in a directory like 
+  `/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/`.
+
+2. Install the system daemon service for openclaw gateway,
+   
+  ~~~
+  robot@robot-test:~$ openclaw onboard --install-daemon
+  ~~~
+
+  Here is [the log of running this command](./src/openclaw_onboard.md).
+  
+  Notice that do NOT use `homebrew` to install the skills like `gemini` and `github`, 
+  otherwise, it will create another directory for the openclaw package, 
+  `/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw`.
+
 
 &nbsp;
 ## Appendix. The proof that a tool plugin has access to the session context
