@@ -1,8 +1,9 @@
-In "~/.openclaw" directory, run command `openclaw onboard --install-daemon`. 
+In `~/.openclaw` directory, run command `openclaw onboard --install-daemon`. 
 
-Notice that, do NOT use `homebrew` to install skills like 'gemini` and `github`, 
-because `homebrew` will create another `node_modules` by accident, "/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw/dist/", 
-in addition to the correct one, "home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/"
+Notice that, do NOT use `homebrew` to install skills like `gemini` and `github`. 
+
+The reaons is that `homebrew` will create another `node_modules` by accident, `/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw/dist/`,
+in addition to the correct one, `home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/`.
 
 ~~~
 robot@robot-test:~$ openclaw onboard --install-daemon
