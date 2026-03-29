@@ -1,7 +1,7 @@
 In "~/.openclaw/" directory, run command `curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard`. 
 
-Notice that it will create a directory *"/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/"*,
-but no *"/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw"*.
+Notice that it will create a directory `/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/`,
+instead of `/home/linuxbrew/.linuxbrew/lib/node_modules/openclaw`.
 
 ~~~
 robot@robot-test:~$ curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
