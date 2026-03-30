@@ -348,13 +348,45 @@ Also, the `import` of [`index.ts`](./src/plugins/hello-tool-plugin/src/index.ts)
 &nbsp;
 ### 4.3 [openclaw.plugin.json](./src/plugins/hello-tool-plugin/openclaw.plugin.json)
 
+When receiving a user query, the openclaw gateway compares the `description` of all the available plugins,
+in addition to their `SKILL.md` specified in the `skills` field， with the user query. 
+
+Based on the comparison results, the openclaw gateway selects the best candidate for this user query,  
+from all the available plugins whose `status` are `loaded`.
+
+The `SKILL.md` of the plugin is specified in the `skills` field, in our case, 
+[our plugin's skill file directory](./src/plugins/hello-tool-plugin/skills) 
+is `~/.openclaw/plugins/hello-tool-plugin/skills`. 
+
+~~~
+{
+    "id": "hello-tool-plugin",
+    "name": "Hello Tool Plugin",
+    "description": "A demo custom tool plugin of openclaw, to be called on intention.",
+    "skills": ["./skills"],
+
+    "configSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "nodeUrl": {
+                "type": "string",
+                "default": "ws://127.0.0.1:9000",
+                "description": "The WebSocket address of the robot daemon."
+            },
+            "heartbeatMs": {
+                "type": "integer",
+                "default": 30000,
+                "description": "Idle time before sending a heartbeat."
+            }
+        }
+    }
+}
+~~~
+
 
 &nbsp;
-### 4.4 [plugin skills](./src/plugins/hello-tool-plugin/skills)
-
-
-&nbsp;
-### 4.5 [index.ts](./src/plugins/hello-tool-plugin/src/index.ts)
+### 4.4 [index.ts](./src/plugins/hello-tool-plugin/src/index.ts)
 
 
 
