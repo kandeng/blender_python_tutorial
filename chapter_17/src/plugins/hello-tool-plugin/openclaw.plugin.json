@@ -3,8 +3,22 @@
     "name": "Hello Tool Plugin",
     "description": "A demo custom tool plugin of openclaw, to be called on intention.",
     "skills": ["./skills"],
+
     "configSchema": {
         "type": "object",
-        "additionalProperties": false
+        "additionalProperties": false,
+        "properties": {
+            "nodeUrl": {
+                "type": "string",
+                "default": "ws://127.0.0.1:9000",
+                "description": "The WebSocket address of the robot daemon."
+            },
+            "heartbeatMs": {
+                "type": "integer",
+                "default": 30000,
+                "description": "Idle time before sending a heartbeat."
+            }
+        }
     }
 }
+
