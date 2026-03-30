@@ -1,8 +1,12 @@
 {
+  "meta": {
+    "lastTouchedVersion": "2026.3.23-2",
+    "lastTouchedAt": "2026-03-29T10:12:14.301Z"
+  },
   "wizard": {
-    "lastRunAt": "2026-03-22T16:43:02.968Z",
-    "lastRunVersion": "2026.3.13",
-    "lastRunCommand": "onboard",
+    "lastRunAt": "2026-03-29T10:12:14.284Z",
+    "lastRunVersion": "2026.3.23-2",
+    "lastRunCommand": "doctor",
     "lastRunMode": "local"
   },
   "models": {
@@ -10,7 +14,7 @@
     "providers": {
       "custom-dashscope-aliyuncs-com": {
         "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "apiKey": "sk-80f7...",
+        "apiKey": "sk-80f765b700fb461291067dcadb78bd43",
         "api": "openai-completions",
         "models": [
           {
@@ -45,40 +49,24 @@
       },
       "workspace": "/home/robot/.openclaw/workspace",
       "sandbox": {
-        "mode": "off",
-        "scope": "agent"
-      }
-    }
-  },
-  "skills": {
-    "load": {
-      "watch": true,
-      "watchDebounceMs": 250      
-    },
-    "entries": {
-      "hello-python": {
-        "enabled": true
-      },
-      "hello-docker": {
-        "enabled": true
+        "mode": "non-main"
       }
     }
   },
   "tools": {
-    "profile": "coding",
-    "web": {
-      "search": {
-        "provider": "kimi"
-      }
-    }
-  },
-  "plugins": {
-    "enabled": true,
-    "allow": ["hello-plugin"],
-    "load": { "paths": ["/home/robot/.openclaw/plugins"] },    
-    "entries": {
-      "hello-plugin": {
-        "enabled": true
+    "profile": "full",
+    "exec": {
+      "host": "gateway",
+      "backgroundMs": 10000,
+      "timeoutSec": 1800,
+      "cleanupMs": 1800000,
+      "notifyOnExit": true,
+      "notifyOnExitEmptySuccess": false,
+      "applyPatch": {
+        "enabled": false,
+        "allowModels": [
+          "qwen-max"
+        ]
       }
     }
   },
@@ -96,9 +84,6 @@
       "enabled": true,
       "entries": {
         "command-logger": {
-          "enabled": true
-        },
-        "session-memory": {
           "enabled": true
         }
       }
@@ -128,8 +113,34 @@
       ]
     }
   },
-  "meta": {
-    "lastTouchedVersion": "2026.3.13",
-    "lastTouchedAt": "2026-03-22T16:43:02.976Z"
+  "skills": {
+    "load": {
+      "extraDirs": [],
+      "watch": true
+    }
+  },
+  "plugins": {
+    "enabled": true,
+    "allow": [
+      "hello-plugin",
+      "robot-hook",
+      "hello-tool-plugin"
+    ],
+    "load": {
+      "paths": [
+        "/home/robot/.openclaw/plugins"
+      ]
+    },
+    "entries": {
+      "hello-plugin": {
+        "enabled": true
+      },
+      "robot-hook": {
+        "enabled": true
+      },
+      "hello-tool-plugin": {
+        "enabled": true
+      }
+    }
   }
 }
