@@ -239,11 +239,11 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
    the openclaw gateway will scan this directory, and find `tool_one/SKILL.md` and `tool_two/SKILL.md`.
    
    When a user query arrives, the openclaw gateway will compare the user query and the `description` of each candidate `SKILL.md`,
-   and decide which `SKILL.md` is best candidate.
+   and decide which `SKILL.md` is the best candidate.
 
    However, if setting the plugin's skill in the `skills.load.extraDirs`,
    the openclaw gateway will treat the plugin skills the same as the regular skills.
-   When loading the skill, the plugin skill will be assigned the same priority as regular skills. 
+   When calling the skill, the plugin skill will be assigned the same priority as regular skills. 
    
    ~~~
    {
