@@ -157,7 +157,8 @@ plugins/hello-tool-plugin/
 &nbsp;
 ### 4.1 openclaw.json
 
-Following is the settings of the `openclaw.json` that are related to the `skill`, `tool`, `hook`, and `plugin`. 
+Following is the settings of the [`openclaw.json`](./src/openclaw.json) 
+that are related to the `skill`, `tool`, `hook`, and `plugin`. 
 
 ~~~
 {
@@ -222,6 +223,42 @@ Following is the settings of the `openclaw.json` that are related to the `skill`
   ...
 }
 ~~~
+
+`openclaw.json` is for the entire openclaw system, not only for plugins. It has some settings related to plugins. 
+
+1. Skill
+
+   The `skills` setting is for regular `SKILL.md`'s
+
+   In our case, we have `SKILL.md`'s for `hello-tool-plugin` plugin package, they are stored in `~/.openclaw/plugins/hello-tool-plugin/skills` directory.
+   Can we set `skills.load.extraDirs` to be "~/.openclaw/plugins/hello-tool-plugin/skills"?
+
+   Yes and no.
+
+   It is functional to do so, when starting a new session,
+   the openclaw gateway will scan this directory, and find `tool_one/SKILL.md` and `tool_two/SKILL.md`.
+   
+   When a user query arrives, the openclaw gateway will compare the user query and the `description` of each candidate `SKILL.md`,
+   and decide which `SKILL.md` is best candidate.
+
+   However, if setting the plugin's skill in the `skills.load.extraDirs`,
+   the openclaw gateway will treat the plugin skills the same as the regular skills.
+   When loading the skill, the plugin skill will be assigned the same priority as regular skills. 
+   
+   ~~~
+   {
+     ...
+     "skills": {
+        "load": {
+          "extraDirs": [],
+          "watch": true
+        }
+     },
+     ...
+   }
+   ~~~
+
+
 
 
 &nbsp;
