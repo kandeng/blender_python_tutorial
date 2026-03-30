@@ -1,5 +1,7 @@
 // index.ts
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { Type } from "@sinclair/typebox";
+
 import type { OpenclawPluginApi } from "./plugin-api";
 import { registerService } from "./service";
 
