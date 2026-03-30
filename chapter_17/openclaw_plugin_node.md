@@ -349,7 +349,7 @@ Also, the `import` of [`index.ts`](./src/plugins/hello-tool-plugin/src/index.ts)
 ### 4.3 [openclaw.plugin.json](./src/plugins/hello-tool-plugin/openclaw.plugin.json)
 
 When receiving a user query, the openclaw gateway compares the `description` of all the available plugins,
-in addition to their `SKILL.md` specified in the `skills` field， with the user query. 
+in addition to their `SKILL.md` specified in the `skills` field, with the user query. 
 
 Based on the comparison results, the openclaw gateway selects the best candidate for this user query,  
 from all the available plugins whose `status` are `loaded`.
@@ -357,6 +357,11 @@ from all the available plugins whose `status` are `loaded`.
 The `SKILL.md` of the plugin is specified in the `skills` field, in our case, 
 [our plugin's skill file directory](./src/plugins/hello-tool-plugin/skills) 
 is `~/.openclaw/plugins/hello-tool-plugin/skills`. 
+
+Additionally, we specified two properties in `configSchema.properties`, `nodeUrl` and `heartbeatMs`. 
+
+These properties can be accessed from `index.ts` and other codes, via `api.pluginConfig`.
+We will discuss `api.pluginConfig` in more details, when discussing `index.ts`.
 
 ~~~
 {
