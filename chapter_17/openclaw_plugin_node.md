@@ -105,6 +105,124 @@ If needed, uninstall openclaw completely, and reinstall it from scratch, cleanly
 &nbsp;
 ## 4. code, config, and skill
 
+We built a sample tool plugin `hello-tool-plugin`, its file structure is displayed below. To understand the entire package, we only need to look into a few key files. 
+~~~
+robot@robot-test:~/.openclaw$ pwd
+/home/robot/.openclaw
+
+
+robot@robot-test:~/.openclaw$ ls -la
+total 72
+drwx------ 11 robot robot 4096 Mar 29 18:12 .
+drwxr-x--- 97 robot robot 4096 Mar 29 18:13 ..
+drwxrwxr-x  2 robot robot 4096 Mar 30 10:17 devices
+drwx------  2 robot robot 4096 Mar 26 10:26 logs
+drwxrwxr-x  3 robot robot 4096 Mar 26 22:05 nodes
+-rw-------  1 robot robot 2969 Mar 29 18:12 openclaw.json
+drwxrwxr-x  5 robot robot 4096 Mar 28 10:42 plugins
+...
+
+
+robot@robot-test:~/.openclaw$ tree plugins/hello-tool-plugin/
+plugins/hello-tool-plugin/
+├── package.json
+├── openclaw.plugin.json
+├── tsconfig.json
+├── tsup.config.ts
+├── pnpm-lock.yaml
+
+├── skills
+│   ├── tool_one
+│   │   └── SKILL.md
+│   └── tool_two
+│       └── SKILL.md
+
+├── src
+│   ├── index.ts
+│   ├── service.ts
+│   ├── plugin-api.ts
+│   └── transport
+│       ├── factory.ts
+│       └── websocket_client.ts
+
+├── node_modules
+│   └── ...
+└── dist
+    └── ...
+
+18 directories, 15 files
+~~~
+
+
+&nbsp;
+### 4.1 openclaw.json
+
+Following is the settings of the `openclaw.json` that are related to the `skill`, `tool`, `hook`, and `plugin`. 
+
+~~~
+{
+  ...
+  "skills": {
+    "load": {
+      "extraDirs": [],
+      "watch": true
+    }
+  },
+  "tools": {
+    "profile": "full",
+    "exec": {
+      "host": "gateway",
+      "backgroundMs": 10000,
+      "timeoutSec": 1800,
+      "cleanupMs": 1800000,
+      "notifyOnExit": true,
+      "notifyOnExitEmptySuccess": false,
+      "applyPatch": {
+        "enabled": false,
+        "allowModels": [
+          "qwen-max"
+        ]
+      }
+    }
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "command-logger": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "plugins": {
+    "enabled": true,
+    "allow": [
+      "hello-plugin",
+      "robot-hook",
+      "hello-tool-plugin"
+    ],
+    "load": {
+      "paths": [
+        "/home/robot/.openclaw/plugins"
+      ]
+    },
+    "entries": {
+      "hello-plugin": {
+        "enabled": true
+      },
+      "robot-hook": {
+        "enabled": true
+      },
+      "hello-tool-plugin": {
+        "enabled": true
+      }
+    }
+  },
+  ...
+}
+~~~
+
 
 &nbsp;
 ## 5. pnpm install and build
