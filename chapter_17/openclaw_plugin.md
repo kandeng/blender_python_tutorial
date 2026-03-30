@@ -6,9 +6,9 @@ This chapter is a step-by-step tutorial on how to build a custom tool plugin in 
 
 
 &nbsp;
-## 2. The difference between plugin and skill
+## 2. Plugin vs skill
 
-Plugin is a package, that contains one or multiple tools, hooks, channels, providers etc.   
+Plugin is different from regular skill. Plugin is a package, that contains one or multiple tools, hooks, channels, providers etc.   
 
 The tools, hooks, channels, providers inside a plugin can have their own `SKILL.md` respectively. 
 You can specify their `SKILL.md`'s in the `skills/` field of the `openclaw.plugin.json`, 
