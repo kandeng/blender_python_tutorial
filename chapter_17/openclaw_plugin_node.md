@@ -199,8 +199,6 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
   "plugins": {
     "enabled": true,
     "allow": [
-      "hello-plugin",
-      "robot-hook",
       "hello-tool-plugin"
     ],
     "load": {
@@ -209,12 +207,6 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
       ]
     },
     "entries": {
-      "hello-plugin": {
-        "enabled": true
-      },
-      "robot-hook": {
-        "enabled": true
-      },
       "hello-tool-plugin": {
         "enabled": true
       }
@@ -228,7 +220,7 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
 
 1. Skill
 
-   The `skills` setting is for regular `SKILL.md`'s
+   [The "skills" setting](https://docs.openclaw.ai/gateway/configuration-reference#skills) is for regular `SKILL.md`'s
 
    In our case, we have `SKILL.md`'s for `hello-tool-plugin` plugin package, they are stored in `~/.openclaw/plugins/hello-tool-plugin/skills` directory.
    Can we set `skills.load.extraDirs` to be "~/.openclaw/plugins/hello-tool-plugin/skills"?
@@ -244,7 +236,6 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
    However, if setting the plugin's skill in the `skills.load.extraDirs`,
    the openclaw gateway will treat the plugin skills the same as the regular skills.
    When calling the skill, the plugin skill will be assigned the same priority as regular skills. 
-   
    ~~~
    {
      ...
@@ -258,7 +249,61 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
    }
    ~~~
 
+2. Tools
 
+   In our case, we only need to decide [one setting "tools.profile"](https://docs.openclaw.ai/gateway/configuration-reference#tool-profiles).
+   Both `full` and `coding` are okay for our case.
+   ~~~
+   {
+     ...
+     "tools": {
+        "profile": "full",
+     },
+     ...
+   }
+   ~~~
+
+3. Plugins
+   
+   Referring to [the official documentation on "plugins" setting](https://docs.openclaw.ai/gateway/configuration-reference#plugins),
+
+   We set `plugins.enabled` to `true`, otherwise all plugins will be disable.
+   In more details, when running command `openclaw plugins list` in a CLI terminal, the `status` of all plugins will `disabled`,
+
+   we add our plugin `hello-tool-plugin` to `plugins.allow`.
+   In this way, when the openclaw gateway loads this plugin,
+   the openclaw gateway will bypass the redundant verification via the "green door" mechanism,
+   thereby enhancing the loading efficiency.
+
+   By default, the openclaw gateway loads plugins from `~/.openclaw/extensions` and `<workspace>/.openclaw/extensions`.
+   With `plugins.load.paths` setting, the openclaw gateway will load additional plugins.
+   In our case, the additional plugin is stored in the filepath `/home/robot/.openclaw/plugins`.
+
+   We set `plugins.entries.hello-tool-plugin.enabled` to `true`,
+   so that when running command `openclaw plugins list` in a CLI terminalhis,
+   the `status` of `hello-tool-plugin` will be switched on to be `loaded`, otherwise, its status will be `disabled`.
+   ~~~
+   {
+     ...
+     "plugins": {
+        "enabled": true,
+        "allow": [
+           "hello-tool-plugin"
+        ],
+        "load": {
+           "paths": [
+              "/home/robot/.openclaw/plugins"
+           ]
+        },
+        "entries": {
+           "hello-tool-plugin": {
+              "enabled": true
+           }
+        }
+     },
+     ...
+   }
+   ~~~
 
 
 &nbsp;
