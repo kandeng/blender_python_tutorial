@@ -1,11 +1,8 @@
-# Openclaw Plugin and Hook
+# Openclaw Plugin 
 
 ## 1. Objective
 
 This chapter is a step-by-step tutorial on how to build a custom tool plugin in a local Ubuntu laptop.  
-
-In addition, we built a tool-hook plugin paired with a node, that is actually a system daemon service. 
-The plugin contains a websocker client, bi-directionally communicating with the node that contains a websocket server. 
 
 
 &nbsp;
@@ -506,7 +503,9 @@ Error: TypeError: Cannot read properties of undefined (reading 'nodeUrl')
 
 
 &nbsp;
-## Appendix. The proof that a tool plugin has access to the session context
+## 6. Appendix
+
+Here is the proof that a tool plugin has access to the session context
 
 1. The tool inside a plugin package has access to
    [`api`](https://docs.openclaw.ai/plugins/building-plugins#quick-start-tool-plugin),
