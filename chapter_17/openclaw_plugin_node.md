@@ -155,9 +155,9 @@ plugins/hello-tool-plugin/
 
 
 &nbsp;
-### 4.1 openclaw.json
+### 4.1 [openclaw.json](./src/openclaw.json) 
 
-Following is the settings of the [`openclaw.json`](./src/openclaw.json) 
+Following is the settings of the `openclaw.json`
 that are related to the `skill`, `tool`, `hook`, and `plugin`. 
 
 ~~~
@@ -282,6 +282,18 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
    We set `plugins.entries.hello-tool-plugin.enabled` to `true`,
    so that when running command `openclaw plugins list` in a CLI terminalhis,
    the `status` of `hello-tool-plugin` will be switched on to be `loaded`, otherwise, its status will be `disabled`.
+
+   <p align="center" vertical-align="top">
+     <img alt="Set plugins globally disabled" src="./asset/openclaw_plugin_disable_all.png" width="48%">
+     &nbsp;
+     <img alt="Set one plugin enabled" src="./asset/openclaw_plugin_enable_one.png" width="48%">
+   </p>  
+   
+   The left screenshot: when setting `plugins.enabled` to be globally `false`, the status of all plugins will be `disabled`.
+   
+   The right screenshot: when setting `plugins.enabled` to be globally `true`, meanwhile setting only one plugin entry to be `true`, 
+   the status of that specific plugin `hello-tool-plugin` will be `loaded`.
+   
    ~~~
    {
      ...
@@ -304,6 +316,47 @@ that are related to the `skill`, `tool`, `hook`, and `plugin`.
      ...
    }
    ~~~
+
+
+&nbsp;
+### 4.2 [package.json](./src/plugins/hello-tool-plugin/package.json)
+
+The filepath of the entry script `index.ts` is specified in both `main` and `openclaw.extensions` of `package.json`.
+
+Also, the `import` of [`index.ts`](./src/plugins/hello-tool-plugin/src/index.ts) must be specified in `dependencies`. 
+
+~~~
+{
+    "name": "@robot-test/hello-tool-plugin",
+    "type": "module",
+    "main": "src/index.ts",
+    "openclaw": {
+        "extensions": [
+            "./src/index.ts"
+        ]
+    },
+    "dependencies": {
+        "@sinclair/typebox": "^0.34.0",
+        "openclaw": "file:/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw"
+    },
+    "devDependencies": {
+    }
+}
+~~~
+
+
+&nbsp;
+### 4.3 [openclaw.plugin.json](./src/plugins/hello-tool-plugin/openclaw.plugin.json)
+
+
+&nbsp;
+### 4.4 [plugin skills](./src/plugins/hello-tool-plugin/skills)
+
+
+&nbsp;
+### 4.5 [index.ts](./src/plugins/hello-tool-plugin/src/index.ts)
+
+
 
 
 &nbsp;
