@@ -393,16 +393,115 @@ We will discuss `api.pluginConfig` in more details, when discussing `index.ts`.
 &nbsp;
 ### 4.4 [index.ts](./src/plugins/hello-tool-plugin/src/index.ts)
 
+1. import
+
+   To import any external packages, e.g. `openclaw` and `@sinclair/typebox`,
+   their filepaths must be specified in
+   the `dependencies` field of [`package.json`](/src/plugins/hello-tool-plugin/package.json)
+   as [mentioned above](./openclaw_plugin_node.md#42-packagejson).
+   
+    ~~~
+    import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+    import { Type } from "@sinclair/typebox";
+    import type { OpenclawPluginApi } from "./plugin-api";
+    import { registerService } from "./service";
+    ~~~
+
+2. api
+
+   As discussed in [the appendix](./openclaw_plugin_node.md#appendix-the-proof-that-a-tool-plugin-has-access-to-the-session-context),
+   `api` is the entry point to the session context.
+   As an instance of [`OpenClawPluginApi`](https://github.com/openclaw/openclaw/blob/main/src/plugins/types.ts#L1680),
+   `api` can access many information, including the content of the global `openclaw.json` and the plugin package's `openclaw.plugin.json`.
+
+    The content of the global `openclaw.json` can be successfully accessed via `api.config`, as shown in the screenshot below.
+   
+    However, the content of the plugin package's `openclaw.plugin.json` can *not* be accessed via `api.pluginConfig`.
+    For unknown reason, the openclaw gateway regarded `api.pluginConfig` as `undefined`.
+
+    Additionally, `api` can be passed from `index.ts` to other scripts, e.g. `registerService(api)`
+    of [`service.ts`](./src/plugins/hello-tool-plugin/src/service.ts)
+   
+    ~~~
+    register(api) {
+        const { logger, config, pluginConfig } = api;
+        ...
+        const plugin_load_str = JSON.stringify(config.plugins.load, null, 2)
+        logger.info(` "openclaw.json" config.plugins.load: '${plugin_load_str}' `);
+
+        const plugin_nodeurl_str = JSON.stringify(pluginConfig.nodeUrl, null, 2)
+        logger.info(` "openclaw.plugin.json" pluginConfig.nodeUrl: '${plugin_nodeurl_str}' `);
+ 
+        // Register the rosbridge WebSocket connection as a manageind service
+        registerService(api);
+
+        logger.info("[hello-tool-plugin] registerService loaded successfully");
+    },
+    ~~~
+
+   <p align="center" vertical-align="top">
+     <img alt="Openclaw logs to show the content of api.config and api.pluginConfig" src="./asset/openclaw_plugin_api.png" width="90%">
+   </p> 
+
 
 
 
 &nbsp;
 ## 5. pnpm install and build
 
+We use `pnpm` to manage our plugin packages. 
 ~~~
-$ pnpm install
-$ pnpm build
-$ openclaw plugins inspect "hello-tool-plugin"
+robot@robot-test:~/.openclaw/plugins/hello-tool-plugin$ pwd
+/home/robot/.openclaw/plugins/hello-tool-plugin
+
+robot@robot-test:~/.openclaw/plugins/hello-tool-plugin$ pnpm install
+robot@robot-test:~/.openclaw/plugins/hello-tool-plugin$ pnpm build
+~~~
+
+Openclaw provides a tool `openclaw plugins inspect` to look into the plugin package, including its errors.
+
+In our case, for some unknown reason, `api.pluginConfig` did not work properly, 
+that induced the error "TypeError: Cannot read properties of undefined (reading 'nodeUrl')". 
+
+~~~
+robot@robot-test:~/.openclaw/plugins/hello-tool-plugin$ openclaw plugins inspect "hello-tool-plugin"
+
+21:57:35 [plugins] 🚀 [hello-tool-plugin] rootDir='/home/robot/.openclaw/plugins/hello-tool-plugin'
+21:57:35 [plugins] 
+**************************************************
+21:57:35 [plugins] 🚀 [hello-tool-plugin] the content of config.plugins.load
+21:57:35 [plugins]  "openclaw.json" config.plugins.load: '{
+  "paths": [
+    "/home/robot/.openclaw/plugins"
+  ]
+}' 
+21:57:35 [plugins] 
+
+21:57:35 [plugins] 
+**************************************************
+21:57:35 [plugins] ⚠️ [hello-tool-plugin] the content of pluginConfig.nodeUrl
+21:57:35 [plugins] hello-tool-plugin failed during register from /home/robot/.openclaw/plugins/hello-tool-plugin/src/index.ts: TypeError: Cannot read properties of undefined (reading 'nodeUrl')
+
+🦞 OpenClaw 2026.3.23-2 (7ffe7e4) — Less clicking, more shipping, fewer "where did that file go" moments.
+
+Hello Tool Plugin
+id: hello-tool-plugin
+A demo custom tool plugin of openclaw, to be called on intention.
+
+Status: error
+Format: openclaw
+Source: ~/.openclaw/plugins/hello-tool-plugin/src/index.ts
+Origin: config
+Version: 1.0.0
+Shape: non-capability
+Capability mode: none
+Legacy before_agent_start: no
+
+Diagnostics:
+ERROR: plugin failed during register: TypeError: Cannot read properties of undefined (reading 'nodeUrl')
+
+Error: TypeError: Cannot read properties of undefined (reading 'nodeUrl')
+
 ~~~
 
 
