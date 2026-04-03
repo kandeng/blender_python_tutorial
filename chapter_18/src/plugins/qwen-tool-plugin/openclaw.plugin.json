@@ -1,0 +1,8 @@
+{
+    "id": "qwen-tool-plugin",
+    "configSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+    }
+}

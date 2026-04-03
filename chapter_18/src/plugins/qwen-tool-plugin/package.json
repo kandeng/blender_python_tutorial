@@ -1,0 +1,24 @@
+{
+    "name": "@robot-test/qwen-tool-plugin",
+    "version": "1.0.0",
+    "description": "A plugin to send messages from Qwen",
+    "license": "MIT",
+    "author": "Qwen Code",
+    "type": "module",
+    "main": "src/index.ts",
+    "openclaw": {
+        "extensions": [
+            "./src/index.ts"
+        ]
+    },
+    "dependencies": {
+        "@sinclair/typebox": "^0.34.0",
+        "ws": "^8.20.0",
+        "openclaw": "file:/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.2"
+    }
+}
