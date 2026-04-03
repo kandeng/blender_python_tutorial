@@ -50,12 +50,10 @@ looking for files named as `SKILL.md`. The "related file directories" include,
 After scanning the skills, the openclaw gateway use them in the same way, no matter it is a regular skill, 
 or the specific skill of a tool inside a plugin package. 
 
-Even though it is functional to define the filepaths of the plugin's skills, 
+Even though it is functional to define the filepaths of the plugin's skills 
 in the `extraDirs` field of the `openclaw.json` configuration file,
-it is better to define the filepaths in the `skills` field of the `openclaw.plugin.json` of the plugin's configuration file.
-The reason is that possibly the priority of the `skills` field of the `openclaw.plugin.json`, 
-is higher than the `extraDirs` field of the `openclaw.json`. 
-Consequently, there are more chanced be used for the skills defined in the `skills` field of the `openclaw.plugin.json`.
+and [*"today those directories are merged into the same low-precedence path as skills.load.extraDirs"*](https://docs.openclaw.ai/tools/skills#plugins-+-skills),
+it is logically clearer to define the filepaths in the `skills` field of the `openclaw.plugin.json` of the plugin's configuration file.
 
 The fundamental difference between a regular skill and a tool inside a plugin package is that 
 the tool plugin runs *inside* the openclaw gateway, so that it has access to the session context of the openclaw gateway. 
