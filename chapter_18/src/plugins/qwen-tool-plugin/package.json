@@ -11,6 +11,9 @@
             "./src/index.ts"
         ]
     },
+    "scripts": {
+        "build": "tsup"
+    },
     "dependencies": {
         "@sinclair/typebox": "^0.34.0",
         "ws": "^8.20.0",
