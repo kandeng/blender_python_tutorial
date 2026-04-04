@@ -1,0 +1,37 @@
+{
+  "name": "robot-plugin",
+  "version": "1.0.0",
+  "description": "Protocol-Agnostic Robot Gateway Plugin for OpenClaw",
+  "main": "src/index.ts",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "openclaw",
+    "robotics",
+    "websocket",
+    "webrtc",
+    "gateway"
+  ],
+  "author": "OpenClaw",
+  "license": "MIT",
+  "dependencies": {
+    "@sinclair/typebox": "^0.33.0",
+    "openclaw": "file:/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw",
+    "wrtc": "^0.4.7",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}
