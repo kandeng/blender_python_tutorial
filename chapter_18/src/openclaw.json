@@ -32,6 +32,22 @@
             },
             "contextWindow": 32000,
             "maxTokens": 8192
+          },
+          {
+            "id": "qwen3-coder-plus",
+            "name": "qwen3-coder-plus (Custom Provider)",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 128000,
+            "maxTokens": 8192
           }
         ]
       }
@@ -40,11 +56,14 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "custom-dashscope-aliyuncs-com/qwen-max"
+        "primary": "custom-dashscope-aliyuncs-com/qwen3-coder-plus"
       },
       "models": {
         "custom-dashscope-aliyuncs-com/qwen-max": {
           "alias": "qwen-max"
+        },
+        "custom-dashscope-aliyuncs-com/qwen3-coder-plus": {
+          "alias": "qwen3-coder-plus"
         }
       },
       "workspace": "/home/robot/.openclaw/workspace",
@@ -69,7 +88,8 @@
       "applyPatch": {
         "enabled": false,
         "allowModels": [
-          "qwen-max"
+          "qwen-max",
+          "qwen3-coder-plus"
         ]
       }
     }
@@ -124,7 +144,7 @@
   },
   "skills": {
     "load": {
-      "extraDirs": [],
+      "extraDirs": ["/home/robot/.openclaw/skills"],
       "watch": true
     }
   },
@@ -134,7 +154,8 @@
       "hello-plugin",
       "hello-tool-plugin",
       "qwen-tool-plugin",
-      "openclaw-weixin"
+      "openclaw-weixin",
+      "robot-plugin"
     ],
     "load": {
       "paths": [
@@ -153,6 +174,15 @@
       },
       "openclaw-weixin": {
         "enabled": true
+      },
+      "robot-plugin": {
+        "enabled": true,
+        "config": {
+          "transport_type": "ws",
+          "robot_url": "ws://localhost:8080",
+          "signaling_url": "ws://localhost:3000",
+          "robot_id": "mock_robot_1"
+        }
       }
     },
     "installs": {
