@@ -1,0 +1,123 @@
+1. System Overview
+   Build an OpenClaw plugin that serves as a Protocol-Agnostic Robot Gateway.
+ * Websocket: Client inside the plugin connects to a Robot (Server) on the local LAN via WiFi.
+ * WebRTC: Client inside the plugin connects to a Robot (Peer) via an Alibaba Cloud coturn server (STUN/TURN) for NAT traversal.
+ * Decision Logic: The openclaw.plugin.json config determines the active transport.
+  
+  
+2. File Structure
+
+~~~
+~/.openclaw
+├── openclaw.json              # Global Gateway Config
+├── nodes                      # Independent Mock/Server Apps
+│   ├── websocket-server.ts    # Robot-side WS mock
+│   └── webrtc-peer.ts         # Robot-side WebRTC mock
+└── plugins
+    └── robot-plugin
+        ├── package.json
+        ├── tsup.config.ts
+        ├── src
+        │   ├── index.ts       # Entry: Tool & Hook Registration
+        │   ├── service.ts     # Business Logic: Action Processing
+        │   └── transport
+        │       ├── factory.ts # Logic to switch WS/WebRTC
+        │       ├── websocket
+        │       │   └── client.ts
+        │       └── webrtc
+        │           ├── signaling.ts
+        │           └── client.ts
+        └── skills
+            └── robot.md       # The "Brain": Instructions for the LLM
+~~~
+        
+            
+3. The LLM Schema
+
+Define a `registerTool` in `index.ts`, to force the LLM to provide the exact structure as output.
+
+Tool Definition in index.ts:
+
+~~~
+// index.ts
+import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { Type } from "@sinclair/typebox";
+import { RobotService } from './service';
+
+export default definePluginEntry({
+  id: "robot-plugin",
+  name: "Robot Gateway Plugin",
+  description: "Protocol-Agnostic Robot Gateway supporting WebSocket and WebRTC transports",
+
+  register(api) {
+    // Initialize the robot service with plugin config
+    const robotService = new RobotService(api.config);
+
+    // Define the tool configuration separately to avoid type issues during compilation
+    const robotActionTool = {
+      name: "robot_action",
+      label: "Robot Controller",
+      description: "Sends a command to the physical robot and returns a message to the user.",
+      parameters: Type.Object({
+        action: Type.Record(Type.String(), Type.Any()), // e.g., {"move": {"direction": "forward"}}
+        message_query: Type.String(),                   // The raw user intent
+        message_reply: Type.String()                    // The LLM's suggested response to the user
+      }),
+
+      async execute(id: string, params: any) {
+        console.log(`[${new Date().toISOString()}] Robot action requested:`, params);
+        // 1. Log the intent
+        // 2. Pass params to service.ts -> transport/factory.ts
+        // 3. Return the message_reply to the WebChat
+      }
+    };
+
+
+    // Register the robot action tool using the api object
+    api.registerTool(robotActionTool);
+    
+    // Log when the plugin becomes active
+    api.logger.info(`[${new Date().toISOString()}] Robot plugin initialized and registered`);
+  },
+});
+~~~
+
+
+4. The Skill Mapping
+
+In `skills/robot.md`, provide the instructions that tell the LLM how to fill the `robot_action` parameters.
+
+~~~
+---
+name: Robot Pilot
+metadata: { "openclaw": { "always": true, "requires": { "tools": ["robot_action"] } } }
+---
+# Instructions
+When the user wants the robot to do something (e.g., "Move forward" or "Greet Kan Deng"):
+1. **Action Extraction**: Convert the command into a JSON object (e.g., `{"move": "forward"}`).
+2. **Context**: Put the user's original phrasing into `message_query`.
+3. **Response**: Create a friendly, short confirmation (e.g., "Moving now, Kan Deng!") for `message_reply`.
+4. **Invoke**: Call the `robot_action` tool with these parameters.
+~~~
+
+
+5. Transport Logic & WebRTC Setup
+
+ * Factory Pattern: `factory.ts` must read `api.config` to instantiate the correct client.
+ * Signaling: For WebRTC, the `signaling.ts` will connect to the ECS-hosted Coturn/Signaling server to exchange SDP/ICE candidates.
+ * Local WS: The WebSocket client should support auto-reconnect if the robot moves out of WiFi range.
+ 
+ 
+6. Testing & Simulation 
+ * `nodes/websocket-server.ts`: A simple ws server that logs received JSON.
+ * `nodes/webrtc-peer.ts`: A headless WebRTC peer (using node-datachannel or wrtc) to simulate the robot's data channel.
+ * `tests/run_sim.sh`: A bash script that:
+   - Starts the mock server in `nodes/`.
+   - Starts openclaw gateway run.
+   - Uses curl or the openclaw tool call CLI to trigger the robot_action and verify the server receives the data.
+   
+   
+7. The Checklist for the Coder:
+ * dtsbuild: Ensure `AgentToolResult` includes `details: {}` and `isError: false`.
+ * Lifecycle: When the robot-plugin becomes active in a session, `index.ts` writes a record in log .
+ * Config: Use the `OpenClawPluginConfig` interface to define `transport_type` ("ws" | "webrtc") and `robot_url`.
