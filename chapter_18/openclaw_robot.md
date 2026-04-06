@@ -13,15 +13,26 @@ This chapter is a step-by-step tutorial on how to build an openclaw plugin to co
 &nbsp;
 ## 2. Implement robot-plugin 
 
-We wrote a prompt draft, then ask [Gemini3](https://gemini.google.com/app) to polish it so as to fit AI coder better.
+We drafted a prompt and asked [Gemini3](https://gemini.google.com/app) to refine it for better alignment with AI coding tasks.
 
 Here is [the final prompt](./src/robot_plugin_prompt.txt), 
 
 1. `System Overview` describes the main components, as well as the top level data flow.
    
-2. `File Structure` defines the file structure, so that the AI coder will write codes filling in this scaffold.
+2. `File Structure` specifies the file structure, enabling the AI coder to produce code that populates this scaffold.
 
-3.  <TBC here>
+3. `The LLM Schema` provides the skeleton for the critical codes, with detailed description of their workflow,
+    so that the AI coder has no chance to deviate from the design.
+
+4. `The Skill Mapping` writes the skill markdown files that the AI coder can copy and paste without any change.
+
+5. `Transport Logic & WebRTC Setup` describes the functionality and workflow for those non-critical codes.
+
+6. `Testing & Simulation` plans the unit testing scripts.
+
+7. `The Checklist for the Coder` is for the remaining instructions that are not discussed in the previous sections.
+
+With this prompt, we used [Qoder IDE](https://qoder.com/en) with `qwen3-coder-plus` model to write the code. 
 
    <p align="center" vertical-align="top">
      <img alt="Qoder IDE" src="./asset/qoder.png" width="90%">
