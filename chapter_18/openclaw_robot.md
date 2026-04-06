@@ -9,8 +9,23 @@ This chapter is a step-by-step tutorial on how to build an openclaw plugin to co
    </p>  
 
 
+
 &nbsp;
-## 2. Plugin vs skill
+## 2. Implement robot-plugin 
+
+We wrote a prompt draft, then ask [Gemini3](https://gemini.google.com/app) to polish it so as to fit AI coder better.
+
+Here is [the final prompt](./src/robot_plugin_prompt.txt), 
+
+1. `System Overview` describes the main components, as well as the top level data flow.
+   
+2. `File Structure` defines the file structure, so that the AI coder will write codes filling in this scaffold.
+
+3.  <TBC here>
+
+   <p align="center" vertical-align="top">
+     <img alt="Qoder IDE" src="./asset/qoder.png" width="90%">
+   </p>  
 
 
 &nbsp;
