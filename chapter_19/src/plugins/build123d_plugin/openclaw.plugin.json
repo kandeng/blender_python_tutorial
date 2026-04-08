@@ -1,0 +1,25 @@
+{
+  "id": "build123d_plugin",
+  "name": "Build123d Geometry Generator",
+  "description": "Generates 3D CAD models using Build123d Python scripts. Supports isolated worker node execution for crash resilience.",
+  "version": "1.1.0",
+  "author": "OpenClaw",
+  "license": "MIT",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "mode": {
+        "type": "string",
+        "enum": ["direct", "worker"],
+        "default": "worker",
+        "description": "Execution mode: 'worker' (recommended) delegates to an isolated node, 'direct' runs Docker in-gateway"
+      },
+      "nodeId": {
+        "type": "string",
+        "default": "build123d-generator",
+        "description": "Node ID to invoke for build123d execution (worker mode)"
+      }
+    },
+    "required": []
+  }
+}

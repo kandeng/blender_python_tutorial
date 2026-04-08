@@ -1,0 +1,18 @@
+{
+  "name": "build123d_plugin",
+  "version": "1.0.0",
+  "description": "Generates 3D CAD models using Build123d Python scripts in Docker",
+  "main": "src/index.ts",
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./src/index.ts"]
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.33.0",
+    "openclaw": "file:/home/robot/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

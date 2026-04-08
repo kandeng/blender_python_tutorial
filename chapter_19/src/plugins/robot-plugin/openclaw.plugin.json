@@ -1,0 +1,43 @@
+{
+  "id": "robot-plugin",
+  "name": "Robot Gateway Plugin",
+  "description": "Protocol-Agnostic Robot Gateway supporting WebSocket and WebRTC transports",
+  "version": "1.0.0",
+  "author": "OpenClaw",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "keywords": [
+    "robotics",
+    "websocket",
+    "webrtc",
+    "gateway",
+    "iot"
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "transport_type": {
+        "type": "string",
+        "enum": ["ws", "webrtc"],
+        "default": "ws",
+        "description": "Transport protocol to use for communicating with the robot"
+      },
+      "robot_url": {
+        "type": "string",
+        "default": "ws://ai.e-inv.net.cn:18080",
+        "description": "URL for WebSocket connection to the robot"
+      },
+      "signaling_url": {
+        "type": "string",
+        "default": "ws://localhost:3000",
+        "description": "URL for WebRTC signaling server"
+      },
+      "robot_id": {
+        "type": "string",
+        "default": "default_robot",
+        "description": "Unique identifier for the robot"
+      }
+    },
+    "required": ["transport_type"]
+  }
+}
