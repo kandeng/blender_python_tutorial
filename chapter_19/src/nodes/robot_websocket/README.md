@@ -29,13 +29,13 @@ This will compile the `websocket-server.ts` file to both CommonJS and ES Module 
 To run the WebSocket server directly:
 
 ```bash
-node nodes/sample_websocket/websocket-server.ts
+node nodes/robot_websocket/websocket-server.ts
 ```
 
 Or using tsx:
 
 ```bash
-npx tsx nodes/sample_websocket/websocket-server.ts
+npx tsx nodes/robot_websocket/websocket-server.ts
 ```
 
 The server will listen on port 8080 for incoming WebSocket connections.
