@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "socket": {
+    "path": "/home/robot/.openclaw/exec-approvals.sock",
+    "token": "uEGU714z4C94x-eu8IrAuFGYiOLMP7FP"
+  },
+  "defaults": {},
+  "agents": {
+    "main": {
+      "allowlist": [
+        {
+          "id": "4c00b492-7987-40d9-9cc2-ce9b108200ea",
+          "pattern": "/home/robot/.nvm/versions/node/v24.14.0/bin/openclaw",
+          "lastUsedAt": 1775144122093,
+          "lastUsedCommand": "openclaw events fire test_event",
+          "lastResolvedPath": "/home/robot/.nvm/versions/node/v24.14.0/bin/openclaw"
+        },
+        {
+          "id": "e5a9264d-6012-466f-8e52-740152290034",
+          "pattern": "/usr/bin/echo",
+          "lastUsedAt": 1774973896548,
+          "lastUsedCommand": "echo \"agent:intent:resolved\" | openclaw event trigger",
+          "lastResolvedPath": "/usr/bin/echo"
+        }
+      ]
+    }
+  }
+}
