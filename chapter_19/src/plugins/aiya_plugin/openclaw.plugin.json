@@ -1,0 +1,47 @@
+{
+  "id": "aiya_plugin",
+  "name": "Aiya Robot Gateway Plugin",
+  "description": "Production-ready WebSocket gateway for Aiya physical robot with secure handshake and command execution",
+  "version": "1.0.0",
+  "author": "OpenClaw",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "keywords": [
+    "robotics",
+    "aiya",
+    "websocket",
+    "gateway",
+    "iot"
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "robot_url": {
+        "type": "string",
+        "default": "wss://test.e-inv.net.cn/aiya/v1/",
+        "description": "WebSocket URL for the Aiya robot server"
+      },
+      "device_id": {
+        "type": "string",
+        "default": "c8:5f:c1:31:c6:6d",
+        "description": "Unique device identifier for the robot"
+      },
+      "client_id": {
+        "type": "string",
+        "default": "123456",
+        "description": "Client identifier for authentication"
+      },
+      "reconnect_attempts": {
+        "type": "number",
+        "default": 10,
+        "description": "Maximum reconnection attempts"
+      },
+      "reconnect_interval": {
+        "type": "number",
+        "default": 5000,
+        "description": "Reconnection interval in milliseconds"
+      }
+    },
+    "required": ["robot_url", "device_id", "client_id"]
+  }
+}
