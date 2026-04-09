@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.23-2",
-    "lastTouchedAt": "2026-04-02T13:47:17.822Z"
+    "lastTouchedAt": "2026-04-09T14:56:00.183Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-29T10:12:14.284Z",
@@ -144,19 +144,18 @@
   },
   "skills": {
     "load": {
-      "extraDirs": ["/home/robot/.openclaw/skills"],
+      "extraDirs": [
+        "/home/robot/.openclaw/skills"
+      ],
       "watch": true
     }
   },
   "plugins": {
     "enabled": true,
     "allow": [
-      "hello-plugin",
-      "hello-tool-plugin",
-      "qwen-tool-plugin",
-      "openclaw-weixin",
-      "robot-plugin",
-      "build123d_plugin"
+      "build123d_plugin",
+      "aiya_plugin",
+      "openclaw-weixin"
     ],
     "load": {
       "paths": [
@@ -164,32 +163,22 @@
       ]
     },
     "entries": {
-      "hello-plugin": {
-        "enabled": false
-      },
-      "hello-tool-plugin": {
-        "enabled": true
-      },
-      "qwen-tool-plugin": {
-        "enabled": true
-      },
-      "openclaw-weixin": {
-        "enabled": true
-      },
-      "robot-plugin": {
-        "enabled": true,
-        "config": {
-          "transport_type": "ws",
-          "robot_url": "ws://localhost:8080",
-          "signaling_url": "ws://localhost:3000",
-          "robot_id": "mock_robot_1"
-        }
-      },
       "build123d_plugin": {
         "enabled": true,
         "config": {
           "mode": "worker"
         }
+      },
+      "aiya_plugin": {
+        "enabled": true,
+        "config": {
+          "robot_url": "wss://test.e-inv.net.cn/aiya/v1/",
+          "device_id": "c8:5f:c1:31:c6:6d",
+          "client_id": "123456"
+        }
+      },
+      "openclaw-weixin": {
+        "enabled": true
       }
     },
     "installs": {
