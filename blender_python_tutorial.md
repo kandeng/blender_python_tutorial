@@ -56,4 +56,6 @@ Here is the content table of the Blender python tutorials.
 
 17. [Openclaw Plugin](./chapter_17/openclaw_plugin.md)
 
-    
+18. [Openclaw Controls Robot](./chapter_18/openclaw_robot.md)
+
+19. [Openclaw Robot Node](./chapter_19/openclaw_robot_node.md)    
